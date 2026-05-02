@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест API Плейсов</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Тест API Плейсов</h1>
+    
+    <div class="form-group">
+        <label for="token">JWT Token:</label>
+        <input type="text" id="token" placeholder="Введите JWT токен">
+    </div>
+    
+    <div class="form-group">
+        <label for="title">Название плейса:</label>
+        <input type="text" id="title" value="Тестовый плейс">
+    </div>
+    
+    <div class="form-group">
+        <label for="description">Описание:</label>
+        <textarea id="description" rows="3">Тестовое описание плейса</textarea>
+    </div>
+    
+    <div class="form-group">
+        <label for="hashtags">Хештеги (через запятую):</label>
+        <input type="text" id="hashtags" value="тест,плейс">
+    </div>
+    
+    <div class="form-group">
+        <label for="product_ids">ID товаров (через запятую):</label>
+        <input type="text" id="product_ids" value="1,2">
+    </div>
+    
+    <button onclick="testCreatePlace()">Создать плейс</button>
+    <button onclick="testGetPlaces()">Получить плейсы</button>
+    <button onclick="testPlacesFeed()">Тест Places Feed API</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function testCreatePlace() {
+            const token = document.getElementById('token').value;
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const hashtags = document.getElementById('hashtags').value;
+            const productIds = document.getElementById('product_ids').value;
+            
+            const formData = new FormData();
+            formData.append('title', title);
+            formData.append('description', description);
+            
+            if (hashtags) {
+                const hashtagArray = hashtags.split(',').map(tag => tag.trim()).filter(tag => tag);
+                hashtagArray.forEach(tag => {
+                    formData.append('hashtags[]', tag);
+                });
+            }
+            
+            if (productIds) {
+                const productIdArray = productIds.split(',').map(id => id.trim()).filter(id => id);
+                productIdArray.forEach(id => {
+                    formData.append('product_ids[]', id);
+                });
+            }
+            
+            try {
+                const response = await fetch('/api/places', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showResult('Плейс создан успешно!', result, 'success');
+                } else {
+                    showResult('Ошибка при создании плейса', result, 'error');
+                }
+            } catch (error) {
+                showResult('Ошибка сети', error.message, 'error');
+            }
+        }
+        
+        async function testGetPlaces() {
+            try {
+                const response = await fetch('/api/places');
+                const result = await response.json();
+
+                if (response.ok) {
+                    showResult('Плейсы получены успешно!', result, 'success');
+                } else {
+                    showResult('Ошибка при получении плейсов', result, 'error');
+                }
+            } catch (error) {
+                showResult('Ошибка сети', error.message, 'error');
+            }
+        }
+
+        async function testPlacesFeed() {
+            try {
+                const apiUrl = 'https://api.sancan.ru';
+                const response = await fetch(`${apiUrl}/places/feed?limit=5`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+
+                const text = await response.text();
+                console.log('Raw response:', text.substring(0, 500));
+
+                let result;
+                try {
+                    result = JSON.parse(text);
+                } catch (e) {
+                    showResult('Ошибка парсинга JSON', { rawResponse: text }, 'error');
+                    return;
+                }
+
+                if (response.ok) {
+                    showResult('Places Feed API работает!', result, 'success');
+                } else {
+                    showResult('Ошибка API', result, 'error');
+                }
+            } catch (error) {
+                showResult('Ошибка сети', {
+                    message: error.message,
+                    stack: error.stack
+                }, 'error');
+            }
+        }
+        
+        function showResult(title, data, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = `
+                <h3>${title}</h3>
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        }
+    </script>
+</body>
+</html> 

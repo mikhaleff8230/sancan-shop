@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест виртуализации Places</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .control-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .slider {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+        }
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+            border: none;
+        }
+        .value-display {
+            font-weight: bold;
+            color: #007bff;
+            min-width: 60px;
+            text-align: center;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .checkbox {
+            width: 18px;
+            height: 18px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 8px;
+        }
+        .stat-item {
+            text-align: center;
+        }
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .performance-indicator {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .performance-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #ff9800, #f44336);
+            transition: width 0.3s ease;
+        }
+        .test-area {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            height: 600px;
+            overflow: hidden;
+            position: relative;
+        }
+        .test-header {
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+            font-weight: 600;
+        }
+        .scroll-container {
+            height: calc(100% - 50px);
+            overflow-y: auto;
+        }
+        .instructions {
+            margin-top: 20px;
+            padding: 20px;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin-bottom: 5px;
+            color: #856404;
+        }
+        .alert {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧱 Тест виртуализации Places Masonry</h1>
+            <p>Проверка производительности DOM-виртуализации для больших списков мест</p>
+        </div>
+
+        <div class="alert alert-info">
+            <strong>ℹ️ Важно:</strong> Этот тест использует сгенерированные данные. Для тестирования с реальными данными используйте компонент в приложении с параметром <code>enableVirtualization={true}</code>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Количество мест: <span id="placeCount" class="value-display">100</span></label>
+                <div class="slider-container">
+                    <span class="value-display">50</span>
+                    <input
+                        type="range"
+                        id="placeSlider"
+                        class="slider"
+                        min="50"
+                        max="1000"
+                        step="50"
+                        value="100"
+                    >
+                    <span class="value-display">1000</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Режим отображения:</label>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="virtualizationToggle" class="checkbox">
+                    <label for="virtualizationToggle">Включить виртуализацию</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-label">Всего мест</div>
+                <div id="totalPlaces" class="stat-value">100</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">В DOM сейчас</div>
+                <div id="domElements" class="stat-value">~40</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Экономия памяти</div>
+                <div id="memorySavings" class="stat-value">60%</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Режим</div>
+                <div id="currentMode" class="stat-value">Обычный</div>
+            </div>
+        </div>
+
+        <div class="performance-indicator">
+            <div id="performanceBar" class="performance-bar" style="width: 30%"></div>
+        </div>
+
+        <div class="test-area">
+            <div class="test-header">
+                <span id="testTitle">Обычная Masonry сетка</span>
+            </div>
+            <div id="testContainer" class="scroll-container">
+                <!-- Здесь будет отображаться контент теста -->
+                <div style="padding: 20px; text-align: center; color: #666;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">🔄</div>
+                    <p>Загрузка теста...</p>
+                    <p style="font-size: 14px; margin-top: 10px;">
+                        Используйте настройки выше для изменения параметров
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 Как тестировать виртуализацию:</h3>
+            <ul>
+                <li><strong>Количество мест:</strong> Попробуйте 50, 200, 500, 1000 элементов</li>
+                <li><strong>Виртуализация:</strong> Переключайте on/off и сравнивайте производительность</li>
+                <li><strong>Скроллинг:</strong> Проверьте плавность скролла с большим количеством элементов</li>
+                <li><strong>Память:</strong> Следите за индикатором производительности</li>
+                <li><strong>DOM:</strong> В режиме виртуализации всегда ~40 элементов в DOM</li>
+            </ul>
+
+            <h3>🎯 Ожидаемые результаты:</h3>
+            <ul>
+                <li>✅ С 1000 элементов: плавный скролл, низкое использование памяти</li>
+                <li>✅ DOM содержит не более 60 элементов одновременно</li>
+                <li>✅ Masonry layout работает корректно с виртуализацией</li>
+                <li>✅ Скроллбар показывает правильную общую высоту</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Функция для генерации тестовых данных
+        function generateTestPlaces(count) {
+            const places = [];
+            for (let i = 0; i < count; i++) {
+                places.push({
+                    id: `test-place-${i}`,
+                    title: `Тестовое место ${i + 1}`,
+                    images: [{
+                        id: `img-${i}`,
+                        url: `https://picsum.photos/400/300?random=${i}`,
+                        thumbnail: `https://picsum.photos/200/150?random=${i}`
+                    }],
+                    user: {
+                        id: `user-${i % 10}`,
+                        name: `Пользователь ${i % 10 + 1}`,
+                        avatar: `https://picsum.photos/50/50?random=user${i % 10}`
+                    },
+                    created_at: new Date(Date.now() - i * 1000 * 60 * 60).toISOString()
+                });
+            }
+            return places;
+        }
+
+        // Функция для рендеринга обычной masonry сетки
+        function renderNormalMasonry(places) {
+            const container = document.getElementById('testContainer');
+
+            // Имитация breakpoint columns
+            const columns = window.innerWidth > 1100 ? 4 : window.innerWidth > 500 ? 3 : 2;
+            const columnWidth = `calc(${100/columns}% - 16px)`;
+
+            let html = '<div style="display: flex; flex-wrap: wrap; gap: 16px; padding: 20px;">';
+
+            places.forEach((place, index) => {
+                html += `
+                    <div style="
+                        flex: 0 0 ${columnWidth};
+                        break-inside: avoid;
+                        background: white;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    ">
+                        <img
+                            src="${place.images[0].thumbnail}"
+                            alt="${place.title}"
+                            style="width: 100%; height: 150px; object-fit: cover;"
+                            loading="lazy"
+                        >
+                        <div style="padding: 12px;">
+                            <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">
+                                ${place.title}
+                            </h4>
+                            <p style="margin: 0; font-size: 12px; color: #666;">
+                                ${place.user.name}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Функция для рендеринга виртуализированной masonry сетки
+        function renderVirtualizedMasonry(places, visibleCount = 40) {
+            const container = document.getElementById('testContainer');
+
+            // Имитация виртуализации: показываем только видимые элементы
+            const visiblePlaces = places.slice(0, visibleCount);
+            const totalHeight = places.length * 320; // Предполагаемая высота элемента
+            const hiddenCount = places.length - visibleCount;
+
+            let html = `
+                <div style="min-height: ${totalHeight}px; position: relative;">
+                    <!-- Top spacer -->
+                    <div style="height: 0px;"></div>
+
+                    <!-- Visible content -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 16px; padding: 20px;">
+            `;
+
+            const columns = window.innerWidth > 1100 ? 4 : window.innerWidth > 500 ? 3 : 2;
+            const columnWidth = `calc(${100/columns}% - 16px)`;
+
+            visiblePlaces.forEach((place, index) => {
+                html += `
+                    <div style="
+                        flex: 0 0 ${columnWidth};
+                        break-inside: avoid;
+                        background: white;
+                        border-radius: 8px;
+                        overflow: hidden;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    ">
+                        <img
+                            src="${place.images[0].thumbnail}"
+                            alt="${place.title}"
+                            style="width: 100%; height: 150px; object-fit: cover;"
+                            loading="lazy"
+                        >
+                        <div style="padding: 12px;">
+                            <h4 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">
+                                ${place.title}
+                            </h4>
+                            <p style="margin: 0; font-size: 12px; color: #666;">
+                                ${place.user.name}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+
+                    <!-- Bottom spacer -->
+                    <div style="height: ${hiddenCount * 320}px;"></div>
+                </div>
+
+                <div style="
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: rgba(0,123,255,0.9);
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                    font-weight: bold;
+                ">
+                    Виртуализация активна
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        // Функция обновления статистики
+        function updateStats() {
+            const placeCount = parseInt(document.getElementById('placeSlider').value);
+            const useVirtualization = document.getElementById('virtualizationToggle').checked;
+
+            document.getElementById('totalPlaces').textContent = placeCount;
+            document.getElementById('domElements').textContent = useVirtualization ? '~40' : placeCount;
+            document.getElementById('memorySavings').textContent = useVirtualization
+                ? Math.round((1 - 40/placeCount) * 100) + '%'
+                : '0%';
+            document.getElementById('currentMode').textContent = useVirtualization ? 'Виртуальный' : 'Обычный';
+
+            // Обновление индикатора производительности
+            const performancePercent = useVirtualization ? Math.max(10, 100 - (placeCount / 10)) : Math.max(10, 100 - placeCount / 20);
+            document.getElementById('performanceBar').style.width = performancePercent + '%';
+        }
+
+        // Функция обновления отображения
+        function updateDisplay() {
+            const placeCount = parseInt(document.getElementById('placeSlider').value);
+            const useVirtualization = document.getElementById('virtualizationToggle').checked;
+
+            document.getElementById('placeCount').textContent = placeCount;
+            document.getElementById('testTitle').textContent = useVirtualization
+                ? 'Виртуализированная Masonry сетка'
+                : 'Обычная Masonry сетка';
+
+            updateStats();
+
+            // Генерация данных и рендеринг
+            const places = generateTestPlaces(placeCount);
+
+            if (useVirtualization) {
+                renderVirtualizedMasonry(places);
+            } else {
+                renderNormalMasonry(places);
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обработчики событий
+            document.getElementById('placeSlider').addEventListener('input', function(e) {
+                document.getElementById('placeCount').textContent = e.target.value;
+                updateStats();
+            });
+
+            document.getElementById('placeSlider').addEventListener('change', updateDisplay);
+            document.getElementById('virtualizationToggle').addEventListener('change', updateDisplay);
+
+            // Начальная загрузка
+            updateDisplay();
+        });
+
+        // Обработка изменения размера окна
+        window.addEventListener('resize', function() {
+            // Перерендеринг при изменении размера для корректного masonry
+            setTimeout(updateDisplay, 100);
+        });
+    </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+

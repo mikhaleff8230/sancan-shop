@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест загрузки видео в плейсы</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .video-preview {
+            margin-top: 15px;
+            max-width: 500px;
+        }
+        .video-preview video {
+            width: 100%;
+            height: auto;
+            border-radius: 6px;
+        }
+        .debug-info, .result {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .file-info {
+            background: #e3f2fd;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎬 Тест загрузки видео в плейсы</h1>
+        <p><strong>Цель:</strong> Проверить, что видео корректно обрабатывается перед отправкой на сервер</p>
+        
+        <form id="video-form">
+            <div class="form-group">
+                <label for="auth-token">🔑 Authorization Token (Bearer):</label>
+                <input type="text" id="auth-token" name="auth-token" placeholder="Вставьте ваш Bearer-токен" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label for="title">📝 Название плейса:</label>
+                <input type="text" id="title" name="title" required placeholder="Введите название плейса">
+            </div>
+            
+            <div class="form-group">
+                <label for="description">📄 Описание:</label>
+                <textarea id="description" name="description" rows="3" placeholder="Введите описание плейса (необязательно)"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="video">🎥 Видео (до 40 МБ):</label>
+                <input type="file" id="video" name="video" accept="video/*">
+                <div id="video-error" class="error"></div>
+                <div id="video-preview" class="video-preview"></div>
+            </div>
+            
+            <button type="submit" id="submit-btn">🚀 Протестировать FormData</button>
+            <button type="button" id="upload-btn" style="margin-left: 16px; background: #28a745;">⬆️ Отправить на сервер</button>
+        </form>
+        
+        <div id="status"></div>
+        
+        <div id="debug-info" class="debug-info">
+            <h3>🔍 Отладочная информация:</h3>
+            <div id="debug-content">Выберите видео файл для просмотра информации</div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('video-form');
+        const videoInput = document.getElementById('video');
+        const videoError = document.getElementById('video-error');
+        const videoPreview = document.getElementById('video-preview');
+        const debugContent = document.getElementById('debug-content');
+        const submitBtn = document.getElementById('submit-btn');
+        const result = document.getElementById('result');
+        const status = document.getElementById('status');
+
+        function showStatus(message, type = 'success') {
+            status.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        videoInput.addEventListener('change', function(e) {
+            const file = e.target.files?.[0];
+            videoError.textContent = '';
+            videoPreview.innerHTML = '';
+            
+            if (file) {
+                showStatus('📁 Файл выбран, проверяю...', 'success');
+                
+                // Проверка размера
+                const maxSize = 40 * 1024 * 1024; // 40MB
+                if (file.size > maxSize) {
+                    const errorMsg = 'Максимальный размер видео — 40 МБ.';
+                    videoError.textContent = errorMsg;
+                    showStatus('❌ ' + errorMsg, 'error');
+                    return;
+                }
+                
+                // Показываем превью
+                const videoElement = document.createElement('video');
+                videoElement.src = URL.createObjectURL(file);
+                videoElement.controls = true;
+                videoElement.preload = 'metadata';
+                videoElement.style.maxHeight = '300px';
+                videoPreview.appendChild(videoElement);
+                
+                // Отладочная информация
+                updateDebugInfo(file, e.target.files);
+                showStatus('✅ Видео готово к отправке', 'success');
+            } else {
+                debugContent.textContent = 'Файл не выбран';
+                showStatus('📂 Выберите видео файл', 'error');
+            }
+        });
+
+        function updateDebugInfo(file, fileList) {
+            const info = {
+                fileName: file.name,
+                fileSize: (file.size / (1024 * 1024)).toFixed(2) + ' МБ',
+                fileType: file.type,
+                isFileList: fileList instanceof FileList,
+                fileListLength: fileList.length,
+                lastModified: new Date(file.lastModified).toLocaleString(),
+                isValidVideo: file.type.startsWith('video/'),
+                readableSize: formatFileSize(file.size)
+            };
+            
+            debugContent.innerHTML = `
+                <div class="file-info">
+                    <strong>📁 Имя файла:</strong> ${info.fileName}<br>
+                    <strong>📏 Размер:</strong> ${info.fileSize} (${info.readableSize})<br>
+                    <strong>🎭 Тип:</strong> ${info.fileType}<br>
+                    <strong>✅ Это FileList:</strong> ${info.isFileList}<br>
+                    <strong>🔢 Количество файлов:</strong> ${info.fileListLength}<br>
+                    <strong>📅 Дата изменения:</strong> ${info.lastModified}<br>
+                    <strong>🎥 Валидное видео:</strong> ${info.isValidVideo ? '✅ Да' : '❌ Нет'}
+                </div>
+            `;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const videoFiles = videoInput.files;
+            const authToken = document.getElementById('auth-token').value.trim();
+            
+            if (!title.trim()) {
+                alert('Пожалуйста, введите название плейса');
+                showStatus('❌ Введите название плейса', 'error');
+                return;
+            }
+            
+            formData.append('title', title);
+            formData.append('description', description);
+            
+            // Проверяем видео точно так же, как в исправленном коде
+            const hasVideo = videoFiles && videoFiles instanceof FileList && videoFiles.length > 0;
+            
+            if (hasVideo) {
+                formData.append('video', videoFiles[0]);
+            }
+            
+            // Симулируем отладочную информацию из CreatePlaceModal
+            const videoDebugInfo = {
+                mode: 'create',
+                submitDataVideo: videoFiles,
+                videoType: typeof videoFiles,
+                isFileList: videoFiles instanceof FileList,
+                videoLength: videoFiles && videoFiles instanceof FileList ? videoFiles.length : 'no video',
+                hasVideoCheck: hasVideo
+            };
+
+            const formDataDebugInfo = {
+                title: title,
+                description: description,
+                hasNewImages: 0, // В тесте нет изображений
+                hasVideo: hasVideo,
+                videoFileSize: hasVideo ? (videoFiles[0].size / (1024 * 1024)).toFixed(2) + ' МБ' : 0,
+                videoFileName: hasVideo ? videoFiles[0].name : null,
+                product_id: null, // В тесте нет товара
+                authToken: authToken ? (authToken.slice(0, 10) + '...' + authToken.slice(-5)) : '(не указан)'
+            };
+            
+            // Выводим результат
+            result.innerHTML = `
+                <div class="result">
+                    <h3>🎯 Результаты тестирования:</h3>
+                    <h4>🔑 Authorization Token:</h4>
+                    <pre>${authToken ? authToken : '(не указан)'}</pre>
+                    <h4>📊 Video Debug Info (как в CreatePlaceModal):</h4>
+                    <pre>${JSON.stringify(videoDebugInfo, null, 2)}</pre>
+                    <h4>📋 FormData Prepared (как в CreatePlaceModal):</h4>
+                    <pre>${JSON.stringify(formDataDebugInfo, null, 2)}</pre>
+                    <h4>📦 FormData Entries:</h4>
+                    <div id="formdata-entries"></div>
+                    <div class="status success">
+                        ✅ FormData готова к отправке на сервер!
+                    </div>
+                    <p><em>В реальном приложении эти данные отправились бы на API endpoint с этим токеном</em></p>
+                </div>
+            `;
+            
+            // Выводим содержимое FormData
+            const entriesDiv = document.getElementById('formdata-entries');
+            let entriesHtml = '';
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    entriesHtml += `<strong>${key}:</strong> File(${value.name}, ${formatFileSize(value.size)})<br>`;
+                } else {
+                    entriesHtml += `<strong>${key}:</strong> ${value}<br>`;
+                }
+            }
+            entriesDiv.innerHTML = entriesHtml;
+            
+            // Логируем в консоль для детального анализа
+            console.log('🎬 Video Test Results:');
+            console.log('Authorization token:', authToken);
+            console.log('Video debug info:', videoDebugInfo);
+            console.log('FormData prepared:', formDataDebugInfo);
+            console.log('FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    console.log(`${key}:`, `File(${value.name}, ${value.size} bytes)`);
+                } else {
+                    console.log(`${key}:`, value);
+                }
+            }
+
+            showStatus('🎉 Тестирование завершено! Проверьте результаты ниже.', 'success');
+        });
+
+        // Показываем начальный статус
+        showStatus('📂 Готов к тестированию! Выберите видео файл.', 'success');
+
+        // --- Новый код: отправка на сервер ---
+        const uploadBtn = document.getElementById('upload-btn');
+        uploadBtn.addEventListener('click', async function() {
+            const formData = new FormData();
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const videoFiles = videoInput.files;
+            const authToken = document.getElementById('auth-token').value.trim();
+
+            if (!title.trim()) {
+                alert('Пожалуйста, введите название плейса');
+                showStatus('❌ Введите название плейса', 'error');
+                return;
+            }
+            formData.append('title', title);
+            formData.append('description', description);
+            if (videoFiles && videoFiles.length > 0) {
+                formData.append('video', videoFiles[0]);
+            }
+
+            showStatus('⏳ Отправка на сервер...', 'success');
+            result.innerHTML = '';
+
+            try {
+                const response = await fetch('https://sancan.ru/api/places', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': authToken ? `Bearer ${authToken}` : '',
+                    },
+                    body: formData
+                });
+                const text = await response.text();
+                let json;
+                try { json = JSON.parse(text); } catch { json = text; }
+                result.innerHTML = `<div class="result">
+                    <h3>📡 Ответ сервера:</h3>
+                    <div><b>Статус:</b> ${response.status} ${response.statusText}</div>
+                    <pre>${typeof json === 'string' ? json : JSON.stringify(json, null, 2)}</pre>
+                </div>`;
+                if (response.ok) {
+                    showStatus('✅ Успешно отправлено на сервер!', 'success');
+                } else {
+                    showStatus('❌ Ошибка при отправке на сервер', 'error');
+                }
+            } catch (err) {
+                result.innerHTML = `<div class="result"><b>Ошибка:</b> ${err}</div>`;
+                showStatus('❌ Ошибка JS при отправке', 'error');
+            }
+        });
+    </script>
+</body>
+</html> 
