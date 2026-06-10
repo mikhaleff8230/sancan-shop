@@ -10,7 +10,10 @@ const BottomNavigation = dynamic(() => import('@/layouts/_bottom-navigation'), {
   ssr: false,
 });
 
-export default function Layout({ children }: React.PropsWithChildren<{}>) {
+export default function Layout({
+  children,
+  hideSidebar = false,
+}: React.PropsWithChildren<{ hideSidebar?: boolean }>) {
   const breakpoint = useBreakpoint();
   const isMounted = useIsMounted();
   let [collapse, setCollapse] = useState(false);
@@ -22,16 +25,27 @@ export default function Layout({ children }: React.PropsWithChildren<{}>) {
       initial="exit"
       animate="enter"
       exit="exit"
-      className="app-shell flex min-h-screen w-full flex-col"
+      className="sancan-ozon-page flex min-h-screen w-full flex-col"
     >
       <Header
         isCollapse={collapse}
-        showHamburger={true}
+        showHamburger={!hideSidebar}
         onClickHamburger={toggleSidebar}
       />
-      <div className="flex flex-1 pt-14 sm:pt-[58px]">
-        <Sidebar isCollapse={collapse} onToggle={toggleSidebar} />
-        <main className={cn('flex w-full flex-col')}>
+      <div className="flex flex-1">
+        {!hideSidebar && (
+          <Sidebar isCollapse={collapse} onToggle={toggleSidebar} />
+        )}
+        <main
+          className={cn(
+            'flex w-full flex-col',
+            hideSidebar
+              ? ''
+              : collapse
+              ? 'ltr:sm:pl-60 rtl:sm:pr-60 ltr:xl:pl-[75px] rtl:xl:pr-[75px]'
+              : 'ltr:sm:pl-[75px] rtl:sm:pr-[75px] ltr:xl:pl-60 rtl:xl:pr-60'
+          )}
+        >
           {children}
         </main>
       </div>

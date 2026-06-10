@@ -96,7 +96,7 @@ export function TestVirtualization() {
           <div>
             <span className="font-medium">В DOM сейчас:</span>
             <br />
-            <span className="text-brand">
+            <span className="text-green-600">
               {useVirtualization ? '~40' : placeCount}
             </span>
           </div>
@@ -113,7 +113,7 @@ export function TestVirtualization() {
           <div>
             <span className="font-medium">Режим:</span>
             <br />
-            <span className={`font-semibold ${useVirtualization ? 'text-brand' : 'text-orange-600'}`}>
+            <span className={`font-semibold ${useVirtualization ? 'text-green-600' : 'text-orange-600'}`}>
               {useVirtualization ? 'Виртуальный' : 'Обычный'}
             </span>
           </div>

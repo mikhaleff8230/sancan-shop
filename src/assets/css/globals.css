@@ -6,13 +6,14 @@
 @import '../../styles/places.css';
 @layer base {
   :root {
-    /* Design tokens: marketplace shell */
-    --color-accent: #FF076A;
-    --color-app-bg: 13, 16, 26;
-    --color-app-surface: 20, 23, 34;
-    --color-app-card: 23, 27, 41;
-    --color-app-muted: 148, 156, 184;
-
+    --sancan-ozon-blue: #005bff;
+    --sancan-ozon-blue-dark: #004ad6;
+    --sancan-ozon-pink: #f91155;
+    --sancan-ozon-bg: #f7f7fa;
+    --sancan-ozon-card: #ffffff;
+    --sancan-ozon-text: #17212b;
+    --sancan-ozon-muted: #707f8d;
+    --sancan-ozon-border: #e5e8ee;
     /* Promo page colors */
     --promo-primary: 0 0% 0%;
     --promo-primary-foreground: 0 0% 14%;
@@ -38,6 +39,8 @@
   html,
   body {
     @apply h-full antialiased font-body;
+    background: var(--sancan-ozon-bg);
+    color: var(--sancan-ozon-text);
   }
   #__next {
     @apply h-full text-13px;
@@ -74,45 +77,53 @@
 
 /* custom utilities */
 @layer utilities {
-  .container {
+  .sancan-ozon-page {
+    background: var(--sancan-ozon-bg);
+    color: var(--sancan-ozon-text);
+  }
+  .sancan-ozon-container {
     width: 100%;
-    max-width: 1320px;
-    margin-inline: auto;
-    padding-inline: 16px;
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 16px;
+    padding-right: 16px;
   }
-
-  @media (min-width: 768px) {
-    .container {
-      padding-inline: 20px;
-    }
+  .sancan-ozon-card {
+    border: 1px solid var(--sancan-ozon-border);
+    background: var(--sancan-ozon-card);
+    border-radius: 12px;
   }
-
+  .sancan-ozon-soft-card {
+    background: #f0f3f8;
+    border-radius: 12px;
+  }
+  .sancan-ozon-button {
+    border-radius: 10px;
+    background: var(--sancan-ozon-blue);
+    color: #fff;
+    transition: background-color 160ms ease, transform 160ms ease;
+  }
+  .sancan-ozon-button:hover {
+    background: var(--sancan-ozon-blue-dark);
+  }
+  .sancan-ozon-pill {
+    border: 1px solid var(--sancan-ozon-border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--sancan-ozon-text);
+    transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+  }
+  .sancan-ozon-pill:hover {
+    border-color: var(--sancan-ozon-blue);
+    color: var(--sancan-ozon-blue);
+  }
   @media (min-width: 1024px) {
-    .container {
-      padding-inline: 24px;
+    .sancan-ozon-container {
+      padding-left: 20px;
+      padding-right: 20px;
     }
   }
-
-  .layout-block-16 {
-    padding: 16px;
-  }
-  .layout-block-24 {
-    padding: 24px;
-  }
-  .layout-block-32 {
-    padding: 32px;
-  }
-
-  .section-stack-16 {
-    @apply space-y-grid-2;
-  }
-  .section-stack-24 {
-    @apply space-y-grid-3;
-  }
-  .section-stack-32 {
-    @apply space-y-grid-4;
-  }
-
   .h-inherit {
     height: inherit;
   }
@@ -126,36 +137,6 @@
     transition-property: background-color, fill;
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 150ms;
-  }
-}
-
-@layer components {
-  .app-shell {
-    @apply bg-app-bg;
-  }
-
-  .app-glass-header {
-    @apply border-b border-white/10 bg-app-surface/85 backdrop-blur-xl;
-  }
-
-  .app-surface-panel {
-    @apply rounded-app-md bg-app-surface shadow-app-card;
-  }
-
-  .app-card-ui {
-    @apply rounded-app-md bg-app-card shadow-app-card transition-all duration-200 ease-in-out;
-  }
-
-  .app-card-ui-hover {
-    @apply hover:shadow-app-glow;
-  }
-
-  .app-chip {
-    @apply rounded-lg bg-app-surface px-grid-2 py-grid-1 text-xs font-medium text-light;
-  }
-
-  .app-interactive {
-    @apply rounded-app-sm transition-all duration-200 ease-in-out hover:bg-app-card hover:shadow-app-glow;
   }
 }
 
@@ -418,23 +399,23 @@ html.dark .react-tel-input .country-list .country:hover {
 /* Promo page custom styles */
 section.bg-promo-navy {
   background-color: rgba(255, 241, 204, 1) !important;
-  background: radial-gradient(circle at 50% 50%, rgba(209, 209, 209, 1) 0%, var(--color-accent) 100%) !important;
+  background: radial-gradient(circle at 50% 50%, rgba(209, 209, 209, 1) 0%, rgba(224, 243, 22, 1) 100%) !important;
   border-radius: 38px !important;
   border: none !important;
   border-color: rgba(0, 0, 0, 0) !important;
   border-image: none !important;
   border-style: none !important;
-  color: var(--color-accent) !important;
+  color: rgba(224, 243, 22, 1) !important;
 }
 
 header.border-b.bg-promo-navy {
   background-color: rgba(0, 0, 0, 1) !important;
-  color: var(--color-accent) !important;
+  color: rgba(224, 243, 22, 1) !important;
 }
 
 section.bg-promo-background {
   background-color: rgba(209, 209, 209, 1) !important;
-  background: radial-gradient(circle at 50% 50%, rgba(209, 209, 209, 1) 0%, var(--color-accent) 100%) !important;
+  background: radial-gradient(circle at 50% 50%, rgba(209, 209, 209, 1) 0%, rgba(224, 243, 22, 1) 100%) !important;
   color: rgba(74, 74, 74, 1) !important;
 }
 
@@ -442,7 +423,7 @@ button.bg-promo-primary,
 .bg-promo-primary {
   background-color: rgba(0, 0, 0, 0.7) !important;
   border-width: 1px !important;
-  border-color: var(--color-accent) !important;
+  border-color: rgba(224, 243, 22, 1) !important;
 }
 
 div.bg-promo-primary {
@@ -487,8 +468,8 @@ div.bg-promo-magenta\/20 {
   background:
     radial-gradient(
       ellipse at bottom center,
-      color-mix(in srgb, var(--color-accent) 50%, transparent) 0%,
-      color-mix(in srgb, var(--color-accent) 25%, transparent) 40%,
+      rgba(224, 243, 22, 0.5) 0%,
+      rgba(224, 243, 22, 0.25) 40%,
       rgba(0, 0, 0, 0) 70%
     );
 

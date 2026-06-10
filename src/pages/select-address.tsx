@@ -227,7 +227,7 @@ const SelectAddressPage = () => {
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`inline-block px-2 py-1 text-xs rounded ${
                     point.service === 'sdek' 
-                      ? 'bg-brand-100 text-brand-800' 
+                      ? 'bg-green-100 text-green-800' 
                       : 'bg-yellow-100 text-yellow-800'
                   }`}>
                     {point.service.toUpperCase()}
@@ -241,7 +241,7 @@ const SelectAddressPage = () => {
                 {point.work_time && (
                   <div className="text-xs text-gray-500">Время работы: {point.work_time}</div>
                 )}
-                <div className="text-xs text-brand mt-1">Адрес подходит для доставки</div>
+                <div className="text-xs text-green-600 mt-1">Адрес подходит для доставки</div>
               </div>
 
               {/* Индикатор выбора */}

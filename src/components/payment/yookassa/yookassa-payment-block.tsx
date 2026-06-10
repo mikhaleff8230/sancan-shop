@@ -132,10 +132,10 @@ export default function YooKassaPaymentBlock({
       <div className="mb-4">
         <div className="flex items-center mb-2">
           <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="mr-2">
-            <rect width="24" height="24" rx="6" fill="var(--color-accent)"/>
+            <rect width="24" height="24" rx="6" fill="#00D4AA"/>
             <path d="M7 12h10M7 16h10M7 8h10" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
           </svg>
-          <span className="font-semibold text-base text-brand">ЮKassa</span>
+          <span className="font-semibold text-base text-[#00D4AA]">ЮKassa</span>
         </div>
         <p className="text-sm text-gray-600">Безопасная оплата банковской картой</p>
       </div>
@@ -152,7 +152,7 @@ export default function YooKassaPaymentBlock({
         <div className="text-center">
           <div className="text-gray-500 mb-4">Для начала оплаты нажмите кнопку ниже</div>
           <button
-            className="w-full bg-brand hover:bg-brand-700 text-white font-medium py-3 px-4 rounded-lg text-sm transition-colors"
+            className="w-full bg-[#00D4AA] hover:bg-[#00B894] text-white font-medium py-3 px-4 rounded-lg text-sm transition-colors"
             onClick={handlePay}
             disabled={loading}
           >

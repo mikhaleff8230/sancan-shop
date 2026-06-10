@@ -8,7 +8,6 @@ import ProductCardLoader from '@/components/product/product-loader';
 import Button from '@/components/ui/button';
 import cn from 'classnames';
 import { useViewMode } from '@/components/product/grid-switcher';
-import ProductMapView from './product-map-view';
 
 interface DynamicGridProps {
   limit?: number;
@@ -22,7 +21,6 @@ interface DynamicGridProps {
     name?: string;
     orderBy?: string;
     sortedBy?: string;
-    attribute_values?: Record<string, string[]>;
   };
   onProductClick?: (product: Product) => void;
 }
@@ -126,17 +124,6 @@ export default function DynamicProductGrid({
     );
   }
 
-  // Если режим карты — рендерим карту вместо списка товаров
-  if (viewMode === 'map') {
-    return (
-      <ProductMapView 
-        filters={filters} 
-        onProductClick={onProductClick}
-        className={className}
-      />
-    );
-  }
-
   if (isLoading && (!products || products.length === 0)) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -162,12 +149,12 @@ export default function DynamicProductGrid({
   }
 
   // Определяем классы для grid или list вида
-  const gridClasses = viewMode === 'list' 
-    ? 'flex flex-col gap-4' // Список - вертикальная колонка
-    : 'grid grid-cols-2 gap-4 sm:gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'; // Сетка - плотная, но без пережатия карточек
+  const gridClasses = viewMode === 'list'
+    ? 'flex flex-col gap-4'
+    : 'grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5';
 
   return (
-    <div className={cn('w-full px-4 pt-5 pb-9 md:px-6 md:pb-10 md:pt-6 lg:px-7 lg:pb-12 3xl:px-8', className)}>
+    <div className={cn('w-full pb-9 md:pb-10 lg:pb-12', className)}>
       <motion.div
         variants={staggerTransition}
         initial="initial"
@@ -182,7 +169,7 @@ export default function DynamicProductGrid({
             onClick={() => onProductClick?.(product)}
             className={cn(
               'cursor-pointer',
-              viewMode === 'list' && 'p-4 border border-light-400 dark:border-dark-400 rounded-lg hover:bg-light-50 dark:hover:bg-dark-200 transition-colors'
+              viewMode === 'list' && 'rounded-xl border border-ozon-border bg-white p-4 transition-colors hover:bg-brand-50'
             )}
           >
             <ProductCard product={product} />
@@ -204,7 +191,7 @@ export default function DynamicProductGrid({
             onClick={loadMore}
             disabled={isFetching}
             isLoading={isFetching}
-            className="px-8 py-3"
+            className="sancan-ozon-button px-8 py-3"
           >
             {isFetching ? 'Загружаем...' : t('text-loadmore')}
           </Button>

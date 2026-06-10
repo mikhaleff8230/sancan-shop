@@ -45,12 +45,7 @@ export const getServerSideProps: GetServerSideProps<
   PageProps
 > = async ({ params, locale, res }) => {
   const { productSlug } = params!;
-
-  // Не перехватывать ветку /products/tags/* — она обрабатывается pages/products/tags/[tagSlug]
-  if (productSlug === 'tags') {
-    return { notFound: true };
-  }
-
+  
   // Редирект на новый формат URL /element/{slug} для обратной совместимости
   return {
     redirect: {

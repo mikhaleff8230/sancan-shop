@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Place } from '@/types';
@@ -160,24 +161,22 @@ export default function PlaceCard({ place }: PlaceCardProps) {
   return (
     <motion.div
       variants={fadeInBottomWithScaleX()}
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.2, ease: 'easeInOut' }}
-      className="place-card group app-card-ui app-card-ui-hover cursor-pointer rounded-app-md p-grid-2"
+      className="place-card group cursor-pointer"
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="relative overflow-hidden rounded-2xl bg-light-500 dark:bg-dark-400">
+        <div className="relative overflow-hidden rounded-2xl bg-light-500 dark:bg-dark-400">
         {/* Main Image/Video */}
-        <div className="relative aspect-square w-full overflow-hidden rounded-2xl">
+        <div className="relative w-full">
           {/* Статическое изображение или видео превью */}
           {hasImages ? (
-            <div className="relative h-full w-full overflow-hidden">
+            <div className="relative w-full overflow-hidden">
               <img
                 src={displayImage}
                 alt={safeTitle}
                 className={cn(
-                  "h-full w-full object-cover transition-all duration-300 group-hover:scale-[1.03]",
+                  "w-full h-auto object-cover transition-all duration-300 group-hover:scale-105",
                   isVideoPlaying && hasVideo ? "opacity-0" : "opacity-100"
                 )}
                 loading="lazy"
@@ -189,18 +188,18 @@ export default function PlaceCard({ place }: PlaceCardProps) {
               src={videoPoster}
               alt={safeTitle}
               className={cn(
-                "h-full w-full object-cover transition-all duration-300 group-hover:scale-[1.03]",
+                "w-full h-auto object-cover transition-all duration-300 group-hover:scale-105",
                 isVideoPlaying ? "opacity-0" : "opacity-100"
               )}
               loading="lazy"
             />
           ) : (
             /* Fallback к placeholder, если нет ни изображений, ни видео */
-            <div className="relative h-full w-full overflow-hidden">
+            <div className="relative w-full overflow-hidden">
               <img
                 src={typeof placeholder === 'string' ? placeholder : (placeholder as any)?.src || ''}
                 alt={safeTitle}
-                className="h-full w-full object-cover transition-all duration-300 group-hover:scale-[1.03]"
+                className="w-full h-auto object-cover transition-all duration-300 group-hover:scale-105"
                 loading="lazy"
               />
             </div>
@@ -215,7 +214,7 @@ export default function PlaceCard({ place }: PlaceCardProps) {
               playsInline
               preload="none"
               className={cn(
-                "absolute left-0 top-0 h-full w-full object-cover transition-all duration-300",
+                "absolute top-0 left-0 w-full h-full object-cover transition-all duration-300",
                 isVideoPlaying ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
               )}
               onEnded={() => setIsVideoPlaying(false)}
@@ -227,7 +226,7 @@ export default function PlaceCard({ place }: PlaceCardProps) {
 
           {/* Video duration indicator - показываем в нижнем левом углу */}
           {hasVideo && !isVideoPlaying && videoUrl && (
-            <div className="absolute bottom-2 left-2 z-[1] rounded-md bg-black/70 px-2 py-1 text-xs font-medium text-white">
+            <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs font-medium z-[1]">
               <VideoTimeDisplay videoUrl={videoUrl} />
             </div>
           )}
@@ -287,22 +286,6 @@ export default function PlaceCard({ place }: PlaceCardProps) {
               />
             </button>
           </div>
-        </div>
-      </div>
-      <div className="pt-3">
-        <h3 className="line-clamp-2 text-[15px] font-semibold text-light">
-          {safeTitle}
-        </h3>
-        <p className="mt-1 line-clamp-1 text-xs text-app-muted">
-          {place?.user?.name || t('text-unknown')}
-        </p>
-        <div className="mt-3 flex items-center justify-between">
-          <span className="text-xs font-medium text-app-muted">
-            {localLikes} likes
-          </span>
-          <span className="app-chip group-hover:bg-app-card">
-            View
-          </span>
         </div>
       </div>
     </motion.div>

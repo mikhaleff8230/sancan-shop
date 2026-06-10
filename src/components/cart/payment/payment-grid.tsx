@@ -122,13 +122,13 @@ const PaymentGrid: React.FC<{ className?: string; theme?: 'bw' }> = ({
       value: PaymentGateway.YOOKASSA,
       icon: (
         <svg width="82" height="21" viewBox="0 0 82 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="82" height="21" rx="4" fill="var(--color-accent)"/>
+          <rect width="82" height="21" rx="4" fill="#00D4AA"/>
           <text x="41" y="14" textAnchor="middle" fontSize="12" fill="#fff" fontFamily="Arial, sans-serif" fontWeight="bold">ЮKassa</text>
         </svg>
       ),
       darkIcon: (
         <svg width="82" height="21" viewBox="0 0 82 21" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="82" height="21" rx="4" fill="var(--color-accent)"/>
+          <rect width="82" height="21" rx="4" fill="#00D4AA"/>
           <text x="41" y="14" textAnchor="middle" fontSize="12" fill="#fff" fontFamily="Arial, sans-serif" fontWeight="bold">ЮKassa</text>
         </svg>
       ),
@@ -259,10 +259,10 @@ const PaymentGrid: React.FC<{ className?: string; theme?: 'bw' }> = ({
         <div className="mb-4">
           <div className="flex items-center mb-2">
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="mr-2">
-              <rect width="24" height="24" rx="6" fill="var(--color-accent)"/>
+              <rect width="24" height="24" rx="6" fill="#00D4AA"/>
               <path d="M7 12h10M7 16h10M7 8h10" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
             </svg>
-            <span className="font-semibold text-base text-brand">ЮKassa - безопасная оплата</span>
+            <span className="font-semibold text-base text-[#00D4AA]">ЮKassa - безопасная оплата</span>
           </div>
           <div className="text-sm text-gray-500 mb-4">
             Оплата картами Visa, MasterCard, МИР и другими способами

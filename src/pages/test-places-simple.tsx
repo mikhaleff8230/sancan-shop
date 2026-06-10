@@ -77,8 +77,8 @@ const TestPlacesSimple: NextPageWithLayout = () => {
       </div>
 
       {result?.data && (
-        <div className="bg-brand-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-brand-800 mb-2">
+        <div className="bg-green-50 p-4 rounded-lg">
+          <h3 className="text-lg font-semibold text-green-800 mb-2">
             ✅ API работает! Получено {result.data.length} плейсов
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">

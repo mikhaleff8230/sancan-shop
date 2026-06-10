@@ -1,13 +1,11 @@
 /** @type {import('next').NextConfig} */
-const runtimeCaching = require('./pwa-runtime-caching');
+const runtimeCaching = require('next-pwa/cache');
 const { i18n } = require('./next-i18next.config');
 
 const withPWA = require('next-pwa')({
   disable: process.env.NODE_ENV === 'development',
   dest: 'public',
   runtimeCaching,
-  // Не вешать отдельный NetworkFirst на document "/" — иначе те же no-response при сбое сети
-  cacheStartUrl: false,
 });
 
 module.exports = withPWA({
@@ -29,7 +27,7 @@ module.exports = withPWA({
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || process.env.NEXT_PUBLIC_API_URL || 'https://api.sancan.ru'}/:path*`,
+        destination: `${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'https://api.sancan.ru'}/:path*`,
       },
     ];
   },

@@ -77,7 +77,7 @@ const AddressSelectModal: React.FC<AddressSelectModalProps> = ({ onAddNew, onClo
               </div>
               <div className="text-sm text-gray-800">{addr.address}</div>
               {addr.extra && <div className="text-xs text-gray-500">{addr.extra}</div>}
-              {addr.suitability && <div className="text-xs text-brand mt-1">{addr.suitability}</div>}
+              {addr.suitability && <div className="text-xs text-green-600 mt-1">{addr.suitability}</div>}
             </div>
           ))}
         </div>

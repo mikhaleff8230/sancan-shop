@@ -88,23 +88,6 @@ const OrderView = ({ order, loadingStatus }: OrderViewProps) => {
   const { price: amountDue } = usePrice({ amount: amount_due });
   const { price: gatewayPayment } = usePrice({ amount: gateway_payment });
 
-  const buyerEmailFromOrder = (() => {
-    const raw = (order as any)?.shipping_address;
-    let addr: any = raw;
-    if (typeof raw === 'string') {
-      try {
-        addr = JSON.parse(raw);
-      } catch {
-        addr = null;
-      }
-    }
-    if (addr && typeof addr === 'object' && addr.email) {
-      const e = String(addr.email).trim();
-      return e || undefined;
-    }
-    return undefined;
-  })();
-
   return (
     <div className="p-4 sm:p-8">
       <div className="mx-auto w-full max-w-screen-lg">
@@ -142,6 +125,12 @@ const OrderView = ({ order, loadingStatus }: OrderViewProps) => {
                     paymentStatus={order?.payment_status as PaymentStatus}
                   />
                 </div>
+                 <div class="mt-12">
+                    <p>Адрес доставки: { order?.shipping_address ? order.shipping_address[0]: '' }</p>
+                    <p>Примечание: { order?.note}</p>
+                    <p>ПВЗ: {order?.shipping_address?.pvz ? order.shipping_address.pvz : 'ПВЗ не выбран'}</p>
+                    <p>Трек-номер: {order?.tracking_number ? order.tracking_number : 'Еще нет трек-номера'}</p>
+                 </div>
               </div>
               {/* end of order details */}
 
@@ -184,10 +173,7 @@ const OrderView = ({ order, loadingStatus }: OrderViewProps) => {
               <OrderItems
                 products={order?.products}
                 orderId={order?.id}
-                trackingNumber={order?.tracking_number}
-                buyerEmail={buyerEmailFromOrder}
                 status={order?.payment_status as PaymentStatus}
-                orderStatus={order?.order_status as OrderStatus}
               />
             </div>
             {/* {!isEmpty(order?.children) ? (

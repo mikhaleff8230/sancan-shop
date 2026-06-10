@@ -4,8 +4,6 @@ import { GetServerSideProps } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import GeneralLayout from '@/layouts/_general-layout';
 import type { NextPageWithLayout } from '@/types';
-import client from '@/data/client';
-import toast from 'react-hot-toast';
 
 const PaymentSuccessPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -21,20 +19,6 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
         const data = JSON.parse(orderData);
         if (data.order_id) {
           setOrderNumber(data.order_id);
-        }
-        if (data.order_id) {
-          client.orders
-            .confirmYooKassaPayment({
-              tracking_number: data.order_id,
-              payment_id: data.payment_id,
-            })
-            .catch((error) => {
-              const status = error?.response?.status;
-              // 409 = payment not finished yet; остальное логируем как диагностику
-              if (status !== 409) {
-                toast.error('Не удалось синхронизировать статус оплаты. Попробуйте позже.');
-              }
-            });
         }
       } catch (e) {
         console.error('Error parsing order data:', e);
@@ -61,7 +45,7 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00D4AA] mx-auto mb-4"></div>
           <p className="text-gray-600">Загрузка...</p>
         </div>
       </div>
@@ -74,9 +58,9 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
         <div className="bg-white rounded-xl shadow-lg p-8 text-center">
           {/* Иконка успеха */}
           <div className="mb-6">
-            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-brand-100">
+            <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100">
               <svg
-                className="h-10 w-10 text-brand"
+                className="h-10 w-10 text-green-600"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -103,9 +87,9 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
 
           {/* Номер заказа */}
           {orderNumber && (
-            <div className="bg-brand-50 border border-brand-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-brand-800 mb-2">Номер заказа:</p>
-              <p className="text-2xl font-bold text-brand-900">{orderNumber}</p>
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-green-800 mb-2">Номер заказа:</p>
+              <p className="text-2xl font-bold text-green-900">{orderNumber}</p>
             </div>
           )}
 
@@ -115,7 +99,7 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
             <ul className="space-y-2 text-sm text-gray-600">
               <li className="flex items-start">
                 <svg
-                  className="h-5 w-5 text-brand-500 mr-2 flex-shrink-0 mt-0.5"
+                  className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -131,7 +115,7 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
               </li>
               <li className="flex items-start">
                 <svg
-                  className="h-5 w-5 text-brand-500 mr-2 flex-shrink-0 mt-0.5"
+                  className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -147,7 +131,7 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
               </li>
               <li className="flex items-start">
                 <svg
-                  className="h-5 w-5 text-brand-500 mr-2 flex-shrink-0 mt-0.5"
+                  className="h-5 w-5 text-green-500 mr-2 flex-shrink-0 mt-0.5"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -168,7 +152,7 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             <button
               onClick={handleViewOrders}
-              className="flex-1 px-6 py-3 bg-brand text-white font-semibold rounded-lg hover:bg-brand-700 transition-colors"
+              className="flex-1 px-6 py-3 bg-[#00D4AA] text-white font-semibold rounded-lg hover:bg-[#00C49A] transition-colors"
             >
               Посмотреть мои заказы
             </button>
@@ -184,7 +168,7 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-500">
               Если у вас возникли вопросы, пожалуйста,{' '}
-              <a href="/contact" className="text-brand hover:underline">
+              <a href="/contact" className="text-[#00D4AA] hover:underline">
                 свяжитесь с нами
               </a>
             </p>

@@ -60,10 +60,9 @@ export function useTopShops(
 }
 
 export function useShop(slug: string) {
-  const { locale } = useRouter();
   const { data, isLoading, error } = useQuery<Shop, Error>(
-    [API_ENDPOINTS.SHOPS, slug, locale],
-    () => client.shops.get(slug, locale)
+    [API_ENDPOINTS.SHOPS, slug],
+    () => client.shops.get(slug)
   );
   return {
     product: data,

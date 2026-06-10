@@ -405,8 +405,8 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
         productCurrency="RUB"
       />
       
-      <div className="relative">
-        <div className="container mx-auto h-full min-h-screen max-w-[1320px] pb-grid-4 pt-grid-3 lg:pt-grid-4">
+      <div className="sancan-ozon-page relative">
+        <div className="sancan-ozon-container h-full min-h-screen py-4 lg:py-6">
           {/* Хлебные крошки */}
           <div className="mb-6">
             <ProductBreadcrumbs product={product} />
@@ -425,15 +425,15 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               {/* Скрытый контент для SEO (визуально скрыт, но в HTML для поисковиков) */}
               <div className="sr-only" aria-hidden="true">
                 {/* Трехколоночная структура - скрыта визуально */}
-                <div className="grid gap-grid-3 lg:grid-cols-12 lg:gap-grid-4">
+                <div className="grid gap-6 lg:grid-cols-12 lg:gap-8">
                   <div className="lg:col-span-5">
                     <ProductImageSlider 
                       product={product}
                       images={previews}
                     />
                   </div>
-                  <div className="section-stack-24 lg:col-span-4">
-                    <div className="app-surface-panel rounded-app-md layout-block-24">
+                  <div className="lg:col-span-4 space-y-6">
+                    <div className="bg-light-100 dark:bg-dark-200 p-6 rounded-lg">
                       <ProductDescription description={description} />
                     </div>
                     <ProductVariationsErrorBoundary>
@@ -444,7 +444,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                       <ProductTags tags={tags} />
                     )}
                   </div>
-                  <div className="section-stack-24 lg:col-span-3">
+                  <div className="lg:col-span-3 space-y-6">
                     <ProductPriceBlock 
                       price={price}
                       sale_price={sale_price}
@@ -453,8 +453,8 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                     <ProductDeliveryBlock product={product} />
                   </div>
                 </div>
-                <div className="mt-grid-4 section-stack-32">
-                  <div className="app-surface-panel rounded-app-md layout-block-24">
+                <div className="mt-12 space-y-8">
+                  <div className="bg-light-100 dark:bg-dark-200 p-6 rounded-lg">
                     <AverageRatings
                       ratingCount={rating_count}
                       totalReviews={total_reviews}
@@ -462,7 +462,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                     />
                     <ProductReviews productId={id} />
                   </div>
-                  <div className="app-surface-panel rounded-app-md layout-block-24">
+                  <div className="bg-light-100 dark:bg-dark-200 p-6 rounded-lg">
                     <ProductQuestions
                       productId={id}
                       shopId={shop?.id}
@@ -470,7 +470,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                   </div>
                   <ProductSocialShare
                     productSlug={slug}
-                    className="app-surface-panel rounded-app-md layout-block-24"
+                    className="bg-light-100 dark:bg-dark-200 p-6 rounded-lg"
                   />
                 </div>
               </div>
@@ -478,7 +478,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               {/* Блок "Рекомендуем также" - показываем всегда */}
               <motion.div
                 variants={fadeInBottom()}
-                className="mt-grid-4"
+                className="mt-8"
               >
                 <SimilarProducts 
                   currentProductSlug={slug}
@@ -491,26 +491,36 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               {/* Обычная страница товара для опубликованных товаров */}
               <motion.div
                 variants={staggerTransition()}
-                className="grid min-w-0 gap-grid-3 lg:grid-cols-12 lg:gap-grid-4"
+                className="grid gap-6 lg:grid-cols-[minmax(420px,520px)_minmax(0,1fr)] xl:grid-cols-[minmax(420px,520px)_minmax(0,1fr)_320px]"
               >
                 {/* Левая колонка - Слайдер изображений */}
                 <motion.div
                   variants={fadeInBottomWithScaleX()}
-                  className="min-w-0 lg:col-span-5"
+                  className="lg:sticky lg:top-[92px] lg:self-start"
                 >
                   <ProductImageSlider 
                     product={product}
                     images={previews}
+                    className="sancan-ozon-card p-3"
                   />
                 </motion.div>
 
                 {/* Средняя колонка - Информация о товаре */}
                 <motion.div
                   variants={fadeInBottom()}
-                  className="min-w-0 section-stack-24 lg:col-span-4"
+                  className="space-y-5"
                 >
                   {/* Описание товара */}
-                  <div className="app-surface-panel rounded-app-md layout-block-24">
+                  <div className="sancan-ozon-card p-5">
+                    <h1 className="mb-3 text-2xl font-bold leading-tight text-ozon-text">
+                      {name}
+                    </h1>
+                    <div className="mb-5 flex flex-wrap items-center gap-3 text-sm text-ozon-muted">
+                      <span className="text-[#f5a400]">★</span>
+                      <span>{ratings ? Number(ratings).toFixed(1) : t('text-no-rating')}</span>
+                      <span>{total_reviews ? `${total_reviews} ${t('text-reviews')}` : t('text-no-reviews')}</span>
+                      {shop?.name ? <span>Продавец: {shop.name}</span> : null}
+                    </div>
                     <ProductDescription description={description} />
                   </div>
 
@@ -520,18 +530,22 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                   </ProductVariationsErrorBoundary>
 
                   {/* Характеристики товара */}
-                  <ProductAttributes product={product} />
+                  <div className="sancan-ozon-card p-5">
+                    <ProductAttributes product={product} />
+                  </div>
 
                   {/* Теги товара */}
                   {tags && tags.length > 0 && (
-                    <ProductTags tags={tags} />
+                    <div className="sancan-ozon-card p-5">
+                      <ProductTags tags={tags} />
+                    </div>
                   )}
                 </motion.div>
 
                 {/* Правая колонка - Покупка и доставка */}
                 <motion.div
                   variants={fadeInBottom()}
-                  className="min-w-0 section-stack-24 lg:col-span-3"
+                  className="space-y-4 xl:sticky xl:top-[92px] xl:self-start"
                 >
                   {/* Блок с ценой */}
                   <ProductPriceBlock 
@@ -549,10 +563,10 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               {/* Нижняя часть - Отзывы и вопросы */}
               <motion.div
                 variants={fadeInBottom()}
-                className="mt-grid-4 section-stack-32"
+                className="mt-12 space-y-8"
               >
                 {/* Отзывы */}
-                <div className="app-surface-panel rounded-app-md layout-block-24">
+                <div className="sancan-ozon-card p-5">
                   <AverageRatings
                     ratingCount={rating_count}
                     totalReviews={total_reviews}
@@ -562,7 +576,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                 </div>
 
                 {/* Вопросы */}
-                <div className="app-surface-panel rounded-app-md layout-block-24">
+                <div className="sancan-ozon-card p-5">
                   <ProductQuestions
                     productId={id}
                     shopId={shop?.id}
@@ -572,7 +586,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                 {/* Поделиться */}
                 <ProductSocialShare
                   productSlug={slug}
-                  className="app-surface-panel rounded-app-md layout-block-24"
+                  className="sancan-ozon-card p-5"
                 />
               </motion.div>
 
@@ -580,7 +594,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               {related_products && related_products.length > 0 && (
                 <motion.div
                   variants={fadeInBottom()}
-                  className="mt-grid-4"
+                  className="mt-8"
                 >
                   <SimilarProducts 
                     currentProductSlug={slug}
@@ -595,7 +609,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
         {/* Статичная панель внизу (десктоп) */}
         <motion.div
           variants={fadeInBottomWithScaleY()}
-          className="sticky bottom-0 right-0 z-10 hidden h-[100px] w-full border-t border-white/10 bg-app-surface/90 px-6 py-5 backdrop-blur-xl lg:flex 3xl:h-[120px]"
+          className="hidden"
         >
           <ProductDetailsPaper product={product} />
         </motion.div>

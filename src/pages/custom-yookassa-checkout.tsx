@@ -144,7 +144,7 @@ export default function CustomYooKassaCheckout() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 px-4 bg-brand hover:bg-brand-700 disabled:bg-gray-400 text-white font-medium rounded-md transition-colors"
+          className="w-full py-3 px-4 bg-[#00D4AA] hover:bg-[#00B894] disabled:bg-gray-400 text-white font-medium rounded-md transition-colors"
         >
           {loading ? 'Создание платежа...' : 'Создать платёж через ЮKassa'}
         </button>

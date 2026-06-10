@@ -17,12 +17,12 @@ export default function GeneralLayout({
       initial="exit"
       animate="enter"
       exit="exit"
-      className="app-shell flex min-h-screen w-full flex-col"
+      className="flex min-h-screen w-full flex-col bg-light-300 dark:bg-dark-100"
     >
       <Header showHamburger={false} />
       <motion.div
         variants={fadeInBottom()}
-        className="flex flex-1 flex-col justify-between pt-14 sm:pt-[58px]"
+        className="flex flex-1 flex-col justify-between"
       >
         <main className="flex w-full flex-grow flex-col">
           <AnimatePresence
@@ -33,7 +33,7 @@ export default function GeneralLayout({
             {children}
           </AnimatePresence>
         </main>
-        <Copyright className="container mx-auto py-6 text-center font-medium text-dark-700 md:py-8" />
+        <Copyright className="px-4 py-7 text-center font-medium text-dark-700 md:py-10 lg:px-8" />
       </motion.div>
       {isMounted && breakpoint === 'xs' && <BottomNavigation />}
     </motion.div>

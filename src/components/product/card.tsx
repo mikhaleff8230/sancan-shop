@@ -302,18 +302,16 @@ export default function Card({ product }: { product: Product }) {
     <motion.div 
       variants={fadeInBottomWithScaleX()} 
       title={name}
-      whileHover={{ scale: isListView ? 1 : 1.02 }}
-      transition={{ duration: 0.2, ease: 'easeInOut' }}
       className={cn(
-        'group app-card-ui app-card-ui-hover rounded-app-md p-grid-2',
-        isListView ? 'flex w-full items-center gap-4' : 'flex flex-col'
+        'sancan-ozon-card h-full p-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(23,33,43,0.10)]',
+        isListView && 'flex w-full items-center gap-4'
       )}
     >
       <div
         ref={cardRef}
         className={cn(
-          "relative flex cursor-pointer flex-col justify-center overflow-hidden rounded-2xl",
-          isListView ? "h-32 w-32 flex-shrink-0" : "aspect-square w-full"
+          "group relative flex flex-col justify-center overflow-hidden rounded-xl cursor-pointer bg-[#f3f5f9]",
+          isListView ? "w-32 h-32 flex-shrink-0" : "aspect-[3/4] w-full"
         )}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -322,10 +320,28 @@ export default function Card({ product }: { product: Product }) {
         onClick={handleCardClick}
       >
         {is_external ? (
-          <div className="absolute top-2 right-2 z-10 rounded-md bg-dark-300/70 px-2 py-2 text-white">
+          <div className="absolute left-2 top-2 z-30 rounded-lg bg-white/95 px-2 py-2 text-ozon-text shadow-sm">
             <ExternalIcon className="h-5 w-5" />
           </div>
         ) : null}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isAuthorized) {
+              openModal('LOGIN_VIEW');
+              return;
+            }
+            toggleWishlist({ product_id: id?.toString() || '' });
+          }}
+          className="absolute right-2 top-2 z-40 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-ozon-muted shadow-sm transition-colors hover:text-ozon-pink"
+          title={inWishlist ? 'Удалить из избранного' : 'Добавить в избранное'}
+        >
+          {inWishlist ? (
+            <HeartFillIcon className="h-4 w-4 text-ozon-pink" />
+          ) : (
+            <HeartOutlineIcon className="h-4 w-4" />
+          )}
+        </button>
         
         {/* Видео превью при наведении (3 секунды) */}
         {shouldShowVideo && previewUrl ? (
@@ -333,7 +349,7 @@ export default function Card({ product }: { product: Product }) {
             ref={videoRef}
             src={previewUrl}
             poster={posterUrl || undefined}
-            className="absolute inset-0 z-20 h-full w-full rounded-2xl object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+            className="absolute inset-0 z-20 h-full w-full rounded-xl object-cover"
             muted
             loop={false}
             playsInline
@@ -356,7 +372,7 @@ export default function Card({ product }: { product: Product }) {
               fill
               quality={85}
               src={posterUrl}
-              className="pointer-events-none rounded-2xl bg-light-500 object-cover transition-transform duration-300 group-hover:scale-[1.03] dark:bg-dark-400"
+              className="pointer-events-none rounded-xl bg-[#f3f5f9] object-cover"
               sizes="(max-width: 768px) 100vw,
                   (max-width: 1200px) 50vw,
                   33vw"
@@ -373,7 +389,7 @@ export default function Card({ product }: { product: Product }) {
                     quality={85}
                     src={img?.original || img?.thumbnail || placeholder}
                     className={cn(
-                      "pointer-events-none absolute inset-0 rounded-2xl bg-light-500 object-cover transition-all duration-300 group-hover:scale-[1.03] dark:bg-dark-400",
+                      "absolute inset-0 rounded-xl bg-[#f3f5f9] object-cover transition-opacity duration-300 pointer-events-none",
                       index === currentImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"
                     )}
                     sizes="(max-width: 768px) 100vw,
@@ -424,7 +440,7 @@ export default function Card({ product }: { product: Product }) {
                           fill
                           quality={90}
                           src={img?.thumbnail || img?.original || placeholder}
-                          className="pointer-events-none absolute inset-0 rounded-2xl bg-light-500 object-cover transition-transform duration-300 group-hover:scale-[1.03] dark:bg-dark-400"
+                          className="pointer-events-none absolute inset-0 rounded-xl bg-[#f3f5f9] object-cover"
                           sizes="(max-width: 768px) 100vw,
                               (max-width: 1200px) 50vw,
                               33vw"
@@ -444,7 +460,7 @@ export default function Card({ product }: { product: Product }) {
                       quality={90}
                       src={img?.thumbnail || img?.original || placeholder}
                       className={cn(
-                        "pointer-events-none absolute inset-0 rounded-2xl bg-light-500 object-cover transition-all duration-300 group-hover:scale-[1.03] dark:bg-dark-400",
+                        "absolute inset-0 rounded-xl bg-[#f3f5f9] object-cover transition-opacity duration-300 pointer-events-none",
                         index === currentImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"
                       )}
                       sizes="(max-width: 768px) 100vw,
@@ -462,7 +478,7 @@ export default function Card({ product }: { product: Product }) {
                 fill
                 quality={85}
                 src={placeholder}
-                className="pointer-events-none rounded-2xl bg-light-500 object-cover transition-transform duration-300 group-hover:scale-[1.03] dark:bg-dark-400"
+                className="pointer-events-none rounded-xl bg-[#f3f5f9] object-cover"
                 sizes="(max-width: 768px) 100vw,
                     (max-width: 1200px) 50vw,
                     33vw"
@@ -477,12 +493,13 @@ export default function Card({ product }: { product: Product }) {
             <button
               onClick={handleViewButtonClick}
               className={cn(
-                "flex items-center justify-between gap-2 whitespace-nowrap rounded-xl border border-white/20 px-3 py-1.5 text-xs font-medium text-white transition-all duration-200",
-                "bg-app-surface/75 backdrop-blur-sm hover:bg-app-card/90",
-                "shadow-lg hover:shadow-app-glow"
+                "px-3 py-1.5 rounded-lg font-normal text-xs whitespace-nowrap transition-all duration-200",
+                "bg-brand hover:bg-brand-dark text-white backdrop-blur-sm",
+                "shadow-lg hover:shadow-xl transform hover:scale-105",
+                "border border-white/20 flex items-center justify-between gap-2"
               )}
             >
-              <span>Buy</span>
+              <span>Перейти к товару</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -534,62 +551,126 @@ export default function Card({ product }: { product: Product }) {
           </div>
         )}
       </div>
-      <div className={cn(
-        "flex w-full flex-col",
-        isListView ? "flex-1" : "pt-3.5"
-      )}>
-        <h3
-          title={name}
-          className={cn(
-            "line-clamp-2 text-base font-semibold leading-snug text-light",
-            isListView ? "mb-1" : "mb-1"
-          )}
-        >
-          <div className="relative overflow-hidden">
-            <AnchorLink 
-              href={routes.productUrl(url || ((product as any)?.canonical_url?.replace(/^https?:\/\/[^\/]+/, '') || slug), id)}
-              className="block truncate pr-6 text-[15px] font-semibold leading-6 text-light transition-colors hover:text-brand"
-            >
-              {name}
-            </AnchorLink>
-            <div 
-              className="pointer-events-none absolute bottom-0 right-0 top-0 w-12 bg-gradient-to-r from-transparent via-transparent to-app-card"
-            />
-          </div>
-        </h3>
-        <div className="flex items-center gap-2.5">
-          <div className="relative flex h-8 w-8 flex-shrink-0 overflow-hidden">
-            <Image
-              alt={shop?.name}
-              quality={100}
-              fill
-              src={shop?.logo?.thumbnail ?? placeholder}
-              className="rounded-full border border-white/20 bg-light-500 object-cover dark:bg-dark-400"
-              sizes="32px"
-            />
-          </div>
-          <AnchorLink
-            href={routes.shopUrl(shop?.slug)}
-            className="line-clamp-1 block text-xs font-medium text-app-muted transition-colors hover:text-light"
+      {!isListView && (
+        <div className="flex items-center gap-2 pt-3.5">
+          <span 
+            className="m-0 rounded-[18px] px-1 py-[3px] text-left text-[18px] font-bold uppercase leading-[29px] tracking-[-0.2px] text-ozon-pink"
+            style={{
+              fontWeight: 800,
+              fontSize: '18px',
+              color: '#f91155',
+              backgroundColor: 'unset',
+              border: 'none',
+            }}
           >
-            {shop?.name}
-          </AnchorLink>
-        </div>
-        <div className="mt-3 flex items-center gap-2">
-          <span className="text-sm font-semibold uppercase tracking-[0.01em] text-light sm:text-base">
             {isFreeItem ? t('text-free') : price}
           </span>
           {!isFreeItem && basePrice && basePrice !== price && (
             <>
-              <del className="text-xs text-app-muted line-through">
+              <del className="text-sm text-light-600 dark:text-dark-600 line-through" style={{ fontSize: '11px', letterSpacing: '-0.5px', fontWeight: 500, color: 'rgba(156, 163, 175, 1)' }}>
                 {basePrice}
               </del>
-              <span className="text-xs font-medium text-[#ff5e7a]">
+              <span className="text-sm font-medium text-ozon-pink" style={{ fontSize: '11px', color: '#f91155' }}>
                 -{Math.round(((parseFloat(basePrice.replace(/[^\d.]/g, '')) - parseFloat(price.replace(/[^\d.]/g, ''))) / parseFloat(basePrice.replace(/[^\d.]/g, ''))) * 100)}%
               </span>
             </>
           )}
         </div>
+      )}
+      <div className={cn(
+        "flex flex-col w-full px-1 pb-1",
+        isListView ? "flex-1" : "pt-3.5"
+      )}>
+        <h3
+          title={name}
+          className={cn(
+            "line-clamp-2 text-sm font-medium leading-snug text-ozon-text",
+            isListView ? "mb-1" : "mb-0.5"
+          )}
+        >
+          <div className="relative rounded-[18px] px-[9px] py-[3px] overflow-hidden">
+            <AnchorLink 
+              href={routes.productUrl(url || ((product as any)?.canonical_url?.replace(/^https?:\/\/[^\/]+/, '') || slug), id)}
+              className="m-0 block truncate pr-6 text-left text-[14px] font-normal leading-[20px] tracking-[0px] text-ozon-text hover:text-brand"
+              style={{
+                fontWeight: 400,
+                color: '#17212b',
+                fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+              }}
+            >
+              {name}
+            </AnchorLink>
+            <div 
+              className="pointer-events-none absolute bottom-0 right-0 top-0 w-12 bg-gradient-to-r from-transparent via-transparent to-white"
+            />
+          </div>
+        </h3>
+        <div className="flex items-center gap-3">
+          <div className="relative flex flex-shrink-0 overflow-hidden" style={{ width: '35px', height: '32px' }}>
+            <Image
+              alt={shop?.name}
+              quality={100}
+              fill
+              src={shop?.logo?.thumbnail ?? placeholder}
+              className="rounded-full bg-light-500 object-cover"
+              style={{
+                borderWidth: '2px',
+                borderColor: '#005bff',
+                borderStyle: 'solid',
+              }}
+              sizes="35px"
+            />
+          </div>
+          <AnchorLink
+            href={routes.shopUrl(shop?.slug)}
+            className="line-clamp-2 block text-[12px] font-normal text-ozon-muted hover:text-brand"
+            style={{
+              fontSize: '12px',
+              fontWeight: 400,
+              color: '#707f8d',
+            }}
+          >
+            {shop?.name}
+          </AnchorLink>
+        </div>
+        {!isFreeItem && !is_external ? (
+          <button
+            type="button"
+            onClick={handleViewButtonClick}
+            className="sancan-ozon-button mt-3 min-h-[38px] w-full justify-center rounded-lg px-3 py-2 text-sm font-semibold"
+          >
+            Смотреть товар
+          </button>
+        ) : null}
+          {isListView && (
+            <div className="mt-2 flex items-center gap-2">
+              <span 
+                className="m-0 rounded-[18px] px-1 py-[3px] text-left text-[18px] font-bold uppercase leading-[29px] tracking-[-0.2px] text-ozon-pink"
+                style={{
+                  fontWeight: 800,
+                  fontSize: '18px',
+                  color: '#f91155',
+                  backgroundColor: 'unset',
+                  border: 'none',
+                }}
+              >
+                {isFreeItem ? t('text-free') : price}
+              </span>
+              {!isFreeItem && basePrice && basePrice !== price && (
+                <>
+                  <del className="text-sm text-light-600 dark:text-dark-600 line-through" style={{ fontSize: '11px', letterSpacing: '-0.5px', fontWeight: 500, color: 'rgba(156, 163, 175, 1)' }}>
+                    {basePrice}
+                  </del>
+                  <span className="text-sm font-medium text-ozon-pink" style={{ fontSize: '11px', color: '#f91155' }}>
+                    -{Math.round(((parseFloat(basePrice.replace(/[^\d.]/g, '')) - parseFloat(price.replace(/[^\d.]/g, ''))) / parseFloat(basePrice.replace(/[^\d.]/g, ''))) * 100)}%
+                  </span>
+                </>
+              )}
+            </div>
+          )}
       </div>
     </motion.div>
   );

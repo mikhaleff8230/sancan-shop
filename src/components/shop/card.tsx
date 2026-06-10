@@ -14,30 +14,25 @@ export default function Card({ shop }: { shop: Shop }) {
   return (
     <motion.div
       whileTap={{ scale: 0.98 }}
-      whileHover={{ scale: 1.02 }}
+      whileHover={{ scale: 1.05 }}
       variants={fadeInBottomWithScaleX()}
       onClick={() => router.push(routes.shopUrl(slug))}
-      className="group app-card-ui app-card-ui-hover cursor-pointer rounded-app-md p-grid-3 text-center"
+      className="group cursor-pointer rounded-md bg-light px-4 py-7 text-center dark:bg-dark-250"
     >
-      <div className="relative mx-auto mb-3 h-[78px] w-[78px] md:h-[84px] md:w-[84px] lg:h-[92px] lg:w-[92px]">
+      <div className="relative mx-auto mb-2.5 h-[75px] w-[75px] md:h-20 md:w-20 lg:h-[90px] lg:w-[90px]">
         <Image
           alt={name}
           fill
           quality={50}
           src={logo?.original ?? placeholder}
-          className="rounded-2xl border border-white/15 object-cover transition-transform duration-300 group-hover:scale-105"
+          className="rounded-3xl object-cover"
         />
       </div>
-      <h3 className="mb-1 text-sm font-semibold text-light transition-colors group-hover:text-brand">
+      <h3 className="mb-1 text-13px font-medium text-dark transition-colors group-hover:text-brand dark:text-light">
         {name}
       </h3>
-      <div className="text-xs font-medium text-app-muted">
+      <div className="font-medium text-dark-800 dark:text-dark-base">
         {products_count} {t('text-products')}
-      </div>
-      <div className="mt-3">
-        <span className="app-chip group-hover:bg-app-card">
-          View Shop
-        </span>
       </div>
     </motion.div>
   );

@@ -66,27 +66,30 @@ export default function ProductMobileBuyBar({ product }: Props) {
           <Link
             href={product.external_product_url}
             target="_blank"
-            className="flex w-full items-center justify-center rounded-lg border-0 bg-[linear-gradient(90deg,#C7E2F9_0%,var(--color-accent)_100%)] px-4 py-3 font-semibold text-white hover:opacity-95 text-base leading-6 tracking-normal"
+            className="flex w-full items-center justify-center rounded-lg bg-brand px-4 py-3 font-semibold hover:bg-brand-dark text-base leading-6 tracking-normal"
+            style={{ color: '#232323' }}
           >
-            Купить
+            В корзину
           </Link>
         ) : !isFreeItem ? (
           <Button
             onClick={handleAddToCart}
             isLoading={isLoading}
             disabled={disabled}
-            className="w-full rounded-lg border-0 bg-[linear-gradient(90deg,#C7E2F9_0%,var(--color-accent)_100%)] px-4 py-3 font-semibold text-white hover:opacity-95 text-base leading-6 tracking-normal"
+            className="w-full rounded-lg bg-brand px-4 py-3 font-semibold hover:bg-brand-dark text-base leading-6 tracking-normal"
+            style={{ color: '#232323' }}
           >
-            Купить
+            В корзину
           </Button>
         ) : (
           <Button
             onClick={handleFreeDownload}
             isLoading={isLoading}
             disabled={disabled}
-            className="w-full rounded-lg border-0 bg-[linear-gradient(90deg,#C7E2F9_0%,var(--color-accent)_100%)] px-4 py-3 font-semibold text-white hover:opacity-95 text-base leading-6 tracking-normal"
+            className="w-full rounded-lg bg-brand px-4 py-3 font-semibold hover:bg-brand-dark text-base leading-6 tracking-normal"
+            style={{ color: '#232323' }}
           >
-            Купить
+            В корзину
           </Button>
         )}
       </div>

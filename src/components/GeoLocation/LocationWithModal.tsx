@@ -505,14 +505,11 @@ export const LocationWithModal: React.FC<SimpleLocationProps> = ({
     }
   };
 
-  // Обработка клика по локации (только для авторизованных пользователей)
+  // Обработка клика по локации
   const handleLocationClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // Показываем модальное окно только авторизованным пользователям
-    if (isAuthorized) {
     setShowModal(true);
-    }
   };
 
   // Закрытие модального окна
@@ -591,10 +588,10 @@ export const LocationWithModal: React.FC<SimpleLocationProps> = ({
     <>
       <div 
         className={cn(
-          isAuthorized ? "cursor-pointer hover:bg-light-200 dark:hover:bg-dark-300 rounded px-2 py-1 transition-colors" : "",
+          "cursor-pointer rounded px-2 py-1 transition-colors hover:bg-light-200 dark:hover:bg-dark-300",
           className
         )}
-        onClick={isAuthorized ? handleLocationClick : undefined}
+        onClick={handleLocationClick}
       >
         {isLoading ? (
           <div className="flex items-center space-x-1">

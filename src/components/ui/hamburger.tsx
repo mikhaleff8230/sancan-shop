@@ -10,7 +10,7 @@ export default function Hamburger({ isToggle, className, ...props }: HamburgerPr
     <Button
       variant="icon"
       aria-label="Hamburger"
-      className={cn("text-brand", className)}
+      className={cn("text-[#E0F316]", className)}
       {...props}
     >
       <svg

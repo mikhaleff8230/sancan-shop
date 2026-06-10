@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 import { fadeInBottom } from '@/lib/framer-motion/fade-in-bottom';
 import { ChevronLeft } from '@/components/icons/chevron-left';
 import { ChevronRight } from '@/components/icons/chevron-right';
+import { PlayIcon } from '@/components/icons/play-icon';
 import ProductImageLightbox from './product-image-lightbox';
 import ProductVideoPlayer from './product-video-player';
 import type { Product, ProductVideo } from '@/types';
@@ -20,14 +21,9 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
+  const thumbsContainerRef = useRef<HTMLDivElement>(null);
+  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const mobileSliderRef = useRef<HTMLDivElement>(null);
-  const wheelLockRef = useRef(false);
-  const wheelReleaseTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const wheelMomentumRef = useRef(0);
-  const wheelRafRef = useRef<number | null>(null);
-  const lastWheelTsRef = useRef(0);
-  const wheelGestureTriggeredRef = useRef(false);
-  const wheelDirectionRef = useRef<1 | -1 | 0>(0);
 
   // Функция для возврата назад
   const handleBack = () => {
@@ -160,94 +156,6 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
     setCurrentImageIndex((prev) => (prev - 1 + validMediaItems.length) % validMediaItems.length);
   };
 
-  const releaseWheelLock = useCallback(() => {
-    wheelLockRef.current = false;
-    if (wheelReleaseTimerRef.current) {
-      clearTimeout(wheelReleaseTimerRef.current);
-      wheelReleaseTimerRef.current = null;
-    }
-  }, []);
-
-  const normalizeWheelDelta = useCallback((event: React.WheelEvent<HTMLDivElement>) => {
-    // Нормализация delta между мышью/трекпадом/разными браузерами.
-    const modeMultiplier = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? 120 : 1;
-    const normalized = event.deltaY * modeMultiplier;
-    return Math.max(-140, Math.min(140, normalized));
-  }, []);
-
-  const triggerSlideWithLock = useCallback((direction: 1 | -1) => {
-    if (wheelLockRef.current) return;
-    wheelLockRef.current = true;
-
-    if (direction > 0) {
-      nextMedia();
-    } else {
-      prevMedia();
-    }
-
-    wheelReleaseTimerRef.current = setTimeout(() => {
-      wheelLockRef.current = false;
-    }, 420);
-  }, [nextMedia, prevMedia]);
-
-  const handleDesktopWheel = useCallback(
-    (event: React.WheelEvent<HTMLDivElement>) => {
-      if (typeof window === 'undefined' || window.innerWidth < 1024 || validMediaItems.length <= 1) {
-        return;
-      }
-
-      event.preventDefault();
-
-      const now = performance.now();
-      lastWheelTsRef.current = now;
-      const delta = normalizeWheelDelta(event);
-
-      if (Math.abs(delta) < 12) return;
-
-      const direction: 1 | -1 = delta > 0 ? 1 : -1;
-      const previousDirection = wheelDirectionRef.current;
-      wheelDirectionRef.current = direction;
-
-      if (
-        previousDirection !== 0 &&
-        Math.sign(wheelMomentumRef.current) !== 0 &&
-        Math.sign(wheelMomentumRef.current) !== direction
-      ) {
-        wheelMomentumRef.current = 0;
-        wheelGestureTriggeredRef.current = false;
-      }
-
-      wheelMomentumRef.current += delta * 1.1;
-
-      const runInertia = () => {
-        wheelMomentumRef.current *= 0.82;
-
-        const threshold = 48;
-        const isRecentInput = performance.now() - lastWheelTsRef.current < 160;
-
-        if (!wheelGestureTriggeredRef.current && Math.abs(wheelMomentumRef.current) >= threshold) {
-          wheelGestureTriggeredRef.current = true;
-          const slideDirection: 1 | -1 = wheelMomentumRef.current > 0 ? 1 : -1;
-          triggerSlideWithLock(slideDirection);
-        }
-
-        if (!isRecentInput && Math.abs(wheelMomentumRef.current) < 8 && !wheelLockRef.current) {
-          wheelMomentumRef.current = 0;
-          wheelGestureTriggeredRef.current = false;
-          wheelRafRef.current = null;
-          return;
-        }
-
-        wheelRafRef.current = requestAnimationFrame(runInertia);
-      };
-
-      if (wheelRafRef.current == null) {
-        wheelRafRef.current = requestAnimationFrame(runInertia);
-      }
-    },
-    [normalizeWheelDelta, triggerSlideWithLock, validMediaItems.length]
-  );
-
   // Отслеживание текущего слайда через scroll (только для мобильных)
   useEffect(() => {
     if (!mobileSliderRef.current || window.innerWidth >= 1024) return;
@@ -276,6 +184,20 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
     setIsMobileFullscreen(true);
   };
 
+  // Автоскролл к активной миниатюре (только для вертикальных миниатюр на десктопе)
+  useEffect(() => {
+    if (thumbsContainerRef.current && window.innerWidth >= 1024) {
+      const activeThumb = thumbsContainerRef.current.children[currentImageIndex] as HTMLElement;
+      if (activeThumb) {
+        activeThumb.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
+  }, [currentImageIndex]);
+
   // Обработка клавиш для мобильного полноэкранного режима
   useEffect(() => {
     if (!isMobileFullscreen) return;
@@ -303,26 +225,79 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
     };
   }, [isMobileFullscreen]);
 
-  useEffect(() => {
-    return () => {
-      releaseWheelLock();
-      wheelMomentumRef.current = 0;
-      wheelGestureTriggeredRef.current = false;
-      wheelDirectionRef.current = 0;
-      if (wheelRafRef.current != null) {
-        cancelAnimationFrame(wheelRafRef.current);
-        wheelRafRef.current = null;
-      }
-    };
-  }, [releaseWheelLock]);
-
   return (
-    <motion.div variants={fadeInBottom()} className={`${className} relative min-w-0 w-full max-w-full`}>
-      {/* Основной слайдер без превью (по запросу пользователя) */}
-      <div
-        onWheel={handleDesktopWheel}
-        className="relative min-w-0 w-full max-w-full aspect-square overflow-hidden rounded-app-md border border-white/10 bg-app-surface/95 group lg:min-h-[560px]"
-      >
+    <motion.div variants={fadeInBottom()} className={`${className} relative`}>
+      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[84px_1fr]">
+        {/* Вертикальные миниатюры слева (только на lg+) */}
+        {validMediaItems.length > 1 ? (
+          <div
+            ref={thumbsContainerRef}
+            className="hidden h-[520px] flex-col gap-2 overflow-y-auto pr-1 lg:flex"
+            style={{
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'thin',
+            }}
+          >
+            {validMediaItems.map((item, index) => (
+              <button
+                key={index}
+                ref={(node) => (thumbRefs.current[index] = node)}
+                onClick={() => selectMedia(index)}
+                className={`relative h-20 w-20 overflow-hidden rounded-lg border-2 transition-colors ${
+                  index === currentImageIndex
+                    ? 'border-brand'
+                    : 'border-light-300 dark:border-dark-400 hover:border-light-400 dark:hover:border-dark-500'
+                }`}
+              >
+                {item.type === 'image' ? (
+                  item.data && (item.data?.thumbnail || item.data?.original) ? (
+                    <Image
+                      alt={`${product.name || 'Product'} - превью ${index + 1}`}
+                      fill
+                      quality={100}
+                      src={item.data?.thumbnail || item.data?.original}
+                      className="object-cover"
+                      unoptimized={true}
+                      onError={() => {
+                        console.warn(`Failed to load thumbnail ${index + 1}`);
+                      }}
+                    />
+                  ) : (
+                    <Image
+                      alt={`${product.name || 'Product'} - превью ${index + 1}`}
+                      fill
+                      quality={100}
+                      src={placeholder}
+                      className="object-cover"
+                      unoptimized={true}
+                    />
+                  )
+                ) : (
+                  // Видео миниатюра
+                  <div className="relative h-full w-full bg-dark-300 flex items-center justify-center">
+                    {item.data?.thumbnail_url || item.data?.poster_url ? (
+                      <Image
+                        alt={`${product.name || 'Product'} - видео ${index + 1}`}
+                        fill
+                        quality={100}
+                        src={item.data.thumbnail_url || item.data.poster_url}
+                        className="object-cover"
+                        unoptimized={true}
+                      />
+                    ) : (
+                      <PlayIcon className="h-6 w-6 text-white" />
+                    )}
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="hidden lg:block" />
+        )}
+
+        {/* Большое изображение (справа на десктопе, сверху на мобиле) */}
+        <div className="group relative aspect-square overflow-hidden rounded-xl bg-white">
           {/* Кнопка "Назад" для мобильных (поверх изображения) - вне контейнера для правильного z-index */}
           <button
             onClick={(e) => {
@@ -347,7 +322,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
           </button>
 
           {/* На мобилке - нативный scroll слайдер */}
-          <div
+          <div 
             ref={mobileSliderRef}
             className="mobile-product-slider lg:hidden w-full h-full flex overflow-x-auto overscroll-x-contain"
             style={{
@@ -411,65 +386,48 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
             ))}
           </div>
 
-          {/* На десктопе - плавный transition-слайдер (изображения/видео) */}
-          <div className="relative hidden h-full w-full lg:block">
-            {validMediaItems.map((item, index) => {
-              const isActive = index === currentImageIndex;
-              return (
-                <div
-                  key={index}
-                  className={cn(
-                    'absolute inset-0 transition-all duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
-                    isActive
-                      ? 'z-10 opacity-100 scale-[1.02]'
-                      : 'z-0 pointer-events-none opacity-0 scale-100'
-                  )}
-                >
-                  {item.type === 'image' ? (
-                    item.data && (item.data?.original || item.data?.thumbnail) ? (
-                      <div
-                        className="h-full w-full cursor-zoom-in"
-                        onClick={() => setIsLightboxOpen(true)}
-                      >
-                        <Image
-                          alt={product.name || 'Product image'}
-                          fill
-                          quality={100}
-                          src={item.data?.original || item.data?.thumbnail}
-                          className="object-contain"
-                          unoptimized={true}
-                          onError={() => {
-                            console.warn(`Failed to load product image at index ${index}`);
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <Image
-                        alt={product.name || 'Product image'}
-                        fill
-                        quality={100}
-                        src={placeholder}
-                        className="object-contain"
-                      />
-                    )
-                  ) : item.type === 'video' ? (
-                    <ProductVideoPlayer
-                      video={item.data}
-                      className="h-full w-full"
-                      controls={true}
-                    />
-                  ) : (
-                    <Image
-                      alt={product.name || 'Product image'}
-                      fill
-                      quality={100}
-                      src={placeholder}
-                      className="object-contain"
-                    />
-                  )}
-                </div>
-              );
-            })}
+          {/* На десктопе - лайтбокс (только для изображений) */}
+          <div 
+            className={`hidden lg:block w-full h-full ${validMediaItems[currentImageIndex]?.type === 'image' ? 'cursor-zoom-in' : ''}`}
+            onClick={() => validMediaItems[currentImageIndex]?.type === 'image' && setIsLightboxOpen(true)}
+          >
+            {validMediaItems[currentImageIndex]?.type === 'image' ? (
+              validMediaItems[currentImageIndex].data && (validMediaItems[currentImageIndex].data?.original || validMediaItems[currentImageIndex].data?.thumbnail) ? (
+                <Image
+                  alt={product.name || 'Product image'}
+                  fill
+                  quality={100}
+                  src={validMediaItems[currentImageIndex].data?.original || validMediaItems[currentImageIndex].data?.thumbnail}
+                  className="object-contain"
+                  unoptimized={true}
+                  onError={() => {
+                    console.warn(`Failed to load product image at index ${currentImageIndex}`);
+                  }}
+                />
+              ) : (
+                <Image
+                  alt={product.name || 'Product image'}
+                  fill
+                  quality={100}
+                  src={placeholder}
+                  className="object-contain"
+                />
+              )
+            ) : validMediaItems[currentImageIndex]?.type === 'video' ? (
+              <ProductVideoPlayer
+                video={validMediaItems[currentImageIndex].data}
+                className="h-full w-full"
+                controls={true}
+              />
+            ) : (
+              <Image
+                alt={product.name || 'Product image'}
+                fill
+                quality={100}
+                src={placeholder}
+                className="object-contain"
+              />
+            )}
           </div>
 
           {/* Навигационные стрелки (только на десктопе) */}
@@ -480,29 +438,49 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                   e.stopPropagation();
                   prevMedia();
                 }}
-                className="absolute left-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-app-card/80 p-2 text-light opacity-0 backdrop-blur-md transition-all duration-300 group-hover:opacity-100 lg:block"
+                className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-dark-200/80 z-20 hidden lg:block"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-5 w-5 text-dark dark:text-light" />
               </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   nextMedia();
                 }}
-                className="absolute right-4 top-1/2 z-20 hidden -translate-y-1/2 rounded-full border border-white/20 bg-app-card/80 p-2 text-light opacity-0 backdrop-blur-md transition-all duration-300 group-hover:opacity-100 lg:block"
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-dark-200/80 z-20 hidden lg:block"
               >
-                <ChevronRight className="h-5 w-5" />
+                <ChevronRight className="h-5 w-5 text-dark dark:text-light" />
               </button>
             </>
           )}
 
           {/* Счетчик медиа */}
           {validMediaItems.length > 1 && (
-            <div className="absolute bottom-4 right-4 rounded-full border border-white/15 bg-app-card/85 px-3 py-1 text-xs text-light backdrop-blur-md">
+            <div className="absolute bottom-4 right-4 rounded bg-white/80 px-2 py-1 text-sm text-dark dark:bg-dark-200/80 dark:text-light">
               {currentImageIndex + 1} / {validMediaItems.length}
             </div>
           )}
         </div>
+      </div>
+
+
+      {/* Точки (индикаторы) слайдера */}
+      {validMediaItems.length > 1 && (
+        <div className="mt-4 flex justify-center gap-2">
+          {validMediaItems.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => selectMedia(index)}
+              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                index === currentImageIndex
+                  ? 'bg-brand scale-110 shadow-md'
+                  : 'bg-light-400 dark:bg-dark-400 hover:bg-light-500 dark:hover:bg-dark-500 hover:scale-105'
+              }`}
+              title={`Перейти к медиа ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Лайтбокс только для десктопа (только изображения) */}
       <ProductImageLightbox

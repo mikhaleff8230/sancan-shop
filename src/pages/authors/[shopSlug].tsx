@@ -4,9 +4,8 @@ import type {
   Shop,
 } from '@/types';
 import type {
-  GetStaticPaths,
-  GetStaticProps,
-  InferGetStaticPropsType,
+  GetServerSideProps,
+  InferGetServerSidePropsType,
 } from 'next';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
@@ -30,157 +29,44 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 
+// Dynamic rendering - no static generation
 type PageProps = {
   shop: Shop;
 };
 
-const DEFAULT_AUTHOR_SSG_MAX_PAGES = 80;
-const AUTHOR_PAGE_NOT_FOUND_REVALIDATE_SECONDS = 30;
-
-function resolveAuthorPageApiBaseUrl(): string {
-  const raw =
-    process.env.REST_API_INTERNAL_URL ||
-    process.env.REST_API_URL ||
-    process.env.NEXT_PUBLIC_REST_API_ENDPOINT ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    'https://api.sancan.ru';
-  return String(raw).trim().replace(/\/+$/, '');
-}
-
-async function fetchShopForAuthorPage(
-  shopSlug: string,
-  language: string
-): Promise<Shop | null> {
-  try {
-    return await client.shops.get(shopSlug, language);
-  } catch {
-    // fallback below
-  }
-
-  try {
-    return await client.shops.get(shopSlug);
-  } catch {
-    // fallback below
-  }
-
-  const apiBase = resolveAuthorPageApiBaseUrl();
-  const encodedSlug = encodeURIComponent(shopSlug);
-  const encodedLang = encodeURIComponent(language);
-  const urls = [
-    `${apiBase}/shops/${encodedSlug}?language=${encodedLang}`,
-    `${apiBase}/shops/${encodedSlug}`,
-  ];
-
-  for (const url of urls) {
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { Accept: 'application/json' },
-      });
-      if (!response.ok) continue;
-      const shop = (await response.json()) as Shop;
-      if (shop?.slug) return shop;
-    } catch {
-      // try next URL
-    }
-  }
-
-  return null;
-}
-
-export const getStaticPaths: GetStaticPaths = async ({ locales }) => {
-  const localeList =
-    locales && locales.length > 0
-      ? locales
-      : [process.env.NEXT_PUBLIC_DEFAULT_LANGUAGE ?? 'ru'];
-
-  const paths: { params: { shopSlug: string }; locale: string }[] = [];
-  const maxPages = Math.min(
-    500,
-    Math.max(
-      1,
-      parseInt(
-        process.env.NEXT_PUBLIC_AUTHOR_SSG_MAX_PAGES ||
-          String(DEFAULT_AUTHOR_SSG_MAX_PAGES),
-        10
-      ) || DEFAULT_AUTHOR_SSG_MAX_PAGES
-    )
+export const getServerSideProps: GetServerSideProps<
+  PageProps
+> = async ({ params, locale, res }) => {
+  const { shopSlug } = params!;
+  
+  // Set cache headers for better performance
+  res.setHeader(
+    'Cache-Control',
+    'public, s-maxage=60, stale-while-revalidate=300'
   );
-
-  try {
-    for (let page = 1; page <= maxPages; page++) {
-      const paginator = await client.shops.all({
-        page,
-        limit: 50,
-        searchJoin: 'and',
-        search: 'is_active:1',
-      });
-      const shops = paginator?.data ?? [];
-      if (!shops.length) break;
-
-      for (const shop of shops) {
-        if (!shop?.slug) continue;
-        for (const locale of localeList) {
-          paths.push({ params: { shopSlug: shop.slug }, locale });
-        }
-      }
-
-      if (page >= paginator.last_page) break;
-    }
-  } catch {
-    // пустой paths + fallback: blocking — любой slug сгенерируется по первому запросу
-  }
-
-  return {
-    paths,
-    fallback: 'blocking',
-  };
-};
-
-export const getStaticProps: GetStaticProps<PageProps> = async ({
-  params,
-  locale,
-}) => {
-  const rawSlug = params?.shopSlug as string;
-  const shopSlug = decodeURIComponent(rawSlug || '').trim();
-  const language =
-    locale ?? process.env.NEXT_PUBLIC_DEFAULT_LANGUAGE ?? 'ru';
-
-  if (!shopSlug) {
-    return {
-      notFound: true,
-      revalidate: AUTHOR_PAGE_NOT_FOUND_REVALIDATE_SECONDS,
-    };
-  }
-
+  
   const queryClient = new QueryClient();
-
-  const shop = await fetchShopForAuthorPage(shopSlug, language);
-  if (!shop) {
+  try {
+    const shop = await client.shops.get(shopSlug as string);
+    await Promise.all([
+      queryClient.prefetchQuery(
+        [API_ENDPOINTS.SETTINGS, { language: locale }],
+        ({ queryKey }) =>
+          client.settings.all(queryKey[1] as SettingsQueryOptions)
+      ),
+    ]);
+    return {
+      props: {
+        shop,
+        ...(await serverSideTranslations(locale!, ['common'])),
+        dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
+      },
+    };
+  } catch (error) {
     return {
       notFound: true,
-      revalidate: AUTHOR_PAGE_NOT_FOUND_REVALIDATE_SECONDS,
     };
   }
-
-  try {
-    await queryClient.prefetchQuery(
-      [API_ENDPOINTS.SETTINGS, { language }],
-      ({ queryKey }) =>
-        client.settings.all(queryKey[1] as SettingsQueryOptions)
-    );
-  } catch {
-    // настройки не критичны для страницы селлера
-  }
-
-  return {
-    props: {
-      shop,
-      ...(await serverSideTranslations(locale!, ['common'])),
-      dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
-    },
-    revalidate: 60,
-  };
 };
 
 function AboutShop({ shop }: { shop: Shop }) {
@@ -191,9 +77,8 @@ function AboutShop({ shop }: { shop: Shop }) {
     owner,
     orders_count,
     products_count,
-    settings,
+    settings: { socials },
   } = shop;
-  const socials = settings?.socials ?? [];
   const { t } = useTranslation('common');
   return (
     <motion.div
@@ -237,29 +122,27 @@ function AboutShop({ shop }: { shop: Shop }) {
             {t('text-products')}
           </div>
         </div>
-        {socials.length > 0 && (
-          <div className="space-y-3 border-t border-light-300 pt-5 dark:border-dark-500">
-            {socials.map(({ icon, url }, idx) => (
-              <a
-                key={idx}
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-                className="group flex items-center"
-              >
-                {getIcon({
-                  iconList: socialIcons,
-                  iconName: icon,
-                  className:
-                    'w-3.5 h-3.5 text-dark-800 dark:text-light-900 shrink-0',
-                })}
-                <span className="transition-colors group-hover:text-dark ltr:pl-2 rtl:pr-2 dark:group-hover:text-light">
-                  {url.slice(12, -1).split('/').slice(0, 1)}
-                </span>
-              </a>
-            ))}
-          </div>
-        )}
+        <div className="space-y-3 border-t border-light-300 pt-5 dark:border-dark-500">
+          {socials.map(({ icon, url }, idx) => (
+            <a
+              key={idx}
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="group flex items-center"
+            >
+              {getIcon({
+                iconList: socialIcons,
+                iconName: icon,
+                className:
+                  'w-3.5 h-3.5 text-dark-800 dark:text-light-900 shrink-0',
+              })}
+              <span className="transition-colors group-hover:text-dark ltr:pl-2 rtl:pr-2 dark:group-hover:text-light">
+                {url.slice(12, -1).split('/').slice(0, 1)}
+              </span>
+            </a>
+          ))}
+        </div>
       </div>
     </motion.div>
   );
@@ -280,7 +163,7 @@ function ShopProducts({ shopId }: { shopId: string }) {
 }
 
 const ShopPage: NextPageWithLayout<
-  InferGetStaticPropsType<typeof getStaticProps>
+  InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ shop }) => {
   const { name, logo, cover_image } = shop;
   const { t } = useTranslation('common');

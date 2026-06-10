@@ -27,24 +27,29 @@ module.exports = {
     },
     extend: {
       colors: {
-        'app-bg': withOpacity('--color-app-bg'),
-        'app-surface': withOpacity('--color-app-surface'),
-        'app-card': withOpacity('--color-app-card'),
-        'app-muted': withOpacity('--color-app-muted'),
-        'app-accent': withOpacity('--color-app-accent'),
         brand: {
-          DEFAULT: '#E0F316', // Основной лаймовый цвет
-          dark: '#B8CC12', // Темный вариант для hover
-          50: '#F7FCE0', // Очень светлый
-          100: '#EFF9C1', // Светлый
-          200: '#E7F6A2', // Светло-лаймовый
-          300: '#DFF383', // Средне-светлый
-          400: '#D7F064', // Средний
-          500: '#E0F316', // Основной
-          600: '#B8CC12', // Темнее основной
-          700: '#90A50E', // Темный
-          800: '#687E0A', // Очень темный
-          900: '#405706', // Самый темный
+          DEFAULT: '#005bff',
+          dark: '#004ad6',
+          50: '#edf5ff',
+          100: '#d7eaff',
+          200: '#b7d8ff',
+          300: '#86bdff',
+          400: '#5598ff',
+          500: '#005bff',
+          600: '#004ad6',
+          700: '#003cab',
+          800: '#073782',
+          900: '#0b2e64',
+        },
+        ozon: {
+          blue: '#005bff',
+          blueDark: '#004ad6',
+          pink: '#f91155',
+          bg: '#f7f7fa',
+          card: '#ffffff',
+          text: '#17212b',
+          muted: '#707f8d',
+          border: '#e5e8ee',
         },
         light: {
           DEFAULT: '#ffffff',
@@ -103,20 +108,6 @@ module.exports = {
         card: '0px 0px 6px rgba(79, 95, 120, 0.1)',
         dropdown: '0px 10px 32px rgba(46, 57, 72, 0.2)',
         'bottom-nav': '0 -2px 3px rgba(0, 0, 0, 0.08)',
-        'app-card': '0 10px 30px rgba(0, 0, 0, 0.28)',
-        'app-lift': '0 18px 40px rgba(0, 0, 0, 0.38)',
-        'app-glow': '0 18px 40px rgba(81, 70, 255, 0.25)',
-      },
-      borderRadius: {
-        'app-sm': '12px',
-        'app-md': '16px',
-        'app-lg': '20px',
-      },
-      spacing: {
-        'grid-1': '8px',
-        'grid-2': '16px',
-        'grid-3': '24px',
-        'grid-4': '32px',
       },
       fontSize: {
         '10px': '.625rem',

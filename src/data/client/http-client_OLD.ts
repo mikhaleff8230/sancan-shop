@@ -17,16 +17,6 @@ const Axios = axios.create({
 Axios.interceptors.request.use(
   (config) => {
     const token = getAuthToken();
-    
-    // ВАЖНО: Если данные - это FormData, НЕ устанавливаем Content-Type
-    // Браузер сам установит правильный Content-Type с boundary
-    // Если установить вручную, boundary не будет установлен и сервер не сможет распарсить данные
-    if (config.data instanceof FormData) {
-      // Удаляем Content-Type из headers, чтобы браузер установил его автоматически
-      // @ts-ignore
-      delete config.headers['Content-Type'];
-    }
-    
     //@ts-ignore
     config.headers = {
       ...config.headers,
@@ -144,51 +134,17 @@ Axios.interceptors.response.use(
 
 export class HttpClient {
   static async get<T>(url: string, params?: unknown) {
-    // ✅ Логируем запрос для отладки комментариев
-    if (url.includes('/comments')) {
-      console.log('HttpClient.get: запрос комментариев', {
-        url,
-        fullUrl: `${Axios.defaults.baseURL}${url}`,
-        params,
-      });
-    }
-    
     const response = await Axios.get<T>(url, { params });
-    
-    // ✅ Логируем ответ для отладки комментариев
-    if (url.includes('/comments')) {
-      console.log('HttpClient.get: ответ комментариев', {
-        url,
-        status: response.status,
-        dataType: typeof response.data,
-        hasData: response.data && typeof response.data === 'object',
-      });
-    }
-    
     return response.data;
   }
 
   static async post<T>(url: string, data: unknown, options?: any) {
-    // Для загрузки видео увеличиваем таймаут до 5 минут (300 секунд)
-    const isVideoUpload = data instanceof FormData && (data.has('video') || url.includes('/places'));
-    const timeout = isVideoUpload ? 300000 : (options?.timeout || Axios.defaults.timeout);
-    
-    const response = await Axios.post<T>(url, data, {
-      ...options,
-      timeout,
-    });
+    const response = await Axios.post<T>(url, data, options);
     return response.data;
   }
 
-  static async put<T>(url: string, data: unknown, options?: any) {
-    // Для загрузки видео увеличиваем таймаут до 5 минут (300 секунд)
-    const isVideoUpload = data instanceof FormData && (data.has('video') || url.includes('/places'));
-    const timeout = isVideoUpload ? 300000 : (options?.timeout || Axios.defaults.timeout);
-    
-    const response = await Axios.put<T>(url, data, {
-      ...options,
-      timeout,
-    });
+  static async put<T>(url: string, data: unknown) {
+    const response = await Axios.put<T>(url, data);
     return response.data;
   }
 
@@ -211,69 +167,3 @@ export class HttpClient {
 
 // Экспорт Axios для прямого использования в API функциях
 export default Axios;
-
-
-// ===============================
-// БЛОК ДЛЯ ПАГИНАЦИИ ПЛЕЙСОВ (infinite scroll)
-// ===============================
-
-/**
- * Получение плейсов с пагинацией
- * @param page - номер страницы (начиная с 1)
- * @param limit - количество элементов на странице
- * @param params - дополнительные query-параметры (например, hashtag, user_id)
- */
-export async function fetchPlaces(
-  page: number = 1,
-  limit: number = 20,
-  params: Record<string, any> = {}
-) {
-  const queryParams = { page, limit, ...params };
-  try {
-    const data = await HttpClient.get<{ data: any[]; meta: any }>('/places', queryParams);
-    return data;
-  } catch (error) {
-    console.error('fetchPlaces error', error);
-    throw error;
-  }
-}
-
-/**
- * Получение избранных плейсов текущего пользователя
- * @param page - номер страницы
- * @param limit - элементов на странице
- */
-export async function fetchMyWishlistPlaces(
-  page: number = 1,
-  limit: number = 20
-) {
-  const queryParams = { page, limit };
-  try {
-    const data = await HttpClient.get<{ data: any[]; meta: any }>('/places/my-place-wishlists', queryParams);
-    return data;
-  } catch (error) {
-    console.error('fetchMyWishlistPlaces error', error);
-    throw error;
-  }
-}
-
-/**
- * Получение плейсов по хэштегу
- * @param tag - название хэштега
- * @param page - номер страницы
- * @param limit - элементов на странице
- */
-export async function fetchPlacesByHashtag(
-  tag: string,
-  page: number = 1,
-  limit: number = 20
-) {
-  const queryParams = { page, limit };
-  try {
-    const data = await HttpClient.get<{ data: any[]; meta: any }>(`/places/hashtag/${tag}`, queryParams);
-    return data;
-  } catch (error) {
-    console.error('fetchPlacesByHashtag error', error);
-    throw error;
-  }
-}

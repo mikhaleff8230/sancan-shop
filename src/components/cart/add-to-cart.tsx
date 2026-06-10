@@ -57,7 +57,7 @@ export default function AddToCart({
       onClick={() => handleAddToCart()}
       isLoading={addToCartLoader}
       className={cn(
-        'relative border-0 bg-[linear-gradient(90deg,#C7E2F9_0%,var(--color-accent)_100%)] text-white hover:opacity-95 focus:opacity-95',
+        'relative',
         cartingSuccess
           ? 'is-carting pointer-events-none cursor-not-allowed'
           : 'pointer-events-auto cursor-pointer',
@@ -65,7 +65,7 @@ export default function AddToCart({
       )}
       disabled={isInStock(item?.id)}
     >
-      Купить
+      {t('text-add-to-cart')}
       <svg
         viewBox="0 0 37 37"
         xmlns="http://www.w3.org/2000/svg"

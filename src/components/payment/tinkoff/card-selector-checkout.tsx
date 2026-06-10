@@ -14,10 +14,10 @@ const CARD_STYLES: Record<string, { bg: string; logo: string; text: string }> = 
   mastercard: { bg: 'bg-neutral-900', logo: mastercard, text: 'MasterCard' },
   mir: { bg: 'bg-black', logo: mir, text: 'МИР' },
   tinkoff: { bg: 'bg-yellow-400', logo: tinkoff, text: 'Тинькофф' },
-  sber: { bg: 'bg-brand-400', logo: sber, text: 'Сбербанк' },
+  sber: { bg: 'bg-green-400', logo: sber, text: 'Сбербанк' },
   alfa: { bg: 'bg-red-600', logo: alfa, text: 'Альфа-Банк' },
   pay: { bg: 'bg-black', logo: pay, text: 'Pay' },
-  jcb: { bg: 'bg-brand-700', logo: jcb, text: 'JCB' },
+  jcb: { bg: 'bg-green-700', logo: jcb, text: 'JCB' },
 };
 
 function getCardStyle(network: string) {

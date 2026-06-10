@@ -9,8 +9,7 @@ import { useScrollableSlider } from '@/lib/hooks/use-scrollable-slider';
 import { useQuery } from '@tanstack/react-query';
 import client from '@/data/client';
 import { getColorHex } from '@/lib/utils/color-utils';
-import { useViewMode, ViewModeToggle } from '@/components/product/grid-switcher';
-import { useLocationStore, getDefaultMapCenter, getUserOrShopRegion } from '@/store/locationStore';
+import { useViewMode } from '@/components/product/grid-switcher';
 
 interface FilterItemProps {
   name: string;
@@ -341,8 +340,8 @@ function ColorSwatchFilterItem({ attribute, isActive, selectedValues, onValueSel
             colorHex === '#F5F5DC' ||
             colorHex === '#FFC0CB' ||
             colorHex === '#E6E6FA' ||
-            colorHex === '#FFE4EF' ||
-            colorHex === '#FFC6DD' ||
+            colorHex === '#98FF98' ||
+            colorHex === '#90EE90' ||
             colorHex === '#87CEEB'
           );
           
@@ -544,8 +543,8 @@ function AttributeFilterItem({ attribute, isActive, selectedValues, onValueSelec
               colorHex === '#F5F5DC' ||
               colorHex === '#FFC0CB' ||
               colorHex === '#E6E6FA' ||
-              colorHex === '#FFE4EF' ||
-              colorHex === '#FFC6DD' ||
+              colorHex === '#98FF98' ||
+              colorHex === '#90EE90' ||
               colorHex === '#87CEEB'
             );
             
@@ -675,7 +674,6 @@ export default function ProductFilterBar({ categoryId, onSortChange, onFilterCha
   const [selectedRanges, setSelectedRanges] = useState<Record<string, { min: string; max: string }>>({});
   const [sortBy, setSortBy] = useState('popularity');
   const { viewMode, setViewMode } = useViewMode();
-  const locationStore = useLocationStore();
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [showAllFilters, setShowAllFilters] = useState(false); // Показывать/скрывать фильтры справа (по умолчанию скрыты)
   const sortDropdownRef = useRef<HTMLDivElement>(null);
@@ -903,11 +901,7 @@ export default function ProductFilterBar({ categoryId, onSortChange, onFilterCha
     }
   };
 
-  /**
-   * Обработчик изменения режима отображения (grid/list/map).
-   * Состояние фильтров, региона и поиска сохраняется автоматически через Jotai + query keys.
-   */
-  const handleViewModeChange = (mode: 'grid' | 'list' | 'map') => {
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
     setViewMode(mode);
   };
 
@@ -1200,9 +1194,20 @@ export default function ProductFilterBar({ categoryId, onSortChange, onFilterCha
             </>
           )}
 
-          {/* Переключатель вида (Список / Карта) — справа от всех фильтров */}
-          <div className="flex items-center ml-auto pl-4 border-l border-light-300 dark:border-dark-400">
-            <ViewModeToggle />
+          {/* Переключатель вида */}
+          <div className="flex items-center ml-auto">
+            <button
+              onClick={() => handleViewModeChange(viewMode === 'grid' ? 'list' : 'grid')}
+              className="p-2 rounded bg-light-400 text-dark-100 hover:bg-light-500 dark:bg-dark-400 dark:text-light-100 dark:hover:bg-dark-500 transition-colors"
+              title={viewMode === 'grid' ? 'Переключить на список' : 'Переключить на сетку'}
+              aria-label={viewMode === 'grid' ? 'Переключить на список' : 'Переключить на сетку'}
+            >
+              {viewMode === 'grid' ? (
+                <CompactGridIcon className="h-4 w-4" />
+              ) : (
+                <NormalGridIcon className="h-4 w-4" />
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -1450,8 +1455,8 @@ function MobileAttributePanel({ attribute, selectedValues, onValueSelect, onRese
           colorHex === '#F5F5DC' ||
           colorHex === '#FFC0CB' ||
           colorHex === '#E6E6FA' ||
-          colorHex === '#FFE4EF' ||
-          colorHex === '#FFC6DD' ||
+          colorHex === '#98FF98' ||
+          colorHex === '#90EE90' ||
           colorHex === '#87CEEB'
         );
 

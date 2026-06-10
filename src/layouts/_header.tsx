@@ -11,20 +11,24 @@ import { Transition } from '@/components/ui/transition';
 import { UserIcon } from '@/components/icons/user-icon';
 import SearchInput from '@/components/search/search-input';
 import CartButton from '@/components/cart/cart-button';
+import Hamburger from '@/components/ui/hamburger';
 import { useIsMounted } from '@/lib/hooks/use-is-mounted';
 import { useSwapBodyClassOnScrollDirection } from '@/lib/hooks/use-swap-body-class';
 import { useDynamicHeader } from '@/lib/hooks/use-dynamic-header';
-import { useModalAction } from '@/components/modal-views/context';
+import { useDrawer } from '@/components/drawer-views/context';
 import Button from '@/components/ui/button';
 import LanguageSwitcher from '@/components/ui/language-switcher';
+import { MapPin } from 'lucide-react';
 import { useTranslation } from 'next-i18next';
 import DropdownCategoriesMenu from '@/components/menu/dropdown-categories-menu';
 import CreatePlaceModal from '@/components/places/CreatePlaceModal';
 import Logo from '@/components/ui/logo';
+import Image from 'next/image'
 import { useState } from 'react';
 import cn from 'classnames';
 import { PlusCircleIcon } from '@/components/icons/plus-circle-icon';
 import ChatButton from '@/components/chat/ChatButton';
+import { LocationWithModal } from '@/components/GeoLocation/LocationWithModal';
 
 const AuthorizedMenuItems = [
   {
@@ -58,10 +62,10 @@ function AuthorizedMenu({ user }: { user: User }) {
   const { t } = useTranslation('common');
   return (
     <Menu>
-      <Menu.Button className="app-interactive relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-app-card/60">
+      <Menu.Button className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-ozon-border bg-white shadow-sm">
         {/* @ts-ignore */}
         <Avatar
-          size="32"
+        size="40"
           round={true}
           name={user.name}
           textSizeRatio={2}
@@ -77,12 +81,12 @@ function AuthorizedMenu({ user }: { user: User }) {
         leaveFrom="transform opacity-100 scale-100"
         leaveTo="transform opacity-0 scale-95"
       >
-        <Menu.Items className="absolute top-[84%] z-30 mt-4 w-56 rounded-app-md border border-white/10 bg-app-surface/95 py-1.5 text-light shadow-app-lift backdrop-blur-xl ltr:right-0 ltr:origin-top-right rtl:left-0 rtl:origin-top-left">
+        <Menu.Items className="absolute top-[84%] z-30 mt-4 w-56 rounded-md bg-light py-1.5 text-dark shadow-dropdown ltr:right-0 ltr:origin-top-right rtl:left-0 rtl:origin-top-left dark:bg-dark-250 dark:text-light">
           {AuthorizedMenuItems.map((item) => (
             <Menu.Item key={item.label}>
               <ActiveLink
                 href={item.path}
-                className="transition-fill-colors mx-1 flex w-auto items-center rounded-app-sm px-4 py-2.5 hover:bg-app-card"
+                className="transition-fill-colors flex w-full items-center px-5 py-2.5 hover:bg-light-400 dark:hover:bg-dark-600"
               >
                 {t(item.label)}
               </ActiveLink>
@@ -91,7 +95,7 @@ function AuthorizedMenu({ user }: { user: User }) {
           <Menu.Item>
             <button
               type="button"
-              className="transition-fill-colors mx-1 w-[calc(100%-8px)] rounded-app-sm px-4 py-2.5 hover:bg-app-card ltr:text-left rtl:text-right"
+              className="transition-fill-colors w-full px-5 py-2.5 hover:bg-light-400 ltr:text-left rtl:text-right dark:hover:bg-dark-600"
               onClick={() => logout()}
             >
               {t('text-logout')}
@@ -104,12 +108,12 @@ function AuthorizedMenu({ user }: { user: User }) {
 }
 
 function LoginMenu() {
-  const { openModal } = useModalAction();
+  const { openDrawer } = useDrawer();
   const { me, isAuthorized, isLoading } = useMe();
   const isMounted = useIsMounted();
   if (!isMounted) {
     return (
-      <div className="h-8 w-8 animate-pulse rounded-full bg-light-300 dark:bg-dark-500" />
+      <div className="h-10 w-10 animate-pulse rounded-full bg-light-300" />
     );
   }
   if (isAuthorized && me && !isLoading) {
@@ -119,11 +123,32 @@ function LoginMenu() {
     <Button
       variant="icon"
       aria-label="User"
-      className="app-interactive flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-app-card/40"
-      onClick={() => openModal('LOGIN_VIEW')}
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-light-200 text-ozon-text hover:bg-brand-50 hover:text-brand"
+      onClick={() => openDrawer('AUTH_VIEW')}
     >
-      <UserIcon className="h-5 w-5 text-light" />
+      <UserIcon className="h-5 w-5"/>
     </Button>
+  );
+}
+
+function HeaderLocation({ compact = false }: { compact?: boolean }) {
+  return (
+    <div
+      className={cn(
+        'items-center gap-2 rounded-xl bg-light-200 px-3 py-2 text-ozon-text transition-colors hover:bg-brand-50',
+        compact ? 'flex min-w-[44px]' : 'hidden min-w-[220px] lg:flex'
+      )}
+    >
+      <MapPin className="h-5 w-5 shrink-0 text-ozon-text" />
+      {!compact && (
+        <div className="min-w-0">
+          <LocationWithModal className="!p-0 hover:!bg-transparent" />
+          <div className="truncate text-xs font-medium text-ozon-muted">
+            Как можно скорее
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -134,15 +159,15 @@ interface HeaderProps {
 }
 
 export default function Header({
-  isCollapse: _isCollapse,
-  showHamburger: _showHamburger = false,
-  onClickHamburger: _onClickHamburger,
+  isCollapse,
+  showHamburger = false,
+  onClickHamburger,
 }: HeaderProps) {
   const router = useRouter();
   const { asPath } = router;
   const { t } = useTranslation('common');
   const { me, isAuthorized, isLoading } = useMe();
-  const { openModal } = useModalAction();
+  const { openDrawer } = useDrawer();
   
   
   useSwapBodyClassOnScrollDirection();
@@ -156,6 +181,17 @@ export default function Header({
     process.env.NEXT_PUBLIC_ENABLE_MULTI_LANG === 'true' &&
     !!process.env.NEXT_PUBLIC_AVAILABLE_LANGUAGES;
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Функция для открытия мобильного меню (сайдбара)
+  const handleMobileMenuClick = () => {
+    // На мобильных устройствах открываем drawer с меню
+    if (typeof window !== 'undefined' && window.innerWidth < 640) {
+      openDrawer('MOBILE_MENU');
+    } else {
+      // На десктопе используем обычный toggle сайдбара
+      onClickHamburger?.();
+    }
+  };
 
   // Обработка изменения маршрута для исправления "ghost header" (только для мобильных)
   useEffect(() => {
@@ -201,34 +237,48 @@ export default function Header({
   return (
     <>
       {/* Desktop: Статичный хедер (без динамики) */}
-      <header className="app-header fixed top-0 z-50 hidden w-full border-b border-white/10 bg-app-surface/60 backdrop-blur-xl ltr:left-0 rtl:right-0 sm:block">
-        <div className="container mx-auto">
-          <div className="flex h-[56px] items-center justify-between gap-3">
-            {/* Левая часть */}
-            <div className="flex items-center gap-grid-2">
-              <Logo className="h-8 w-24 md:w-28" />
-              <div className="hidden lg:flex">
+      <header className="app-header sticky top-0 z-50 hidden w-full border-b border-ozon-border bg-white ltr:left-0 rtl:right-0 sm:block">
+        <div className="sancan-ozon-container">
+          <div className="flex h-[72px] items-center justify-between gap-4">
+            {/* Левая часть - логотип и кнопка Каталог */}
+            <div className="flex items-center gap-2">
+			 {/* Круглая иконка */}
+              <Image
+                src="/icon.png"
+                alt="Icon"
+                width={32}
+                height={32}
+                className="rounded-full border border-ozon-border"
+              />
+              {showHamburger && (
+                <Hamburger
+                  isToggle={isCollapse}
+                  onClick={onClickHamburger}
+                  className="hidden lg:flex"
+                />
+              )}
+              <Logo className="h-10 w-30" />
+              <div className="hidden sm:flex">
                 <DropdownCategoriesMenu />
               </div>
             </div>
 
-            {/* Центральная часть */}
-            <div className="mx-2 hidden max-w-2xl flex-1 md:flex">
-              <SearchInput className="w-full [&_input]:h-10 [&_input]:rounded-full [&_input]:border-white/10 [&_input]:bg-[#3A3A5C] [&_input]:text-light [&_input]:placeholder:text-app-muted [&_input]:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] [&_input]:ring-1 [&_input]:ring-white/5 [&_input]:focus:ring-app-accent/35" />
+            {/* Центральная часть - поиск */}
+            <div className="mx-2 hidden flex-1 md:flex">
+              <SearchInput className="w-full" />
             </div>
+            <HeaderLocation />
 
-            {/* Правая часть */}
-            <div className="flex items-center gap-1.5">
-              <div className="app-interactive rounded-app-sm px-1.5 py-1">
+            {/* Правая часть - кнопки и меню */}
+            <div className="flex items-center gap-2">
+              <div className="hidden">
                 <ThemeSwitcher />
               </div>
               {asPath !== routes.checkout && (
-                <div className="app-interactive hidden rounded-app-sm px-1.5 py-1 sm:flex">
-                  <CartButton className="hidden sm:flex" />
-                </div>
+                <CartButton className="hidden h-10 w-10 items-center justify-center rounded-full bg-light-200 text-ozon-text hover:bg-brand-50 hover:text-brand sm:flex" />
               )}
               {isMultiLangEnable ? (
-                <div className="app-interactive ltr:ml-auto rounded-app-sm px-1 py-1 rtl:mr-auto">
+                <div className="ltr:ml-auto rtl:mr-auto">
                   <LanguageSwitcher />
                 </div>
               ) : (
@@ -239,13 +289,13 @@ export default function Header({
                   if (isAuthorized && me && !isLoading) {
                     setIsModalOpen(true);
                   } else {
-                    openModal('LOGIN_VIEW');
+                    openDrawer('AUTH_VIEW');
                   }
                 }}
-                className="app-interactive hidden h-9 items-center justify-center rounded-app-sm border border-white/10 bg-app-card/45 px-grid-2 text-light hover:bg-app-card lg:flex"
+                className="sancan-ozon-button hidden items-center space-x-2 px-4 py-2 text-sm font-semibold lg:flex"
               >
-                <PlusCircleIcon className="h-5 w-5 text-brand" />
-                <span className="hidden xl:inline">{t('text-create')}</span>
+                <PlusCircleIcon className="h-5 w-5 text-white" />
+                <span>{t('text-create')}</span>
               </button>
               <CreatePlaceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
               <LoginMenu />
@@ -258,7 +308,7 @@ export default function Header({
       {/* Скрываем на странице товара */}
       <header 
         className={cn(
-          "app-header fixed top-0 z-50 w-full border-b border-white/10 bg-app-surface/60 backdrop-blur-xl ltr:left-0 rtl:right-0 transition-all duration-300 ease-in-out sm:hidden",
+          "app-header sticky top-0 z-50 w-full border-b border-ozon-border bg-white ltr:left-0 rtl:right-0 transition-all duration-300 ease-in-out sm:hidden",
           {
             "transform translate-y-0": isVisible,
             "shadow-sm": isCompact,
@@ -267,7 +317,7 @@ export default function Header({
         )}
       >
         <div className={cn(
-          "container mx-auto transition-all duration-300 ease-in-out",
+          "container mx-auto px-4 transition-all duration-300 ease-in-out",
           {
             "opacity-100 translate-y-0": isVisible,
             "opacity-95": !isVisible,
@@ -281,10 +331,18 @@ export default function Header({
 
             {/* Поиск */}
             <div className="flex-1 min-w-0">
-              <SearchInput className="w-full [&_input]:h-10 [&_input]:rounded-full [&_input]:border-white/10 [&_input]:bg-[#3A3A5C] [&_input]:text-light [&_input]:placeholder:text-app-muted [&_input]:shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] [&_input]:ring-1 [&_input]:ring-white/5" />
+              <SearchInput className="w-full" />
             </div>
+            <HeaderLocation compact />
 
-            {/* Кнопка меню скрыта по запросу */}
+            {/* Кнопка меню */}
+            {showHamburger && (
+              <Hamburger
+                isToggle={isCollapse}
+                onClick={handleMobileMenuClick}
+                className="flex-shrink-0"
+              />
+            )}
           </div>
         </div>
       </header>

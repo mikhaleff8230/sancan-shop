@@ -123,7 +123,7 @@ export default function GeneralContainer({
   const breakpoint = useBreakpoint();
   const isMounted = useIsMounted();
   return (
-    <div className="app-surface-panel relative flex w-full flex-col overflow-hidden rounded-app-md layout-block-16 dark:shadow-none sm:layout-block-24 lg:flex-row lg:p-0">
+    <div className="relative flex w-full flex-col overflow-hidden rounded-md bg-light p-4 shadow-card dark:bg-dark-200 dark:shadow-none xs:p-5 md:p-8 lg:flex-row lg:p-0">
       <aside className="shrink-0 justify-center border-light-300 dark:border-dark-400 md:flex md:border-b lg:block lg:w-72 lg:border-b-0 ltr:lg:border-r rtl:lg:border-l lg:dark:border-dark-300 lg:dark:bg-dark-250 xl:w-80">
         {isMounted && ['xs', 'sm'].indexOf(breakpoint) !== -1 ? (
           <SidebarMobileNav />
@@ -133,7 +133,7 @@ export default function GeneralContainer({
       </aside>
       <motion.div
         variants={fadeInBottom()}
-        className="w-full flex-grow pt-4 pb-4 sm:pt-6 sm:pb-6 lg:layout-block-24 xl:layout-block-32"
+        className="w-full flex-grow pt-4 pb-4 sm:pb-2 md:pt-10 lg:p-10 xl:p-12"
       >
         {children}
       </motion.div>

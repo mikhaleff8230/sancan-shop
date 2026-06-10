@@ -6,6 +6,7 @@ import GeneralLayout from '@/layouts/_general-layout';
 import CartItemList from '@/components/cart/cart-item-list';
 import CartEmpty from '@/components/cart/cart-empty';
 import Button from '@/components/ui/button';
+import PhoneInput from '@/components/ui/forms/phone-input';
 import CInput from '@/components/ui/forms/input';
 import CTextArea from '@/components/ui/forms/textarea';
 import { useCart } from '@/components/cart/lib/cart.context';
@@ -20,6 +21,8 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { GetStaticProps } from 'next';
 import { toast } from 'react-hot-toast';
+import SavedAddressSelector from '@/components/checkout/SavedAddressSelector';
+import { UserAddress } from '@/data/user-addresses';
 
 const CheckoutPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -51,19 +54,40 @@ const CheckoutPage: NextPageWithLayout = () => {
   const [name, setName] = useState(me?.name || '');
   const [email, setEmail] = useState(me?.email || '');
   const [phone, setPhone] = useState(me?.profile?.contact || '');
+  const [address, setAddress] = useState(me?.adres || '');
   const [note, setNote] = useState('');
+  const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(null);
+  const [deliveryType, setDeliveryType] = useState<'pvz' | 'courier'>('pvz');
+  
+  // Используем только локальное состояние телефона
+  const finalPhone = phone;
 
+  // Отладочная информация
+  console.log('Checkout debug:', {
+    isEmpty,
+    verifiedResponse: !!verifiedResponse,
+    verifiedResponseData: verifiedResponse,
+    selectedAddress,
+    deliveryType,
+    finalPhone,
+    name,
+    email
+  });
   function verify() {
-    if (!name || !email || !phone) {
-      toast.error('Заполните имя, email и телефон');
+    // Простая проверка основных полей
+    if (!name || !email) {
+      toast.error('Заполните имя и email');
       return;
     }
 
-    const customerContact = {
+    // Подготавливаем базовые данные (без ПВЗ, так как они будут в CartCheckout)
+    const shippingAddress = {
       name,
       email,
-      phone,
+      phone: finalPhone,
+      address: deliveryType === 'courier' ? address : '',
       comment: note,
+      delivery_type: deliveryType,
     };
 
     mutate({
@@ -74,8 +98,8 @@ const CheckoutPage: NextPageWithLayout = () => {
         unit_price: item.price,
         subtotal: item.price * item.quantity,
       })),
-      shipping_address: customerContact,
-      payment_gateway: 'yookassa',
+      shipping_address: shippingAddress,
+      payment_gateway: 'tinkoff',
     });
   }
   return (
@@ -93,8 +117,52 @@ const CheckoutPage: NextPageWithLayout = () => {
           <div className="px-5 py-4 sm:py-6 sm:px-7">
             <CInput label="Email" value={email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)} required />
           </div>
+          {/* Выбор типа доставки */}
           <div className="px-5 py-4 sm:py-6 sm:px-7">
-            <CInput label="Телефон" value={phone} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)} required />
+            <label className="block mb-3 text-sm font-medium">Тип доставки</label>
+            <div className="flex gap-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="deliveryType"
+                  value="pvz"
+                  checked={deliveryType === 'pvz'}
+                  onChange={(e) => setDeliveryType(e.target.value as 'pvz' | 'courier')}
+                  className="mr-2"
+                />
+                Самовывоз из ПВЗ
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="deliveryType"
+                  value="courier"
+                  checked={deliveryType === 'courier'}
+                  onChange={(e) => setDeliveryType(e.target.value as 'pvz' | 'courier')}
+                  className="mr-2"
+                />
+                Курьером
+              </label>
+            </div>
+          </div>
+
+          {/* Выбор ПВЗ или адреса */}
+          {deliveryType === 'pvz' ? (
+            <div className="px-5 py-4 sm:py-6 sm:px-7">
+              <label className="block mb-3 text-sm font-medium">Пункт выдачи заказов</label>
+              <SavedAddressSelector
+                selectedAddress={selectedAddress}
+                onSelectAddress={setSelectedAddress}
+              />
+            </div>
+          ) : (
+            <div className="px-5 py-4 sm:py-6 sm:px-7">
+              <CInput label="Адрес доставки" value={address} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAddress(e.target.value)} required />
+            </div>
+          )}
+          <div className="px-5 py-4 sm:py-6 sm:px-7">
+            <label className="block mb-2">Телефон</label>
+            <PhoneInput className="w-full" defaultValue={phone} />
           </div>
           <div className="px-5 py-4 sm:py-6 sm:px-7">
             <CTextArea label="Комментарий к заказу" value={note} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNote(e.target.value)} />
@@ -153,9 +221,12 @@ const CheckoutPage: NextPageWithLayout = () => {
               <CartCheckout
                 name={name}
                 email={email}
-                phone={phone}
+                phone={finalPhone}
+                address={address}
                 note={note}
                 clearCart={resetCart}
+                selectedAddress={selectedAddress}
+                deliveryType={deliveryType}
               />
             )}
           </div>

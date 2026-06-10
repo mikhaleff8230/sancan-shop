@@ -18,6 +18,11 @@ export const docsNav: DocsNavSection[] = [
         slug: 'self-employed-sellers',
         description: 'Всё о работе самозанятых продавцов на Sancan',
       },
+      {
+        title: 'СДЭК ТК',
+        slug: 'sdek_tk',
+        description: 'Информация о работе с транспортной компанией СДЭК',
+      },
     ],
   },
   {

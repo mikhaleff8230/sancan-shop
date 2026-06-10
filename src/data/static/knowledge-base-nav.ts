@@ -24,6 +24,11 @@ export const docsNav: DocsNavSection[] = [
         description: 'Всё о работе самозанятых продавцов на Sancan',
       },
       {
+        title: 'СДЭК ТК',
+        slug: 'sdek_tk',
+        description: 'Информация о работе с транспортной компанией СДЭК',
+      },
+      {
         title: 'Ссылка на маркетплейс из карточки товара',
         slug: 'marketplace-link-from-product-card',
         description: 'Как добавить и настроить ссылку на внешний маркетплейс в карточке товара на Sancan',

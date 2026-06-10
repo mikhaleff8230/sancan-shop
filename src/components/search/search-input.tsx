@@ -180,7 +180,7 @@ export default function SearchInput({
   return (
     <div className={cn('relative w-full', className)}>
       {/* Поле ввода */}
-      <div className="relative">
+      <div className="relative flex rounded-xl border-2 border-brand bg-white p-0.5 shadow-sm transition-shadow focus-within:shadow-[0_0_0_3px_rgba(0,91,255,0.12)]">
         <input
           ref={inputRef}
           type="text"
@@ -189,19 +189,25 @@ export default function SearchInput({
           onFocus={() => setIsFocused(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          className="flex w-full h-10 px-3 py-2 pr-4 rounded-full border-input border-0 text-base md:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-offset-2 focus-visible:ring-1 focus-visible:ring-[#C45A4A] ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground transition-all duration-200"
-          style={{ backgroundColor: '#3A3A5C' }}
+          className="flex h-10 w-full rounded-lg border-0 bg-white px-4 py-2 pr-10 text-base text-ozon-text placeholder:text-ozon-muted focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-gray-600"
+            className="absolute inset-y-0 right-[86px] flex items-center pr-2 text-gray-400 hover:text-gray-600"
           >
             <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
+        <button
+          type="button"
+          onClick={handleSearch}
+          className="sancan-ozon-button flex h-10 min-w-[76px] items-center justify-center px-4 text-sm font-semibold"
+        >
+          Найти
+        </button>
         
       </div>
 
@@ -214,13 +220,13 @@ export default function SearchInput({
             exit="exit"
             variants={fadeInOut()}
             ref={resultsRef}
-            className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-dark-300 border border-gray-200 dark:border-dark-500 rounded-lg shadow-xl z-50 overflow-hidden max-h-[500px] overflow-y-auto"
+            className="absolute top-full left-0 right-0 z-50 mt-2 max-h-[500px] overflow-hidden overflow-y-auto rounded-xl border border-ozon-border bg-white shadow-xl"
             style={{ minWidth: '600px', maxWidth: '100%' }}
           >
             {/* Индикатор загрузки */}
             {isLoadingSuggestions && (
               <div className="p-4 text-center text-gray-500">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#C45A4A] mx-auto"></div>
+                <div className="mx-auto h-6 w-6 animate-spin rounded-full border-b-2 border-brand"></div>
                 <p className="mt-2 text-sm">Загружаем подсказки...</p>
               </div>
             )}
@@ -236,7 +242,7 @@ export default function SearchInput({
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: index * 0.05 }}
                       onClick={() => handleHorizontalSuggestionClick(suggestion)}
-                      className="px-4 py-2 bg-white dark:bg-dark-300 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium hover:bg-[#C45A4A] hover:text-white dark:hover:bg-[#C45A4A] transition-all duration-200 shadow-sm hover:shadow-md"
+                      className="rounded-full bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-brand hover:text-white hover:shadow-md"
                     >
                       {suggestion}
                     </motion.button>
@@ -263,7 +269,7 @@ export default function SearchInput({
                         onClick={() => handleSuggestionClick(suggestion)}
                         className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-dark-400 rounded-lg transition-colors flex items-center space-x-3 group"
                       >
-                        <svg className="h-5 w-5 text-[#C45A4A] flex-shrink-0 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-5 w-5 flex-shrink-0 text-brand transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
                         <span className="text-gray-700 dark:text-gray-300 flex-1 truncate">{suggestion}</span>
@@ -287,7 +293,7 @@ export default function SearchInput({
                         onClick={() => handleSuggestionClick(suggestion)}
                         className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-dark-400 rounded-lg transition-colors flex items-center space-x-3 group"
                       >
-                        <span className="h-5 w-5 text-[#C45A4A] flex-shrink-0 group-hover:scale-110 transition-transform flex items-center justify-center font-bold">#</span>
+                        <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center font-bold text-brand transition-transform group-hover:scale-110">#</span>
                         <span className="text-gray-700 dark:text-gray-300 flex-1 truncate">{suggestion}</span>
                       </motion.button>
                     ))}
@@ -309,7 +315,7 @@ export default function SearchInput({
                         onClick={() => handleSuggestionClick(suggestion)}
                         className="w-full text-left p-3 hover:bg-gray-50 dark:hover:bg-dark-400 rounded-lg transition-colors flex items-center space-x-3 group"
                       >
-                        <svg className="h-5 w-5 text-[#C45A4A] flex-shrink-0 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="h-5 w-5 flex-shrink-0 text-brand transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
                         </svg>
                         <span className="text-gray-700 dark:text-gray-300 flex-1 truncate">{suggestion}</span>

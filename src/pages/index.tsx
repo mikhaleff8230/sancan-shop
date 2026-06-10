@@ -1,62 +1,27 @@
 import CategoryFilter from '@/components/product/category-filter';
 import DynamicProductGrid from '@/components/product/dynamic-grid';
-import PlacesFeed from '@/components/places/PlacesFeed';
 import { TitleSeo } from '@/components/seo/title-seo';
-import client from '@/data/client';
-import { API_ENDPOINTS } from '@/data/client/endpoints';
 import Layout from '@/layouts/_layout';
-import type {
-  CategoryQueryOptions,
-  NextPageWithLayout,
-  SettingsQueryOptions,
-  Place,
-} from '@/types';
+import type { NextPageWithLayout } from '@/types';
 import type { GetStaticProps } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
-import { dehydrate, QueryClient } from '@tanstack/react-query';
 
-interface HomePageProps {
-  initialPlaces: Place[];
-  initialPaginatorInfo: any;
-}
+interface HomePageProps {}
 
 export const getStaticProps: GetStaticProps<HomePageProps> = async ({ locale }) => {
-  const queryClient = new QueryClient();
-
   try {
-    const [settings, categories] = await Promise.all([
-      queryClient.prefetchQuery(
-        [API_ENDPOINTS.SETTINGS, { language: locale }],
-        ({ queryKey }) =>
-          client.settings.all(queryKey[1] as SettingsQueryOptions)
-      ),
-      queryClient.prefetchInfiniteQuery(
-        [API_ENDPOINTS.CATEGORIES, { limit: 100, language: locale }],
-        ({ queryKey }) =>
-          client.categories.all(queryKey[1] as CategoryQueryOptions)
-      ),
-    ]);
-
-    // Временно отключаем SSR для places чтобы избежать 502 ошибки
-    // Данные будут загружаться на клиенте
     return {
       props: {
-        initialPlaces: [],
-        initialPaginatorInfo: null,
         ...(await serverSideTranslations(locale!, ['common'])),
-        dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
       },
-      revalidate: 60, // In seconds
+      revalidate: 60,
     };
   } catch (error) {
     console.error('Home page SSR error:', error);
     return {
       props: {
-        initialPlaces: [],
-        initialPaginatorInfo: null,
         ...(await serverSideTranslations(locale!, ['common'])),
-        dehydratedState: JSON.parse(JSON.stringify(dehydrate(queryClient))),
       },
     };
   }
@@ -64,7 +29,7 @@ export const getStaticProps: GetStaticProps<HomePageProps> = async ({ locale }) 
 
 function Products() {
   const { query } = useRouter();
-  
+
   const filters = {
     ...(query.category && { categories: query.category }),
     ...(query.price && { price: query.price }),
@@ -72,54 +37,115 @@ function Products() {
 
   return (
     <DynamicProductGrid
-      limit={28}
+      limit={30}
       filters={filters}
       showLoadMore={true}
+      className="px-0 pt-0"
     />
   );
 }
 
-// TODO: SEO text gulo translation ready hobe kina? r seo text gulo static thakbe or dynamic?
-const Home: NextPageWithLayout<HomePageProps> = ({ initialPlaces, initialPaginatorInfo }) => {
+function PromoStrip() {
+  return (
+    <div className="sancan-ozon-container pt-3">
+      <div className="relative flex min-h-[52px] items-center justify-center overflow-hidden rounded-[18px] bg-gradient-to-r from-[#ff5bd7] via-[#00b7ff] to-[#304dff] px-4 text-center text-white shadow-sm">
+        <div className="absolute -left-5 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-white/25 blur-xl" />
+        <div className="absolute -right-4 top-1/2 h-24 w-24 -translate-y-1/2 rounded-full bg-white/25 blur-xl" />
+        <span className="relative text-sm font-extrabold uppercase tracking-wide md:text-lg">
+          Распродажа уже началась
+        </span>
+        <span className="relative ml-3 hidden rounded-full bg-[#0b2548] px-4 py-2 text-sm font-bold md:inline-flex">
+          Забрать сейчас
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function HeroBanner() {
+  return (
+    <div className="sancan-ozon-container pt-3">
+      <div className="relative min-h-[210px] overflow-hidden rounded-[22px] bg-[#ffe72e] px-6 py-7 shadow-sm md:min-h-[270px] md:px-12 lg:px-16">
+        <button
+          type="button"
+          aria-label="Предыдущий баннер"
+          className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-2xl text-ozon-text shadow-sm"
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          aria-label="Следующий баннер"
+          className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-2xl text-ozon-text shadow-sm"
+        >
+          ›
+        </button>
+
+        <div className="relative z-[1] grid gap-6 md:grid-cols-[1fr_380px] md:items-center">
+          <div>
+            <div className="mb-5 inline-flex rounded-[28px] bg-white px-5 py-3 text-lg font-black text-ozon-text shadow-sm md:text-2xl">
+              SANCAN Маркет
+            </div>
+            <h1 className="max-w-[620px] text-4xl font-black leading-[0.95] tracking-[-0.02em] text-black md:text-6xl">
+              Цены напрямую от продавцов
+            </h1>
+            <p className="mt-5 max-w-[520px] text-base font-semibold text-black/70 md:text-lg">
+              Новые товары, подборки и выгодные предложения в одном каталоге.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <span className="rounded-2xl bg-white px-5 py-3 text-sm font-black text-ozon-text shadow-sm">
+                Промокод SANCAN
+              </span>
+              <span className="rounded-2xl bg-[#8057ff] px-5 py-3 text-sm font-black text-white shadow-sm">
+                Скидки до 80%
+              </span>
+            </div>
+          </div>
+
+          <div className="relative hidden h-[210px] rounded-[32px] bg-[#8a65ff] p-6 text-white shadow-[0_20px_50px_rgba(91,58,255,0.28)] md:block">
+            <div className="absolute -left-4 top-8 h-20 w-20 rounded-3xl bg-white/25 blur-sm" />
+            <div className="absolute right-7 top-8 rotate-6 rounded-2xl bg-white px-5 py-4 text-4xl font-black text-ozon-pink shadow-lg">
+              %
+            </div>
+            <div className="absolute bottom-8 left-8 max-w-[240px] text-3xl font-black leading-tight">
+              Корзина сама себя не оплатит
+            </div>
+            <div className="absolute bottom-6 right-7 text-2xl font-bold text-white/60">
+              0+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const Home: NextPageWithLayout<HomePageProps> = () => {
   return (
     <>
-      <TitleSeo 
-        title={'SANCAN — медиа платформа для продвижения.'} 
-        description={'Вещи со смыслом. Плейсы, где вдохновение становится выбором.'}
+      <TitleSeo
+        title="SANCAN — каталог товаров"
+        description="SANCAN: товары, подборки и покупки в едином каталоге."
       />
-      
-      {/* Places Feed Section */}
-      <section className="mb-12">
-        <div className="container mx-auto">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-heading mb-4">
-              Последние плейсы
-            </h2>
-            <p className="text-body text-lg max-w-2xl mx-auto">
-              Откройте для себя уникальные идеи и вдохновение от наших мастеров
-            </p>
-          </div>
-          <PlacesFeed
-            limit={5}
-            showLoadMore={false}
-            filters={{}}
-            className="px-4 pt-5 pb-9 md:px-6 md:pb-10 md:pt-6 lg:px-7 lg:pb-12 3xl:px-8"
-          />
-        </div>
-      </section>
 
-      {/* Products Section */}
-      <section>
-        <div className="container mx-auto">
-          <div className="mb-8 text-center">
-            <h2 className="text-3xl font-bold text-heading mb-4">
-              Популярные товары
-            </h2>
-            <p className="text-body text-lg max-w-2xl mx-auto">
-              Лучшие товары для вашего дома от проверенных мастеров
-            </p>
+      <section className="sancan-ozon-page pb-12">
+        <PromoStrip />
+        <HeroBanner />
+        <CategoryFilter />
+        <div className="sancan-ozon-container">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-2xl font-bold text-ozon-text md:text-3xl">
+                Популярные товары
+              </h2>
+              <p className="mt-1 text-sm text-ozon-muted">
+                Последние обновления каталога SANCAN.
+              </p>
+            </div>
+            <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand shadow-sm">
+              Новинки и хиты
+            </div>
           </div>
-          <CategoryFilter />
           <Products />
         </div>
       </section>
@@ -128,9 +154,7 @@ const Home: NextPageWithLayout<HomePageProps> = ({ initialPlaces, initialPaginat
 };
 
 Home.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
+  return <Layout hideSidebar>{page}</Layout>;
 };
 
 export default Home;
-
-

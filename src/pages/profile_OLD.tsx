@@ -149,7 +149,7 @@ const ProfilePage: NextPageWithLayout = () => {
                     {t('text-profile-contact')}
                   </span>
                   {me?.profile?.phone_verified && (
-                    <span className="text-xs text-brand dark:text-brand-300">
+                    <span className="text-xs text-green-600 dark:text-green-400">
                       ✓ Подтвержден
                     </span>
                   )}

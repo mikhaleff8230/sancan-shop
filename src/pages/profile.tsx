@@ -20,6 +20,10 @@ import pick from 'lodash/pick';
 import { API_ENDPOINTS } from '@/data/client/endpoints';
 import Uploader from '@/components/ui/forms/uploader';
 import * as yup from 'yup';
+import PvzModal from '@/components/pvz/PvzModal';
+import SavedAddresses from '@/components/profile/SavedAddresses';
+import UserAddress from '@/components/profile/UserAddress';
+import { useState } from 'react';
 import { useModalAction } from '@/components/modal-views/context';
 import { useTheme } from 'next-themes';
 import { Switch } from '@/components/ui/switch';
@@ -85,6 +89,8 @@ const ProfilePage: NextPageWithLayout = () => {
     console.log('Profile update data:', input); // Логирование для отладки
     mutate(input);
   };
+  const [showPvzModal, setShowPvzModal] = useState(false);
+  const [pvz, setPvz] = useState(me?.profile?.contact?.startsWith('ПВЗ:') ? me.profile.contact : '');
   const { resolvedTheme, setTheme } = useTheme();
   const isMounted = useIsMounted();
   const isDarkMode = isMounted ? resolvedTheme === 'dark' : false;
@@ -164,7 +170,7 @@ const ProfilePage: NextPageWithLayout = () => {
                     {t('text-profile-contact')}
                   </span>
                   {me?.profile?.phone_verified && (
-                    <span className="text-xs text-brand dark:text-brand-300">
+                    <span className="text-xs text-green-600 dark:text-green-400">
                       ✓ Подтвержден
                     </span>
                   )}
@@ -204,6 +210,30 @@ const ProfilePage: NextPageWithLayout = () => {
                     {'contact field is required'}
                   </span>
                 )}
+                <div className="mt-4 p-3 bg-gray-50 rounded flex items-center justify-between">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">ПВЗ для заказов</div>
+                    <div className="font-semibold text-base">{pvz ? pvz : 'ПВЗ не выбран'}</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="ml-4 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    onClick={() => setShowPvzModal(true)}
+                  >
+                    Изменить
+                  </button>
+                </div>
+                {showPvzModal && (
+                  <PvzModal
+                    onClose={() => setShowPvzModal(false)}
+                    onSelect={selected => {
+                      setPvz(selected);
+                      setShowPvzModal(false);
+                      // TODO: обновить поле profile.contact через форму
+                    }}
+                    allowSaveToProfile={true}
+                  />
+                )}
               </div>
               <Textarea
                 label={t('text-profile-bio')}
@@ -211,7 +241,11 @@ const ProfilePage: NextPageWithLayout = () => {
                 error={errors.profile?.bio?.message && 'bio field is required'}
                 className="sm:col-span-2"
               />
-
+              {/* Поле "Мой адрес" - после описания, перед ПВЗ */}
+              <div className="sm:col-span-2">
+                <UserAddress />
+              </div>
+              
               {/* PIN-код для быстрого входа */}
               <div className="sm:col-span-2">
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-dark-400">
@@ -276,6 +310,11 @@ const ProfilePage: NextPageWithLayout = () => {
           </>
         )}
       </Form>
+      
+      {/* Секция сохраненных адресов */}
+      <div className="mt-8 pt-8 border-t border-gray-200">
+        <SavedAddresses />
+      </div>
     </motion.div>
   );
 };

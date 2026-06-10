@@ -1,4 +1,4 @@
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import type { GetStaticProps } from 'next';
 import { useTranslation } from 'next-i18next';
@@ -20,104 +20,17 @@ import { fadeInBottom } from '@/lib/framer-motion/fade-in-bottom';
 import rangeMap from '@/lib/range-map';
 import Button from '@/components/ui/button';
 import placeholder from '@/assets/images/placeholders/product.svg';
-import { OrderStatus, PaymentStatus } from '@/types';
+import { useModalAction } from '@/components/modal-views/context';
+import { getReview } from '@/lib/get-reviews';
+import { OrderStatus } from '@/types';
 import Link from '@/components/ui/link';
 import routes from '@/config/routes';
 import AnchorLink from '@/components/ui/links/anchor-link';
-import { DownloadIcon } from '@/components/icons/download-icon';
-
-function extractFileNameFromUrl(url?: string): string {
-  if (!url) return '';
-  try {
-    const clean = decodeURIComponent(url.split('?')[0]);
-    return clean.substring(clean.lastIndexOf('/') + 1);
-  } catch {
-    const clean = url.split('?')[0];
-    return clean.substring(clean.lastIndexOf('/') + 1);
-  }
-}
-
-function isPaymentSuccessful(status?: string): boolean {
-  if (!status) return false;
-  const normalized = String(status).toLowerCase().trim();
-  return (
-    normalized === PaymentStatus.SUCCESS ||
-    normalized === 'success' ||
-    normalized === 'paid'
-  );
-}
-
-function isOrderCompleted(status?: string): boolean {
-  if (!status) return false;
-  const normalized = String(status).toLowerCase().trim();
-  return normalized === OrderStatus.COMPLETED;
-}
-
-function productAccessLabel(type?: string): string {
-  switch (type) {
-    case 'file':
-      return 'Скачать';
-    case 'prompt':
-      return 'Показать промпт';
-    case 'link':
-      return 'Открыть ссылку';
-    case 'account':
-      return 'Доступ к аккаунту';
-    case 'subscription':
-      return 'Подписка';
-    case 'key':
-      return 'Показать ключ';
-    default:
-      return 'Получить доступ';
-  }
-}
 
 // Компонент для отображения одного товара в заказе
-function OrderProductItem({
-  product,
-  canDownload,
-  trackingNumber,
-  buyerEmail,
-}: {
-  product: Product;
-  canDownload: boolean;
-  trackingNumber: string;
-  buyerEmail?: string;
-}) {
-  const [accessData, setAccessData] = useState<any | null>(null);
-  const productType = (product as any)?.digital_product_type || 'file';
-  const productIdForAccess = (product as any)?.pivot?.product_id || product.id;
-
-  const { mutate: requestProductAccess, isLoading: isAccessLoading } = useMutation(
-    () => {
-      return client.products.access(productIdForAccess, {
-        tracking_number: trackingNumber,
-        ...(buyerEmail ? { email: buyerEmail } : {}),
-      });
-    },
-    {
-      onSuccess: (response) => {
-        const type = response?.type;
-        const payload = response?.payload ?? {};
-        setAccessData(response);
-
-        if (type === 'file' && payload?.download_url) {
-          const a = document.createElement('a');
-          a.href = payload.download_url;
-          a.setAttribute('download', product.name || 'digital-file');
-          a.click();
-          return;
-        }
-
-        if (type === 'link' && payload?.external_url) {
-          window.open(payload.external_url, '_blank', 'noopener,noreferrer');
-        }
-      },
-      onError: () => {
-        toast.error('Доступ к этому товару недоступен.');
-      },
-    }
-  );
+function OrderProductItem({ product, orderId }: { product: Product; orderId: string }) {
+  const { t } = useTranslation('common');
+  const { openModal } = useModalAction();
   
   // Получаем название товара
   let productName = product.name || 'Товар';
@@ -160,22 +73,19 @@ function OrderProductItem({
     }
   }
 
-  const digitalFileName =
-    (product as any)?.digital_file?.file_name ||
-    (product as any)?.digital_file_name ||
-    extractFileNameFromUrl((product as any)?.digital_file?.url);
-  const canDownloadProduct = canDownload && Boolean(productIdForAccess);
-  const payload = accessData?.payload ?? {};
-
-  const copyToClipboard = async (value: string) => {
-    if (!value) return;
-    try {
-      await navigator.clipboard.writeText(value);
-      toast.success('Скопировано');
-    } catch {
-      toast.error('Не удалось скопировать');
-    }
-  };
+  function openReviewModal() {
+    openModal('REVIEW_RATING', {
+      product_id: product.id,
+      shop_id: product.shop_id,
+      name: productName,
+      image: productImage,
+      my_review: getReview(product.my_review, orderId),
+      order_id: orderId,
+      ...((product as any).pivot?.variation_option_id && {
+        variation_option_id: (product as any).pivot.variation_option_id,
+      }),
+    });
+  }
 
   return (
     <div className="flex items-start gap-4 border-b border-light-400 py-3 last:border-b-0 dark:border-dark-400 sm:gap-5">
@@ -218,143 +128,6 @@ function OrderProductItem({
             <span>{productName}</span>
           )}
         </h4>
-        {digitalFileName && (
-          <p className="text-xs text-body">
-            Файл: <span className="font-medium">{digitalFileName}</span>
-          </p>
-        )}
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() =>
-              canDownloadProduct
-                ? requestProductAccess()
-                : null
-            }
-            disabled={!canDownloadProduct || isAccessLoading}
-            className="!h-9 !px-3 text-xs"
-          >
-            <DownloadIcon className="h-auto w-4" />
-            {productAccessLabel(productType)}
-          </Button>
-        </div>
-        {accessData && productType !== 'file' && (
-          <div className="mt-2 rounded-md border border-light-400 p-3 text-xs dark:border-dark-500">
-            {productType === 'prompt' && (
-              <div className="space-y-2">
-                <p className="whitespace-pre-wrap break-words text-body">
-                  {payload?.prompt_text || 'Промпт пуст'}
-                </p>
-                <Button
-                  onClick={() => copyToClipboard(payload?.prompt_text || '')}
-                  className="!h-8 !px-2 text-xs"
-                >
-                  Копировать
-                </Button>
-              </div>
-            )}
-            {productType === 'link' && (
-              <div className="space-y-2">
-                <p className="break-all text-body">{payload?.external_url || 'Ссылка не указана'}</p>
-                {!!payload?.external_url && (
-                  <Button
-                    onClick={() => window.open(payload.external_url, '_blank', 'noopener,noreferrer')}
-                    className="!h-8 !px-2 text-xs"
-                  >
-                    Открыть
-                  </Button>
-                )}
-              </div>
-            )}
-            {productType === 'account' && (
-              <div className="space-y-2">
-                {payload?.account_data && typeof payload.account_data === 'object' ? (
-                  <>
-                    {'login' in (payload.account_data as object) && (
-                      <p className="text-body">
-                        <span className="text-body-muted">Логин: </span>
-                        <span className="break-all font-medium">
-                          {String((payload.account_data as any).login ?? '')}
-                        </span>
-                      </p>
-                    )}
-                    {'password' in (payload.account_data as object) && (
-                      <p className="text-body">
-                        <span className="text-body-muted">Пароль: </span>
-                        <span className="break-all font-medium">
-                          {String((payload.account_data as any).password ?? '')}
-                        </span>
-                      </p>
-                    )}
-                    <Button
-                      onClick={() =>
-                        copyToClipboard(
-                          [
-                            (payload.account_data as any).login != null
-                              ? `Логин: ${String((payload.account_data as any).login)}`
-                              : '',
-                            (payload.account_data as any).password != null
-                              ? `Пароль: ${String((payload.account_data as any).password)}`
-                              : '',
-                          ]
-                            .filter(Boolean)
-                            .join('\n')
-                        )
-                      }
-                      className="!h-8 !px-2 text-xs"
-                    >
-                      Копировать
-                    </Button>
-                  </>
-                ) : (
-                  <pre className="whitespace-pre-wrap break-all text-body">
-                    {JSON.stringify(payload?.account_data ?? {}, null, 2)}
-                  </pre>
-                )}
-              </div>
-            )}
-            {productType === 'subscription' && (
-              <div className="space-y-2">
-                {payload?.expires_at && (
-                  <p className="text-body">
-                    Доступ активен до{' '}
-                    <span className="font-semibold">
-                      {dayjs(payload.expires_at).isValid()
-                        ? dayjs(payload.expires_at).format('DD.MM.YYYY HH:mm')
-                        : String(payload.expires_at)}
-                    </span>
-                  </p>
-                )}
-              </div>
-            )}
-            {productType === 'key' && (
-              <div className="space-y-2">
-                {payload?.license_key != null && (
-                  <pre className="whitespace-pre-wrap break-all text-body">
-                    {String(payload.license_key)}
-                  </pre>
-                )}
-                {payload?.key_data != null &&
-                  Object.keys(payload.key_data).length > 0 && (
-                    <pre className="whitespace-pre-wrap break-all text-body">
-                      {JSON.stringify(payload.key_data, null, 2)}
-                    </pre>
-                  )}
-                <Button
-                  onClick={() =>
-                    copyToClipboard(
-                      payload?.license_key != null
-                        ? String(payload.license_key)
-                        : JSON.stringify(payload?.key_data ?? {}, null, 2)
-                    )
-                  }
-                  className="!h-8 !px-2 text-xs"
-                >
-                  Копировать
-                </Button>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
@@ -364,23 +137,6 @@ function OrderProductItem({
 function OrderGroup({ order }: { order: Order }) {
   const { t } = useTranslation('common');
   const queryClient = useQueryClient();
-
-  const buyerEmailFromOrder = (() => {
-    const raw = (order as any)?.shipping_address;
-    let addr: any = raw;
-    if (typeof raw === 'string') {
-      try {
-        addr = JSON.parse(raw);
-      } catch {
-        addr = null;
-      }
-    }
-    if (addr && typeof addr === 'object' && addr.email) {
-      const e = String(addr.email).trim();
-      return e || undefined;
-    }
-    return undefined;
-  })();
   
   if (!order || !order.products || order.products.length === 0) {
     return null;
@@ -511,12 +267,7 @@ function OrderGroup({ order }: { order: Order }) {
           <OrderProductItem 
             key={product.id + ((product as any).pivot?.variation_option_id || '')} 
             product={product} 
-            trackingNumber={order.tracking_number}
-            buyerEmail={buyerEmailFromOrder}
-            canDownload={
-              isPaymentSuccessful(order.payment_status) ||
-              isOrderCompleted(order.order_status)
-            }
+            orderId={order.id}
           />
         ))}
       </div>

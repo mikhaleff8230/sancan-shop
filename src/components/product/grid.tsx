@@ -65,9 +65,9 @@ export default function Grid({
         className={cn(
           'grid grid-cols-2 gap-5 xs:grid-cols-2 md:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] lg:gap-6 3xl:gap-7',
           {
-            '2xl:grid-cols-3 3xl:grid-cols-6 4xl:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]':
+            '2xl:grid-cols-4 3xl:grid-cols-7 4xl:grid-cols-[repeat(auto-fill,minmax(300px,1fr))]':
               isGridCompact,
-            '2xl:grid-cols-2 3xl:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] 4xl:grid-cols-[repeat(auto-fill,minmax(380px,1fr))]':
+            '2xl:grid-cols-3 3xl:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] 4xl:grid-cols-[repeat(auto-fill,minmax(380px,1fr))]':
               !isGridCompact,
           }
         )}

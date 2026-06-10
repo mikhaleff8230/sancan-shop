@@ -31,7 +31,7 @@ const PromoPage: NextPageWithLayout = () => {
                 variant="outline"
                 className="inline-flex border-promo-primary text-promo-primary hover:bg-promo-primary hover:text-promo-primary-foreground"
                 onClick={() => window.open('https://seller.sancan.ru/login', '_blank')}
-                style={{ backgroundColor: 'var(--color-accent)' }}
+                style={{ backgroundColor: 'rgba(224, 243, 22, 1)' }}
               >
                 Войти в кабинет
               </Button>
@@ -55,7 +55,7 @@ const PromoPage: NextPageWithLayout = () => {
                 variant="outline"
                 className="hidden md:inline-flex border-promo-primary text-promo-primary hover:bg-promo-primary hover:text-promo-primary-foreground"
                 onClick={() => window.open('https://seller.sancan.ru/login', '_blank')}
-                style={{ backgroundColor: 'var(--color-accent)' }}
+                style={{ backgroundColor: 'rgba(224, 243, 22, 1)' }}
               >
                 Стать продавцом
               </Button>
@@ -315,10 +315,10 @@ const PromoPage: NextPageWithLayout = () => {
               <Card className="bg-white dark:bg-dark-300 border border-light-500 dark:border-dark-600 p-6 rounded-2xl hover:scale-105 transition-transform">
                 <div className="space-y-3">
                   <h3 className="text-xl font-bold text-dark dark:text-light">
-                    Продажа цифровых товаров
+                    Доставка ТК СДЭК
                   </h3>
                   <p className="text-dark/70 dark:text-light/70">
-                    Как зарабатывать без логистики
+                    Почему это выгодно
                   </p>
                   <button className="text-brand hover:text-brand-dark p-0 h-auto font-semibold">
                     Читать →

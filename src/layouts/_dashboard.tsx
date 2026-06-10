@@ -17,16 +17,16 @@ export default function DashboardLayout({
       initial="exit"
       animate="enter"
       exit="exit"
-      className="app-shell flex min-h-full flex-col lg:min-h-[auto]"
+      className="flex min-h-full flex-col bg-light dark:bg-dark-100 lg:min-h-[auto] lg:bg-light-300"
     >
       <Header />
       <motion.div
         variants={fadeInBottom()}
-        className="container mx-auto my-6 w-full max-w-[1320px] flex-1 pt-14 md:my-8 sm:pt-[58px]"
+        className="mx-auto my-6 w-full max-w-screen-xl flex-1 px-4 sm:my-8 sm:px-5 md:my-10 xl:my-12 3xl:my-14"
       >
-        <div className="app-surface-panel flex w-full flex-col lg:min-h-[70vh] lg:flex-row 2xl:min-h-[630px]">
+        <div className="flex w-full flex-col rounded-lg lg:min-h-[70vh] lg:flex-row lg:shadow-card 2xl:min-h-[630px]">
           <Sidebar />
-          <main className="flex w-full flex-grow flex-col lg:flex-grow-0 lg:bg-app-surface lg:layout-block-24 xl:layout-block-32">
+          <main className="flex w-full flex-grow flex-col lg:flex-grow-0 lg:bg-light lg:py-8 lg:px-12 lg:dark:bg-dark-250">
             <AnimatePresence
               mode="wait"
               initial={false}

@@ -174,7 +174,7 @@ const SavedAddresses: React.FC = () => {
                       <button
                         onClick={handleSaveTitle}
                         disabled={isUpdating || !editTitle.trim()}
-                        className="px-2 py-1 bg-brand text-white text-xs rounded hover:bg-brand-700 disabled:opacity-50"
+                        className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 disabled:opacity-50"
                       >
                         ✓
                       </button>

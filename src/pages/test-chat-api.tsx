@@ -296,7 +296,7 @@ const TestChatAPI: NextPageWithLayout = () => {
                   key={index}
                   className={`border rounded-lg p-4 ${
                     result.status === 'success'
-                      ? 'bg-brand-50 border-brand-200'
+                      ? 'bg-green-50 border-green-200'
                       : result.status === 'error'
                       ? 'bg-red-50 border-red-200'
                       : 'bg-gray-50 border-gray-200'
@@ -307,7 +307,7 @@ const TestChatAPI: NextPageWithLayout = () => {
                     <span
                       className={`px-3 py-1 rounded text-sm font-medium ${
                         result.status === 'success'
-                          ? 'bg-brand-100 text-brand-800'
+                          ? 'bg-green-100 text-green-800'
                           : result.status === 'error'
                           ? 'bg-red-100 text-red-800'
                           : 'bg-gray-100 text-gray-800'
@@ -352,8 +352,8 @@ const TestChatAPI: NextPageWithLayout = () => {
                   )}
 
                   {result.data && (
-                    <div className="mt-3 p-3 bg-brand-100 rounded border border-brand-200">
-                      <p className="font-semibold text-brand-800 mb-2">Данные ответа:</p>
+                    <div className="mt-3 p-3 bg-green-100 rounded border border-green-200">
+                      <p className="font-semibold text-green-800 mb-2">Данные ответа:</p>
                       <pre className="text-xs overflow-auto max-h-60 bg-white p-2 rounded">
                         {JSON.stringify(result.data, null, 2)}
                       </pre>

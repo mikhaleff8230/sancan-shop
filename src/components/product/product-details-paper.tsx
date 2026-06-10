@@ -93,9 +93,9 @@ export default function ProductDetailsPaper({ product, className }: Props) {
           <Link
             href={external_product_url}
             target="_blank"
-            className="transition-fill-colors pointer-events-auto relative mt-2.5 flex min-h-[46px] w-full flex-1 cursor-pointer items-center justify-center gap-2 rounded border-0 bg-[linear-gradient(90deg,#C7E2F9_0%,var(--color-accent)_100%)] py-3 px-4 font-semibold text-white opacity-100 duration-200 hover:opacity-95 focus:opacity-95 xs:mt-0 sm:h-12 md:px-5"
+            className="transition-fill-colors pointer-events-auto relative mt-2.5 flex min-h-[46px] w-full flex-1 cursor-pointer items-center justify-center gap-2 rounded bg-brand py-3 px-4 font-semibold text-white opacity-100 duration-200 hover:bg-brand-dark focus:bg-brand-dark xs:mt-0 sm:h-12 md:px-5"
           >
-            {external_product_button_text || 'Купить'}
+            {external_product_button_text}
           </Link>
         ) : !isFreeItem ? (
           <AddToCart

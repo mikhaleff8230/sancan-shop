@@ -181,7 +181,7 @@ const PvzModal: React.FC<PvzModalProps> = ({ onClose, onSelect, allowSaveToProfi
                   <div className="flex items-center gap-2">
                     <span className={`inline-block px-2 py-1 text-xs rounded ${
                       pvz.service === 'sdek' 
-                        ? 'bg-brand-100 text-brand-800' 
+                        ? 'bg-green-100 text-green-800' 
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
                       {pvz.service.toUpperCase()}
@@ -203,7 +203,7 @@ const PvzModal: React.FC<PvzModalProps> = ({ onClose, onSelect, allowSaveToProfi
                   </button>
                   {allowSaveToProfile && me && (
                     <button
-                      className="px-3 py-1 bg-brand text-white text-sm rounded hover:bg-brand-700 transition disabled:opacity-50"
+                      className="px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600 transition disabled:opacity-50"
                       onClick={() => handleSavePvzToProfile(pvz)}
                       disabled={isSaving}
                     >

@@ -32,10 +32,10 @@ export default function ProductPriceBlock({
   return (
     <motion.div 
       variants={fadeInBottom()}
-      className={`app-surface-panel rounded-app-md layout-block-24 ${className}`}
+      className={`sancan-ozon-card p-5 shadow-[0_8px_24px_rgba(23,33,43,0.05)] ${className}`}
     >
       {/* Название товара */}
-      <h1 className="mb-3 text-2xl font-bold text-light">
+      <h1 className="mb-3 text-xl font-bold leading-tight text-ozon-text">
         {product.name}
       </h1>
 
@@ -45,11 +45,11 @@ export default function ProductPriceBlock({
           <>
             <div className="flex items-center">
               <StarIcon className="h-4 w-4 text-yellow-400" />
-              <span className="ml-1 text-sm font-medium text-dark dark:text-light">
+              <span className="ml-1 text-sm font-medium text-ozon-text">
                 {product.ratings.toFixed(1)}
               </span>
             </div>
-            <span className="text-sm text-app-muted">
+            <span className="text-sm text-ozon-muted">
               {product.total_reviews > 0 ? (
                 `(${product.total_reviews} ${t('text-reviews')})`
               ) : (
@@ -58,7 +58,7 @@ export default function ProductPriceBlock({
             </span>
           </>
         ) : (
-          <span className="text-sm text-app-muted">
+          <span className="text-sm text-ozon-muted">
             {t('text-no-rating')}
           </span>
         )}
@@ -67,17 +67,17 @@ export default function ProductPriceBlock({
       {/* Цена */}
       <div className="mb-6">
         <div className="flex items-center space-x-3">
-          <span className="text-3xl font-bold text-light">
+          <span className="text-3xl font-bold text-ozon-pink">
             {isFreeItem ? t('text-free') : price}
           </span>
           {!isFreeItem && basePrice && basePrice !== price && (
-            <span className="text-lg text-app-muted line-through">
+            <span className="text-lg text-ozon-muted line-through">
               {basePrice}
             </span>
           )}
         </div>
         {!isFreeItem && basePrice && basePrice !== price && (
-          <span className="text-sm text-brand font-medium">
+          <span className="text-sm font-medium text-emerald-600">
             -{Math.round(((parseFloat(basePrice.replace(/[^\d.]/g, '')) - parseFloat(price.replace(/[^\d.]/g, ''))) / parseFloat(basePrice.replace(/[^\d.]/g, ''))) * 100)}% {t('text-discount')}
           </span>
         )}
@@ -90,36 +90,36 @@ export default function ProductPriceBlock({
             <Link
               href={product.external_product_url}
               target="_blank"
-            className="flex-1 flex items-center justify-center gap-2 rounded-app-sm border-0 bg-[linear-gradient(90deg,#C7E2F9_0%,var(--color-accent)_100%)] px-6 py-3 text-base font-semibold leading-6 tracking-normal text-white transition-opacity hover:opacity-95"
+              className="sancan-ozon-button flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-semibold leading-6 tracking-normal"
             >
               <ShoppingCartIcon className="h-5 w-5" />
-              {product.external_product_button_text || 'Купить'}
+              {product.external_product_button_text || t('text-add-to-cart')}
             </Link>
           ) : !isFreeItem ? (
             <AddToCart
               item={product}
               withPrice={false}
-              className="flex-1 flex items-center justify-center gap-2 border-0 bg-[linear-gradient(90deg,#C7E2F9_0%,var(--color-accent)_100%)] text-white font-semibold py-3 px-6 rounded-lg transition-opacity hover:opacity-95 text-base leading-6 tracking-normal"
+              className="sancan-ozon-button flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-semibold leading-6 tracking-normal"
             />
           ) : (
             <FreeDownloadButton
               productId={product.id}
               productSlug={product.slug}
               productName={product.name}
-              className="flex-1 flex items-center justify-center gap-2 border-0 bg-[linear-gradient(90deg,#C7E2F9_0%,var(--color-accent)_100%)] text-white font-semibold py-3 px-6 rounded-lg transition-opacity hover:opacity-95 text-base leading-6 tracking-normal"
+              className="sancan-ozon-button flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-semibold leading-6 tracking-normal"
             />
           )}
           {/* Иконка избранного в той же строке справа */}
           <FavoriteButton 
             productId={product.id}
-            className="flex h-12 w-12 items-center justify-center text-app-muted transition-colors hover:text-brand"
+            className="flex h-12 w-12 items-center justify-center rounded-xl bg-light-200 text-ozon-muted transition-colors hover:text-ozon-pink"
           />
         </div>
       </div>
 
       {/* Кнопка ссылки на маркетплейс */}
       {product.preview_url && (
-        <div className="mt-6 border-t border-white/10 pt-4">
+        <div className="mt-6 border-t border-ozon-border pt-4">
           {(() => {
             const previewUrl = product.preview_url;
             const previewUrlLower = previewUrl.toLowerCase();
@@ -152,7 +152,7 @@ export default function ProductPriceBlock({
                 href={previewUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex cursor-pointer items-center gap-3 rounded-app-sm border border-white/10 bg-app-card/45 p-3.5 transition-all duration-200 hover:border-white/20 hover:bg-app-card"
+                className="group flex cursor-pointer items-center gap-3 rounded-xl border border-ozon-border bg-light-100 p-3.5 transition-all duration-200 hover:border-brand hover:bg-brand-50"
               >
                 {/* Иконка (favicon) */}
                 {faviconUrl && (
@@ -169,7 +169,7 @@ export default function ProductPriceBlock({
                 )}
                 
                 {/* Текст ссылки */}
-                <span className="text-sm font-medium text-light transition-colors group-hover:text-brand">
+                <span className="text-sm font-medium text-ozon-text transition-colors group-hover:text-brand">
                   {linkText}
                 </span>
               </Link>

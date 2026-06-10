@@ -13,7 +13,7 @@ export default function TestPlaceDetailPage({ apiStatus, placeData, error }: Tes
       
       <div className="mb-4">
         <h2 className="text-lg font-semibold">Статус API:</h2>
-        <p className="text-brand">{apiStatus}</p>
+        <p className="text-green-600">{apiStatus}</p>
       </div>
       
       {error && (

@@ -11,67 +11,10 @@ import Link from '@/components/ui/link';
 import routes from '@/config/routes';
 import { getReview } from '@/lib/get-reviews';
 import Button from '@/components/ui/button';
-import { OrderStatus, PaymentStatus } from '@/types';
+import { PaymentStatus } from '@/types';
 import { useMutation } from '@tanstack/react-query';
 import client from '@/data/client';
 import { DownloadIcon } from '@/components/icons/download-icon';
-import toast from 'react-hot-toast';
-
-function isPaymentSuccessful(status?: string, orderStatus?: string): boolean {
-  if (!status) return false;
-  const normalized = String(status).toLowerCase().trim();
-  const normalizedOrder = String(orderStatus ?? '').toLowerCase().trim();
-  return (
-    normalized === PaymentStatus.SUCCESS ||
-    normalized === 'success' ||
-    normalized === 'paid' ||
-    normalizedOrder === OrderStatus.COMPLETED
-  );
-}
-
-function getDigitalFileDisplayName(record: any): string {
-  const fileName =
-    record?.digital_file?.file_name ||
-    record?.digital_file?.name ||
-    record?.digital_file_name;
-
-  if (typeof fileName === 'string' && fileName.trim()) {
-    return fileName;
-  }
-
-  const rawUrl =
-    record?.digital_file?.url ||
-    record?.digital_file?.original ||
-    record?.digital_file?.thumbnail;
-  if (!rawUrl || typeof rawUrl !== 'string') return '';
-
-  try {
-    const clean = decodeURIComponent(rawUrl.split('?')[0]);
-    return clean.substring(clean.lastIndexOf('/') + 1);
-  } catch {
-    const clean = rawUrl.split('?')[0];
-    return clean.substring(clean.lastIndexOf('/') + 1);
-  }
-}
-
-function productAccessLabel(type?: string): string {
-  switch (type) {
-    case 'file':
-      return 'Скачать';
-    case 'prompt':
-      return 'Промпт';
-    case 'link':
-      return 'Ссылка';
-    case 'account':
-      return 'Доступ';
-    case 'subscription':
-      return 'Подписка';
-    case 'key':
-      return 'Ключ';
-    default:
-      return 'Доступ';
-  }
-}
 
 //FIXME: need to fix this usePrice hooks issue within the table render we may check with nested property
 const OrderItemList = (_: any, record: any) => {
@@ -115,11 +58,6 @@ const OrderItemList = (_: any, record: any) => {
         <span className="text-accent mb-1 inline-block overflow-hidden truncate text-sm font-semibold">
           {price}
         </span>
-        {getDigitalFileDisplayName(record) && (
-          <span className="text-xs text-body truncate">
-            Файл: {getDigitalFileDisplayName(record)}
-          </span>
-        )}
       </div>
     </div>
   );
@@ -127,96 +65,30 @@ const OrderItemList = (_: any, record: any) => {
 export const OrderItems = ({
   products,
   orderId,
-  trackingNumber,
-  buyerEmail,
   status,
-  orderStatus,
 }: {
   products: any;
   orderId: any;
-  trackingNumber?: string;
-  buyerEmail?: string;
   status: PaymentStatus;
-  orderStatus?: OrderStatus | string;
 }) => {
   const { t } = useTranslation('common');
-  const { alignLeft } = useIsRTL();
+  const { alignLeft, alignRight } = useIsRTL();
   const { openModal } = useModalAction();
 
-  const getStatus = isPaymentSuccessful(status, orderStatus);
+  const getStatus = status === PaymentStatus.SUCCESS;
 
-  const { mutate: requestProductAccess } = useMutation(
-    ({
-      productId,
-      productType,
-      fileName,
-    }: {
-      productId: string | number;
-      productType?: string;
-      fileName: string;
-    }) =>
-      client.products.access(productId, {
-        tracking_number: trackingNumber,
-        ...(buyerEmail ? { email: buyerEmail } : {}),
-      }),
-    {
-      onSuccess: (response, variables) => {
-        const type = response?.type || variables.productType || 'file';
-        const payload = response?.payload ?? {};
+  const { mutate } = useMutation(client.orders.generateDownloadLink, {
+    onSuccess: (data, name) => {
+      function download(fileUrl: string, fileName: string) {
+        var a = document.createElement('a');
+        a.href = fileUrl;
+        a.setAttribute('download', fileName);
+        a.click();
+      }
 
-        if (type === 'file' && payload?.download_url) {
-          const a = document.createElement('a');
-          a.href = payload.download_url;
-          a.setAttribute('download', variables.fileName || 'digital-file');
-          a.click();
-          return;
-        }
-
-        if (type === 'link' && payload?.external_url) {
-          window.open(payload.external_url, '_blank', 'noopener,noreferrer');
-          return;
-        }
-
-        if (type === 'prompt' && payload?.prompt_text) {
-          navigator.clipboard
-            .writeText(payload.prompt_text)
-            .then(() => toast.success('Промпт скопирован в буфер обмена'))
-            .catch(() => toast('Промпт получен, но не удалось скопировать автоматически'));
-          return;
-        }
-
-        if (type === 'account' || type === 'subscription' || type === 'key') {
-          let text: string;
-          if (type === 'key') {
-            text =
-              payload?.license_key != null
-                ? String(payload.license_key)
-                : JSON.stringify(payload?.key_data ?? {}, null, 2);
-          } else if (type === 'subscription') {
-            text = payload?.expires_at
-              ? JSON.stringify(
-                  {
-                    expires_at: payload.expires_at,
-                    subscription_data: payload.subscription_data,
-                  },
-                  null,
-                  2
-                )
-              : JSON.stringify(payload?.subscription_data ?? {}, null, 2);
-          } else {
-            text = JSON.stringify(payload?.account_data ?? {}, null, 2);
-          }
-          navigator.clipboard
-            .writeText(text)
-            .then(() => toast.success('Данные доступа скопированы в буфер обмена'))
-            .catch(() => toast('Данные доступа получены'));
-        }
-      },
-      onError: () => {
-        toast.error('Доступ к этому товару недоступен.');
-      },
-    }
-  );
+      download(data, name);
+    },
+  });
 
   const openReviewModal = (record: any) => {
     openModal('REVIEW_RATING', {
@@ -258,10 +130,6 @@ export const OrderItems = ({
       align: alignLeft,
       width: 250,
       render: function RenderReview(_: any, record: any) {
-        const productType = record?.digital_product_type || 'file';
-        const productIdForAccess = record?.pivot?.product_id || record?.id;
-        const canDownload = getStatus && Boolean(productIdForAccess);
-
         return (
           <div className="flex items-center justify-end gap-4">
             <button
@@ -277,22 +145,18 @@ export const OrderItems = ({
                 ? t('text-update-review')
                 : t('text-write-review')}
             </button>
-            <Button
+            {/* <Button
               onClick={() =>
-                canDownload
-                  ? requestProductAccess({
-                      productId: productIdForAccess,
-                      productType,
-                      fileName: record?.name || 'digital-file',
-                    })
+                getStatus
+                  ? mutate(record?.digital_file?.fileable_id, record?.name)
                   : null
               }
-              disabled={!canDownload}
+              disabled={getStatus ? false : true}
               className="shrink-0"
             >
               <DownloadIcon className="h-auto w-4" />
-              {productAccessLabel(productType)}
-            </Button>
+              {t('text-download')}
+            </Button> */}
           </div>
         );
       },

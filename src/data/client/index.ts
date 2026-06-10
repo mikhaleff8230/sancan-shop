@@ -163,14 +163,6 @@ class Client {
       
       return HttpClient.get<ProductPaginator>(API_ENDPOINTS.PRODUCTS, queryParams);
     },
-    access: (
-      productId: number | string,
-      query?: { tracking_number?: string; email?: string; access_email?: string }
-    ) =>
-      HttpClient.get<any>(
-        API_ENDPOINTS.PRODUCTS_ACCESS.replace('{id}', String(productId)),
-        query
-      ),
   };
   categories = {
     all: (query?: CategoryQueryOptions) =>
@@ -213,8 +205,8 @@ class Client {
           is_active: 1,
         }),
       }),
-    get: (slug: string, language?: string) =>
-      HttpClient.get<Shop>(`${API_ENDPOINTS.SHOPS}/${slug}`, language ? { language } : undefined),
+    get: (slug: string) =>
+      HttpClient.get<Shop>(`${API_ENDPOINTS.SHOPS}/${slug}`),
   };
   orders = {
     all: (query?: OrderQueryOptions) =>
@@ -238,27 +230,8 @@ class Client {
         API_ENDPOINTS.ORDERS_CHECKOUT_VERIFY,
         data
       ),
-    createDigital: (productId: number | string) =>
-      HttpClient.post<any>(API_ENDPOINTS.ORDERS_CREATE_DIGITAL, { productId }),
-    paymentSuccess: (orderId: number | string) =>
-      HttpClient.post<any>(API_ENDPOINTS.PAYMENTS_SUCCESS, { orderId }),
-    confirmYooKassaPayment: async (input: { tracking_number: string; payment_id?: string }) => {
-      try {
-        return await HttpClient.post<any>(API_ENDPOINTS.PAYMENTS_YOOKASSA_CONFIRM, input);
-      } catch (error: any) {
-        if (error?.response?.status === 404) {
-          // Фоллбек для окружений, где API обслуживается под префиксом /api.
-          return HttpClient.post<any>(`/api${API_ENDPOINTS.PAYMENTS_YOOKASSA_CONFIRM}`, input);
-        }
-        throw error;
-      }
-    },
     create: (data: CreateOrderInput) =>
       HttpClient.post<Order>(API_ENDPOINTS.ORDERS, data),
-    downloadPurchasedProduct: (productId: number | string) =>
-      HttpClient.get<{ download_url: string }>(
-        API_ENDPOINTS.PRODUCTS_DOWNLOAD_PROTECTED.replace('{id}', String(productId))
-      ),
     getPaymentIntent: ({
       tracking_number,
       payment_gateway,
@@ -451,8 +424,10 @@ class Client {
       HttpClient.get<any>(API_ENDPOINTS.PLACES, query),
     feed: (query?: { limit?: number; cursor?: string; hashtag_slug?: string }) =>
       HttpClient.get<any>(API_ENDPOINTS.PLACES_FEED, query),
-    similar: (id: string | number, query?: { limit?: number; cursor?: string }) =>
-      HttpClient.get<any>(API_ENDPOINTS.PLACES_SIMILAR.replace('{id}', id.toString()), query),
+    similar: (id: string | number, query?: { limit?: number; cursor?: string }) => {
+      const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+      return HttpClient.get<any>(API_ENDPOINTS.PLACES_SIMILAR.replace('{id}', numericId.toString()), query);
+    },
     get: (id: string) =>
       HttpClient.get<any>(`${API_ENDPOINTS.PLACES}/${id}`),
     create: (data: FormData) =>
