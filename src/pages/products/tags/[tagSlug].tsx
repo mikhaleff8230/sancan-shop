@@ -2,7 +2,8 @@ import DynamicProductGrid from '@/components/product/dynamic-grid';
 import { TitleSeo } from '@/components/seo/title-seo';
 import client from '@/data/client';
 import { API_ENDPOINTS } from '@/data/client/endpoints';
-import Layout from '@/layouts/_layout';
+import MarketplaceLayout from '@/layouts/_marketplace-layout';
+import MarketplacePageShell, { MarketplacePageHeader } from '@/components/layout/marketplace-page-shell';
 import type { NextPageWithLayout, Tag } from '@/types';
 import type {
   GetServerSideProps,
@@ -82,26 +83,17 @@ const TagPage: NextPageWithLayout<
   const canonicalUrl = `${baseUrl}/products/tags/${tag.slug}`;
 
   return (
-    <>
-      <TitleSeo 
-        title={tag.name}
-        canonical={canonicalUrl}
-      />
-      <div className="flex flex-col items-center justify-between gap-1.5 px-4 pt-5 pb-6 xs:flex-row md:px-6 md:pt-6 lg:px-7 3xl:px-8">
-        <h2 className="font-medium capitalize text-dark-100 dark:text-light">
-          #{tag.name}
-        </h2>
+    <MarketplacePageShell>
+      <TitleSeo title={tag.name} canonical={canonicalUrl} />
+      <MarketplacePageHeader title={`#${tag.name}`} subtitle="Товары по тегу" />
+      <div className="pt-4">
+        <DynamicProductGrid limit={45} filters={filters} showLoadMore className="px-0 pt-0" />
       </div>
-      <DynamicProductGrid
-        limit={45}
-        filters={filters}
-        showLoadMore={true}
-      />
-    </>
+    </MarketplacePageShell>
   );
 };
 
 TagPage.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
+  return <MarketplaceLayout>{page}</MarketplaceLayout>;
 };
 export default TagPage;

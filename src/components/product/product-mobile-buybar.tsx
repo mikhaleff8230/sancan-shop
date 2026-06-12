@@ -60,14 +60,13 @@ export default function ProductMobileBuyBar({ product }: Props) {
   const disabled = isInStock(product?.id);
 
   return (
-    <div className="fixed left-0 right-0 z-40 bottom-[56px] xs:bottom-[72px] sm:bottom-0 lg:hidden border-t border-light-400/20 bg-light-100/50 backdrop-blur-sm dark:border-dark-400/20 dark:bg-dark-200/50">
-      <div className="mx-auto max-w-screen-lg px-4 py-3">
+    <div className="fixed bottom-[56px] left-0 right-0 z-40 border-t border-ozon-border bg-white/95 backdrop-blur-sm xs:bottom-[72px] sm:bottom-0 lg:hidden">
+      <div className="mx-auto max-w-[1440px] px-4 py-3">
         {product.is_external ? (
           <Link
             href={product.external_product_url}
             target="_blank"
-            className="flex w-full items-center justify-center rounded-lg bg-brand px-4 py-3 font-semibold hover:bg-brand-dark text-base leading-6 tracking-normal"
-            style={{ color: '#232323' }}
+            className="sancan-ozon-button flex w-full items-center justify-center px-4 py-3 text-base font-semibold leading-6"
           >
             В корзину
           </Link>
@@ -76,8 +75,7 @@ export default function ProductMobileBuyBar({ product }: Props) {
             onClick={handleAddToCart}
             isLoading={isLoading}
             disabled={disabled}
-            className="w-full rounded-lg bg-brand px-4 py-3 font-semibold hover:bg-brand-dark text-base leading-6 tracking-normal"
-            style={{ color: '#232323' }}
+            className="sancan-ozon-button w-full px-4 py-3 text-base font-semibold leading-6"
           >
             В корзину
           </Button>
@@ -86,8 +84,7 @@ export default function ProductMobileBuyBar({ product }: Props) {
             onClick={handleFreeDownload}
             isLoading={isLoading}
             disabled={disabled}
-            className="w-full rounded-lg bg-brand px-4 py-3 font-semibold hover:bg-brand-dark text-base leading-6 tracking-normal"
-            style={{ color: '#232323' }}
+            className="sancan-ozon-button w-full px-4 py-3 text-base font-semibold leading-6"
           >
             В корзину
           </Button>

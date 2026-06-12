@@ -83,6 +83,17 @@ export default function ProductPriceBlock({
         )}
       </div>
 
+      <div className="sancan-ozon-trust-note mb-4 px-3 py-2.5">
+        Оплата товара — напрямую продавцу. SANCAN не принимает платёж за товар и помогает с безопасной сделкой и коммуникацией.
+      </div>
+
+      {product.shop?.name ? (
+        <div className="mb-4 rounded-xl border border-ozon-border bg-[#f8fafc] px-3 py-2.5 text-sm">
+          <span className="text-ozon-muted">Продавец: </span>
+          <span className="font-semibold text-ozon-text">{product.shop.name}</span>
+        </div>
+      ) : null}
+
       {/* Кнопки действий */}
       <div className="space-y-3">
         <div className="flex items-center gap-2">

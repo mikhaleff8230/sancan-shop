@@ -20,7 +20,7 @@ import { TitleSeo } from '@/components/seo/title-seo';
 import Image from '@/components/ui/image';
 import routes from '@/config/routes';
 import client from '@/data/client';
-import Layout from '@/layouts/_layout';
+import MarketplaceLayout from '@/layouts/_marketplace-layout';
 import {
   fadeInBottom,
   fadeInBottomWithScaleX,
@@ -322,20 +322,19 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
   // Если товара нет - показываем заглушку
   if (!product || !id) {
     return (
-      <Layout>
-        <div className="flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold">Товар не найден</h1>
-            <p className="mt-2">Попробуйте поискать другой товар</p>
-            <button 
-              onClick={() => router.push('/')}
-              className="mt-4 rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              На главную
-            </button>
-          </div>
+      <div className="sancan-ozon-page flex min-h-[60vh] items-center justify-center">
+        <div className="sancan-ozon-container text-center">
+          <h1 className="text-2xl font-bold text-ozon-text">Товар не найден</h1>
+          <p className="mt-2 text-ozon-muted">Попробуйте поискать другой товар</p>
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="sancan-ozon-button mt-4 px-5 py-2.5 text-sm font-semibold"
+          >
+            На главную
+          </button>
         </div>
-      </Layout>
+      </div>
     );
   }
 
@@ -622,7 +621,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
 };
 
 ProductPage.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
+  return <MarketplaceLayout>{page}</MarketplaceLayout>;
 };
 
 export default ProductPage;

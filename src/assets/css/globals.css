@@ -118,6 +118,25 @@
     border-color: var(--sancan-ozon-blue);
     color: var(--sancan-ozon-blue);
   }
+  .sancan-ozon-pill-active {
+    border: 1px solid var(--sancan-ozon-blue);
+    border-radius: 999px;
+    background: var(--sancan-ozon-blue);
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(0, 91, 255, 0.18);
+  }
+  .sancan-ozon-filter-bar {
+    border-bottom: 1px solid var(--sancan-ozon-border);
+    background: #fff;
+  }
+  .sancan-ozon-trust-note {
+    border: 1px solid #dbeafe;
+    background: #f0f7ff;
+    border-radius: 10px;
+    color: #1e3a5f;
+    font-size: 13px;
+    line-height: 1.45;
+  }
   @media (min-width: 1024px) {
     .sancan-ozon-container {
       padding-left: 20px;

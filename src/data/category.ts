@@ -16,31 +16,24 @@ export function useCategories(options?: CategoryQueryOptions) {
     data,
     isLoading,
     error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
+    isFetching,
   } = useQuery<CategoryPaginator, Error>(
     [API_ENDPOINTS.CATEGORIES, formattedOptions],
-    ({ queryKey, pageParam }) =>
-      client.categories.all(Object.assign({}, queryKey[1], pageParam)),
+    ({ queryKey }) => client.categories.all(queryKey[1] as CategoryQueryOptions),
     {
-      getNextPageParam: ({ current_page, last_page }) =>
-        last_page > current_page && { page: current_page + 1 },
+      staleTime: 60_000,
+      refetchOnWindowFocus: false,
     }
   );
-  function handleLoadMore() {
-    fetchNextPage();
-  }
+
   return {
-    categories: Array.isArray(data?.pages) ? data.pages.flatMap((page) => page.data) : [],
-    paginatorInfo: Array.isArray(data?.pages)
-      ? data?.pages[data.pages.length - 1]
-      : null,
-    hasNextPage,
-    isLoadingMore: isFetchingNextPage,
+    categories: Array.isArray(data?.data) ? data.data : [],
+    paginatorInfo: data ?? null,
+    hasNextPage: data ? data.current_page < data.last_page : false,
+    isLoadingMore: isFetching && !isLoading,
     isLoading,
     error,
-    loadMore: handleLoadMore,
+    loadMore: () => {},
   };
 }
 

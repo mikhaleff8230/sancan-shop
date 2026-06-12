@@ -11,7 +11,7 @@ import { dehydrate, QueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import cn from 'classnames';
 import client from '@/data/client';
-import Layout from '@/layouts/_layout';
+import MarketplaceLayout from '@/layouts/_marketplace-layout';
 import Image from '@/components/ui/image';
 import { Tab } from '@/components/ui/tab';
 import DynamicProductGrid from '@/components/product/dynamic-grid';
@@ -244,7 +244,7 @@ const ShopPage: NextPageWithLayout<
 };
 
 ShopPage.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
+  return <MarketplaceLayout>{page}</MarketplaceLayout>;
 };
 
 export default ShopPage;

@@ -1,7 +1,7 @@
 import CategoryFilter from '@/components/product/category-filter';
 import DynamicProductGrid from '@/components/product/dynamic-grid';
 import { TitleSeo } from '@/components/seo/title-seo';
-import Layout from '@/layouts/_layout';
+import MarketplaceLayout from '@/layouts/_marketplace-layout';
 import type { NextPageWithLayout } from '@/types';
 import type { GetStaticProps } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -154,7 +154,7 @@ const Home: NextPageWithLayout<HomePageProps> = () => {
 };
 
 Home.getLayout = function getLayout(page) {
-  return <Layout hideSidebar>{page}</Layout>;
+  return <MarketplaceLayout>{page}</MarketplaceLayout>;
 };
 
 export default Home;

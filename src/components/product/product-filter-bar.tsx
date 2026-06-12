@@ -10,6 +10,14 @@ import { useQuery } from '@tanstack/react-query';
 import client from '@/data/client';
 import { getColorHex } from '@/lib/utils/color-utils';
 import { useViewMode } from '@/components/product/grid-switcher';
+import cn from 'classnames';
+
+function ozonFilterPillClass(isActive: boolean) {
+  return cn(
+    'flex h-9 shrink-0 items-center gap-2 rounded-full border px-3.5 text-xs font-medium outline-none transition-colors',
+    isActive ? 'sancan-ozon-pill-active' : 'sancan-ozon-pill'
+  );
+}
 
 interface FilterItemProps {
   name: string;
@@ -53,11 +61,7 @@ function FilterItem({ name, isActive, onClick, icon }: FilterItemProps) {
   return (
     <button
       onClick={onClick}
-      className={`h-[30px] shrink-0 !rounded-full border py-1.5 px-3.5 text-xs font-medium outline-none flex items-center gap-2 ${
-        isActive
-          ? 'border-dark-100 bg-dark-100 text-light-100 transition-opacity duration-200 hover:opacity-90 focus:opacity-90 dark:border-light dark:bg-light dark:text-dark-100'
-          : 'border-light-500 bg-light-400 text-dark-100 hover:bg-light-500 dark:border-dark-500 dark:bg-dark-400 dark:text-light-100 hover:dark:bg-dark-500 hover:dark:text-light'
-      }`}
+      className={ozonFilterPillClass(isActive)}
     >
       {icon && <span className="h-4 w-4 flex items-center justify-center">{icon}</span>}
       {name}
@@ -962,7 +966,8 @@ export default function ProductFilterBar({ categoryId, onSortChange, onFilterCha
 
   return (
     <>
-      <div className="app-category-filter-bar relative flex min-h-[64px] w-full border-b border-light-400 bg-light-100 px-4 py-4 dark:border-dark-300 dark:bg-dark-100 sm:min-h-[70px] sm:px-5 sm:py-5 md:px-6 lg:px-7 3xl:px-8">
+      <div className="sancan-ozon-filter-bar app-category-filter-bar">
+        <div className="sancan-ozon-container relative flex min-h-[56px] w-full items-center py-3">
         <button
           title={t('text-prev')}
           ref={sliderPrevBtn}
@@ -1210,17 +1215,18 @@ export default function ProductFilterBar({ categoryId, onSortChange, onFilterCha
             </button>
           </div>
         </div>
-      </div>
+        </div>
 
-      <button
-        title={t('text-next')}
-        ref={sliderNextBtn}
-        onClick={() => scrollToTheRight()}
-        className="invisible absolute top-1/2 right-2 z-[1] -mt-3 flex h-6 w-6 items-center justify-end rounded-full text-dark-800 opacity-0 after:pointer-events-none after:absolute after:-top-2 after:right-1 after:-z-[1] after:block after:h-9 after:w-9 after:bg-gradient-to-l after:from-light-100 after:via-light-100 after:content-[''] hover:text-dark focus:text-dark dark:after:from-dark-100 dark:after:via-dark-100 dark:hover:text-light dark:focus:text-light sm:right-3 md:left-4 lg:left-6"
-      >
-        <ChevronRight className="h-[18px] w-[18px]" />
-      </button>
-    </div>
+        <button
+          title={t('text-next')}
+          ref={sliderNextBtn}
+          onClick={() => scrollToTheRight()}
+          className="invisible absolute top-1/2 right-0 z-[1] -mt-3 flex h-6 w-6 items-center justify-end rounded-full text-ozon-text opacity-0 hover:text-brand"
+        >
+          <ChevronRight className="h-[18px] w-[18px]" />
+        </button>
+        </div>
+      </div>
 
     {/* Мобильная панель фильтров с оверлеем */}
     {mobileFilterPanel.isOpen && typeof window !== 'undefined' && createPortal(

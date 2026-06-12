@@ -4,7 +4,8 @@ import type {
   TypeQueryOptions,
 } from '@/types';
 import type { GetStaticProps } from 'next';
-import Layout from '@/layouts/_layout';
+import MarketplaceLayout from '@/layouts/_marketplace-layout';
+import MarketplacePageShell, { MarketplacePageHeader } from '@/components/layout/marketplace-page-shell';
 import DynamicProductGrid from '@/components/product/dynamic-grid';
 import { useRouter } from 'next/router';
 import Seo from '@/layouts/_seo';
@@ -73,19 +74,27 @@ const Explore: NextPageWithLayout = () => {
   return (
     <>
       <Seo
-        title="UI Design Resources, UI Kits, Wireframes, Icons and More"
-        description="Fastest digital download template built with React, NextJS, TypeScript, React-Query and Tailwind CSS."
+        title="Каталог SANCAN"
+        description="Товары и предложения продавцов на маркетплейсе SANCAN."
         url={routes.home}
       />
-      <PromotionalSlider />
-      <CategoryFilter defaultActivePath={routes.explore} />
-      <Products />
+      <MarketplacePageShell
+        before={
+          <>
+            <PromotionalSlider />
+            <CategoryFilter defaultActivePath={routes.explore} />
+          </>
+        }
+      >
+        <MarketplacePageHeader title="Каталог" subtitle="Все товары маркетплейса" />
+        <Products />
+      </MarketplacePageShell>
     </>
   );
 };
 
 Explore.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
+  return <MarketplaceLayout>{page}</MarketplaceLayout>;
 };
 
 export default Explore;

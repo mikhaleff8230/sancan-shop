@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
-export default function handler(req, res) {
+export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const { error } = req.body;
     const logPath = path.join(process.cwd(), 'build.log');
