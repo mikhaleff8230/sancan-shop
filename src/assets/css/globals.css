@@ -6,8 +6,8 @@
 @import '../../styles/places.css';
 @layer base {
   :root {
-    --sancan-ozon-blue: #005bff;
-    --sancan-ozon-blue-dark: #004ad6;
+    --sancan-ozon-blue: #9f00ff;
+    --sancan-ozon-blue-dark: #7f00cc;
     --sancan-ozon-pink: #f91155;
     --sancan-ozon-bg: #f5f7fb;
     --sancan-ozon-card: #ffffff;
@@ -136,19 +136,81 @@
     border-radius: 999px;
     background: var(--sancan-ozon-blue);
     color: #fff;
-    box-shadow: 0 1px 2px rgba(0, 91, 255, 0.18);
+    box-shadow: 0 1px 2px rgba(159, 0, 255, 0.18);
   }
   .sancan-ozon-filter-bar {
     border-bottom: 1px solid var(--sancan-ozon-border);
     background: #fff;
   }
   .sancan-ozon-trust-note {
-    border: 1px solid #dbeafe;
-    background: #f0f7ff;
+    border: 1px solid #eab8ff;
+    background: #fbf2ff;
     border-radius: 10px;
-    color: #1e3a5f;
+    color: #520080;
     font-size: 13px;
     line-height: 1.45;
+  }
+  .bg-blue-50 {
+    background-color: #fbf2ff !important;
+  }
+  .bg-blue-100 {
+    background-color: #f4dcff !important;
+  }
+  .bg-blue-500,
+  .bg-blue-600,
+  .bg-blue-700 {
+    background-color: var(--sancan-ozon-blue) !important;
+  }
+  .hover\:bg-blue-50:hover {
+    background-color: #fbf2ff !important;
+  }
+  .hover\:bg-blue-100:hover,
+  .hover\:bg-blue-200:hover {
+    background-color: #f4dcff !important;
+  }
+  .hover\:bg-blue-500:hover,
+  .hover\:bg-blue-600:hover,
+  .hover\:bg-blue-700:hover {
+    background-color: var(--sancan-ozon-blue-dark) !important;
+  }
+  .text-blue-400,
+  .text-blue-500,
+  .text-blue-600,
+  .text-blue-700,
+  .text-blue-800 {
+    color: var(--sancan-ozon-blue) !important;
+  }
+  .hover\:text-blue-500:hover,
+  .hover\:text-blue-600:hover,
+  .hover\:text-blue-700:hover,
+  .hover\:text-blue-800:hover {
+    color: var(--sancan-ozon-blue-dark) !important;
+  }
+  .border-blue-200 {
+    border-color: #eab8ff !important;
+  }
+  .border-blue-300,
+  .hover\:border-blue-300:hover,
+  .hover\:border-blue-400:hover {
+    border-color: #dc86ff !important;
+  }
+  .border-blue-500,
+  .border-blue-600,
+  .hover\:border-blue-500:hover {
+    border-color: var(--sancan-ozon-blue) !important;
+  }
+  .ring-blue-200 {
+    --tw-ring-color: #eab8ff !important;
+  }
+  .ring-blue-500,
+  .focus\:ring-blue-500:focus {
+    --tw-ring-color: rgba(159, 0, 255, 0.38) !important;
+  }
+  .focus\:border-blue-500:focus {
+    border-color: var(--sancan-ozon-blue) !important;
+  }
+  .accent-blue-500 {
+    accent-color: var(--sancan-ozon-blue) !important;
   }
   .sancan-ozon-spec-row {
     display: grid;

@@ -312,15 +312,23 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
     <div ref={menuRef} className="relative inline-block text-left">
       <button
         className={compact
-          ? `px-3 py-1.5 text-sm font-bold border border-gray-300 rounded-full transition-all duration-200 focus:outline-none flex items-center justify-center hover:bg-brand hover:text-dark-900 ${isOpen ? 'text-black bg-gray-100' : 'text-gray-800 bg-white'}`
-          : `px-5 py-2 text-base font-bold border border-gray-300 rounded-full transition-all duration-200 focus:outline-none flex items-center justify-center hover:bg-brand hover:text-dark-900 ${isOpen ? 'text-black bg-gray-100' : 'text-gray-800 bg-white'}`
+          ? `flex h-10 items-center justify-center gap-2 rounded-xl border border-brand bg-brand px-4 text-sm font-bold text-white shadow-[0_8px_18px_rgba(159,0,255,0.22)] transition-all duration-200 hover:bg-brand-dark focus:outline-none`
+          : `flex h-11 items-center justify-center gap-2 rounded-xl border border-brand bg-brand px-5 text-[15px] font-bold text-white shadow-[0_8px_18px_rgba(159,0,255,0.22)] transition-all duration-200 hover:bg-brand-dark focus:outline-none`
         }
         style={{ minWidth: compact ? 90 : 135 }}
         onClick={handleToggleMenu}
       >
+        {!isOpen ? (
+          <span className="grid h-4 w-4 shrink-0 grid-cols-2 gap-1" aria-hidden="true">
+            <span className="rounded-[3px] bg-white" />
+            <span className="rounded-[3px] bg-white" />
+            <span className="rounded-[3px] bg-white" />
+            <span className="rounded-[3px] bg-white" />
+          </span>
+        ) : null}
         Каталог
         {isOpen && (
-          <span className="ml-2 text-lg font-normal">×</span>
+          <span className="text-lg font-normal leading-none">×</span>
         )}
       </button>
       {/* Мега-меню: десктоп и планшет */}
@@ -483,44 +491,46 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
 		  
           {/* Десктоп/планшет: широкое меню */}
           {/* Полностью скрываем на мобильных устройствах, показываем только на sm и выше */}
-          <div className="absolute left-0 mt-0 z-50 w-[1280px] h-[calc(100vh-80px)] bg-white border border-gray-200 rounded-bl-2xl rounded-br-2xl shadow-2xl animate-fade-in overflow-hidden !hidden sm:!flex">
+          <div className="absolute left-0 top-full z-[120] mt-2 h-[calc(100vh-88px)] w-[min(1280px,calc(100vw-24px))] animate-fade-in overflow-hidden rounded-b-2xl border border-[#dfe5ef] bg-white shadow-[0_18px_44px_rgba(15,23,42,0.18)] !hidden sm:!flex">
             {/* Левая панель */}
-            <div className="w-72 border-r border-gray-100 bg-gray-50 py-6 flex flex-col transition-all duration-200 overflow-y-auto h-full">
+            <div className="flex h-full w-[286px] shrink-0 flex-col overflow-y-auto border-r border-[#e8edf5] bg-[#f7f9fc] px-3 py-3 transition-all duration-200">
               {categoriesData.map((cat) => (
                 <Link prefetch={false}
                   key={cat.id}
                   href={`/categories/${cat.slug}`}
-                  className={`flex items-center gap-3 px-6 py-3 cursor-pointer text-gray-700 hover:bg-brand/10 hover:text-brand transition-all duration-150 relative text-lg tracking-tight ${activeCategory === cat.id ? 'bg-brand/10 text-brand font-semibold border-l-4 border-brand' : 'border-l-4 border-transparent'}`}
+                  className={`relative flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl px-4 py-2 text-[15px] font-medium leading-5 transition-all duration-150 ${activeCategory === cat.id ? 'bg-[#f1e6ff] text-brand shadow-sm' : 'text-[#1f2937] hover:bg-white hover:text-brand'}`}
                   onMouseEnter={() => setActiveCategory(String(cat.id))}
                   onClick={handleLinkClick}
                 >
-                  <span className="text-lg">{getCategoryIcon(cat.icon)}</span>
-                  <span>{cat.name}</span>
+                  <span className={activeCategory === cat.id ? 'text-brand' : 'text-[#9aa4b2]'}>
+                    {getCategoryIcon(cat.icon)}
+                  </span>
+                  <span className="truncate">{cat.name}</span>
                 </Link>
               ))}
             </div>
             {/* Центральная часть с колонками */}
-            <div className="flex-1 flex flex-col p-8 relative bg-white overflow-y-auto h-full">
+            <div className="relative flex h-full flex-1 flex-col overflow-y-auto bg-white px-8 py-6">
               {/* Название родительской категории */}
               {activeCatObj && (
-                <div className="text-2xl font-extrabold text-gray-900 mb-6 pl-2 tracking-tight">{activeCatObj.name}</div>
+                <div className="mb-6 text-[26px] font-extrabold leading-tight tracking-[-0.01em] text-[#111827]">{activeCatObj.name}</div>
               )}
-              <div className="flex flex-row gap-10">
+              <div className="grid grid-cols-3 gap-x-14 gap-y-2">
                 {activeCatObj ? (
                   activeCatObj.columns.map((col, idx) => (
-                    <div key={idx} className="min-w-[220px] pr-6">
+                    <div key={idx} className="min-w-0">
                       {col.sections.map((section: any, i: number) => (
-                        <div key={i} className="mb-6">
+                        <div key={i} className="mb-5 break-inside-avoid">
                           {section.slug && section.slug !== '#' ? (
                             <Link prefetch={false}
                               href={`/categories/${section.slug}`}
-                              className="font-bold mb-2 text-gray-900 text-base hover:text-brand cursor-pointer transition-colors block"
+                              className="mb-2 block cursor-pointer text-[16px] font-bold leading-5 text-[#111827] transition-colors hover:text-brand"
                               onClick={handleLinkClick}
                             >
                               {section.title}
                             </Link>
                           ) : (
-                            <div className="font-bold mb-2 text-gray-900 text-base">{section.title}</div>
+                            <div className="mb-2 text-[16px] font-bold leading-5 text-[#111827]">{section.title}</div>
                           )}
                           {section.items && section.items.length > 0 && (
                             <ul>
@@ -528,7 +538,7 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
                                 <li key={j}>
                                   <Link prefetch={false}
                                     href={`/categories/${item.slug}`}
-                                    className="block py-1.5 text-gray-600 hover:text-brand cursor-pointer text-[15px] transition-colors"
+                                    className="block cursor-pointer py-1 text-[14px] font-medium leading-5 text-[#667085] transition-colors hover:text-brand"
                                     onClick={handleLinkClick}
                                   >
                                     {item.name}

@@ -25,7 +25,7 @@ export default function ProductTags({
           <AnchorLink
             key={tag.id}
             href={routes.tagUrl(tag.slug)}
-            className="inline-flex items-center justify-center rounded-full bg-[#f0f5fb] px-4 py-2 text-sm font-semibold text-ozon-blue transition hover:bg-[#e4efff]"
+            className="inline-flex items-center justify-center rounded-full bg-[#f0f5fb] px-4 py-2 text-sm font-semibold text-ozon-blue transition hover:bg-[#f4dcff]"
           >
             #{tag.name}
           </AnchorLink>

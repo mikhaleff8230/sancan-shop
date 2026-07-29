@@ -255,7 +255,7 @@ export default function Header({
             {/* Правая часть - кнопки и меню */}
             <div className="flex items-center gap-2">
               {asPath !== routes.checkout && (
-                <CartButton className="hidden h-10 w-10 items-center justify-center rounded-full bg-light-200 text-ozon-text hover:bg-brand-50 hover:text-brand sm:flex" />
+                <CartButton className="hidden h-10 w-10 items-center justify-center rounded-full border border-brand/20 bg-brand-50 text-brand shadow-sm transition hover:border-brand/40 hover:bg-brand-100 sm:flex" />
               )}
               {isMultiLangEnable ? (
                 <div className="ltr:ml-auto rtl:mr-auto">

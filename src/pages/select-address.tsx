@@ -160,11 +160,11 @@ const SelectAddressPage = () => {
       <div className="w-[420px] p-6 bg-white border-r border-gray-200 flex flex-col">
         <div className="flex gap-2 mb-6">
           <button
-            className={`flex-1 px-4 py-2 rounded-lg font-semibold text-base transition border ${pickup ? 'bg-[#2563eb] text-white border-[#2563eb]' : 'bg-[#f3f6fa] text-[#2563eb] border-transparent hover:bg-[#e0e7ef]'}`}
+            className={`flex-1 px-4 py-2 rounded-lg font-semibold text-base transition border ${pickup ? 'bg-[#9f00ff] text-white border-[#9f00ff]' : 'bg-[#fbf2ff] text-[#9f00ff] border-transparent hover:bg-[#f4dcff]'}`}
             onClick={() => setPickup(true)}
           >Самовывоз</button>
           <button
-            className={`flex-1 px-4 py-2 rounded-lg font-semibold text-base transition border ${!pickup ? 'bg-[#2563eb] text-white border-[#2563eb]' : 'bg-[#f3f6fa] text-[#2563eb] border-transparent hover:bg-[#e0e7ef]'}`}
+            className={`flex-1 px-4 py-2 rounded-lg font-semibold text-base transition border ${!pickup ? 'bg-[#9f00ff] text-white border-[#9f00ff]' : 'bg-[#fbf2ff] text-[#9f00ff] border-transparent hover:bg-[#f4dcff]'}`}
             onClick={() => setPickup(false)}
           >Курьером</button>
         </div>
@@ -275,7 +275,7 @@ const SelectAddressPage = () => {
           )}
         </div>
         <button
-          className="w-full mt-6 py-3 rounded-xl bg-[#2563eb] text-white font-bold text-lg hover:bg-[#1d4ed8] transition disabled:opacity-60"
+          className="w-full mt-6 py-3 rounded-xl bg-[#9f00ff] text-white font-bold text-lg hover:bg-[#7f00cc] transition disabled:opacity-60"
           disabled={pickup ? !selectedId : false}
           onClick={(e) => {
             e.preventDefault();

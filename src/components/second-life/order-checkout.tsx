@@ -114,7 +114,7 @@ function SectionTitle({
   return (
     <div className="flex items-start gap-3">
       {Icon ? (
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#eef4ff] text-[#005bff]">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#fbf2ff] text-[#9f00ff]">
           <Icon className="h-5 w-5" />
         </span>
       ) : null}
@@ -134,13 +134,13 @@ function ProductSummary() {
       <div className="flex gap-4 p-4 sm:p-5">
         <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl bg-gradient-to-br from-[#dbeafe] via-white to-[#ffe4ef] sm:h-32 sm:w-32">
           <div className="absolute inset-3 rounded-2xl bg-white/70" />
-          <div className="absolute left-5 top-5 h-16 w-16 rounded-full bg-[#005bff]/15" />
+          <div className="absolute left-5 top-5 h-16 w-16 rounded-full bg-[#9f00ff]/15" />
           <div className="absolute bottom-4 right-3 h-12 w-12 rounded-2xl bg-[#f91155]/20" />
-          <Camera className="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 text-[#005bff]" />
+          <Camera className="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 text-[#9f00ff]" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-[#eff6ff] px-2.5 py-1 text-xs font-semibold text-[#005bff]">
+            <span className="rounded-full bg-[#fbf2ff] px-2.5 py-1 text-xs font-semibold text-[#9f00ff]">
               Зарезервировано
             </span>
             <span className="rounded-full bg-[#f8fafc] px-2.5 py-1 text-xs font-medium text-[#64748b]">
@@ -161,7 +161,7 @@ function ProductSummary() {
               <p className="text-2xl font-bold text-[#f91155]">11 540 ₽</p>
             </div>
             <div className="hidden items-center gap-2 rounded-full bg-[#f8fafc] px-3 py-2 text-sm font-medium text-[#475569] sm:flex">
-              <MapPin className="h-4 w-4 text-[#005bff]" />
+              <MapPin className="h-4 w-4 text-[#9f00ff]" />
               Москва
             </div>
           </div>
@@ -185,13 +185,13 @@ function SellerTrustPanel() {
         </span>
       </div>
       <div className="mt-5 flex items-center gap-4 rounded-2xl bg-[#f8fafc] p-4">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#005bff] to-[#6d5dfc] text-lg font-bold text-white">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#9f00ff] to-[#6d5dfc] text-lg font-bold text-white">
           А
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-semibold text-[#111827]">Александр Петров</p>
-            <BadgeCheck className="h-5 w-5 text-[#005bff]" />
+            <BadgeCheck className="h-5 w-5 text-[#9f00ff]" />
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-[#64748b]">
             <span className="inline-flex items-center gap-1 font-medium text-[#111827]">
@@ -230,9 +230,9 @@ function SellerTrustPanel() {
 
 function DirectPaymentWarning() {
   return (
-    <div className="rounded-2xl border border-[#bfdbfe] bg-[#eff6ff] p-4 text-[#1e3a8a] sm:p-5">
+    <div className="rounded-2xl border border-[#bfdbfe] bg-[#fbf2ff] p-4 text-[#1e3a8a] sm:p-5">
       <div className="flex gap-3">
-        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#005bff]" />
+        <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#9f00ff]" />
         <div>
           <h3 className="font-semibold">Оплата напрямую продавцу</h3>
           <p className="mt-2 text-sm leading-6">
@@ -257,7 +257,7 @@ function QrArtwork() {
               key={index}
               className={cn(
                 'rounded-md',
-                isStrong ? 'bg-[#111827]' : index % 3 === 0 ? 'bg-[#005bff]' : 'bg-[#e2e8f0]'
+                isStrong ? 'bg-[#111827]' : index % 3 === 0 ? 'bg-[#9f00ff]' : 'bg-[#e2e8f0]'
               )}
             />
           );
@@ -276,7 +276,7 @@ function PaymentProfileCard({
 }) {
   return (
     <Card className={cn('overflow-hidden', compact ? '' : 'lg:sticky lg:top-24')}>
-      <div className="bg-gradient-to-br from-[#005bff] via-[#1d4ed8] to-[#0f172a] p-5 text-white">
+      <div className="bg-gradient-to-br from-[#9f00ff] via-[#7f00cc] to-[#0f172a] p-5 text-white">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-white/75">Оплата по СБП</p>
@@ -311,7 +311,7 @@ function PaymentProfileCard({
             <button
               key={label}
               type="button"
-              className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#e8edf6] bg-white px-3 text-sm font-semibold text-[#334155] transition hover:border-[#005bff] hover:text-[#005bff]"
+              className="flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-[#e8edf6] bg-white px-3 text-sm font-semibold text-[#334155] transition hover:border-[#9f00ff] hover:text-[#9f00ff]"
             >
               <Icon className="h-4 w-4" />
               {label}
@@ -319,7 +319,7 @@ function PaymentProfileCard({
           ))}
         </div>
         <Button
-          className="h-14 w-full rounded-2xl bg-[#005bff] text-base shadow-[0_12px_30px_rgba(0,91,255,0.28)] hover:bg-[#004ad6]"
+          className="h-14 w-full rounded-2xl bg-[#9f00ff] text-base shadow-[0_12px_30px_rgba(159,0,255,0.28)] hover:bg-[#7f00cc]"
           onClick={onPaid}
         >
           Я оплатил
@@ -388,7 +388,7 @@ function DealProgress({ isPaid }: { isPaid: boolean }) {
         {isPaid ? (
           <div className="rounded-2xl bg-[#f8fafc] px-4 py-3 text-right">
             <p className="text-xs text-[#94a3b8]">Таймер ожидания</p>
-            <p className="text-xl font-bold text-[#005bff]">14:58</p>
+            <p className="text-xl font-bold text-[#9f00ff]">14:58</p>
           </div>
         ) : null}
       </div>
@@ -399,7 +399,7 @@ function DealProgress({ isPaid }: { isPaid: boolean }) {
               className={cn(
                 'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm font-bold',
                 step.status === 'done' && 'border-[#10b981] bg-[#ecfdf5] text-[#047857]',
-                step.status === 'active' && 'border-[#005bff] bg-[#eff6ff] text-[#005bff]',
+                step.status === 'active' && 'border-[#9f00ff] bg-[#fbf2ff] text-[#9f00ff]',
                 step.status === 'pending' && 'border-[#e2e8f0] bg-white text-[#94a3b8]'
               )}
             >
@@ -416,7 +416,7 @@ function DealProgress({ isPaid }: { isPaid: boolean }) {
               </p>
               {step.status === 'active' ? (
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#e2e8f0]">
-                  <div className="h-full w-2/3 rounded-full bg-[#005bff]" />
+                  <div className="h-full w-2/3 rounded-full bg-[#9f00ff]" />
                 </div>
               ) : null}
             </div>
@@ -438,9 +438,9 @@ function PaymentProofForm() {
       <div className="mt-5 grid gap-4 md:grid-cols-[220px_1fr]">
         <button
           type="button"
-          className="flex min-h-[150px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#cbd5e1] bg-[#f8fafc] p-4 text-center transition hover:border-[#005bff] hover:bg-[#eff6ff]"
+          className="flex min-h-[150px] flex-col items-center justify-center rounded-2xl border border-dashed border-[#cbd5e1] bg-[#f8fafc] p-4 text-center transition hover:border-[#9f00ff] hover:bg-[#fbf2ff]"
         >
-          <ImageIcon className="h-8 w-8 text-[#005bff]" />
+          <ImageIcon className="h-8 w-8 text-[#9f00ff]" />
           <span className="mt-3 text-sm font-semibold text-[#111827]">
             Приложить скриншот
           </span>
@@ -451,7 +451,7 @@ function PaymentProofForm() {
             Комментарий продавцу
           </span>
           <textarea
-            className="mt-3 min-h-[150px] w-full resize-none rounded-2xl border border-[#e2e8f0] bg-white p-4 text-sm outline-none transition placeholder:text-[#94a3b8] focus:border-[#005bff] focus:ring-2 focus:ring-[#005bff]/10"
+            className="mt-3 min-h-[150px] w-full resize-none rounded-2xl border border-[#e2e8f0] bg-white p-4 text-sm outline-none transition placeholder:text-[#94a3b8] focus:border-[#9f00ff] focus:ring-2 focus:ring-[#9f00ff]/10"
             placeholder="Например: оплатил с карты Т-Банк, сумма 11 540 ₽"
           />
         </label>
@@ -478,12 +478,12 @@ function OrderChatPanel() {
               'max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-5',
               message.type === 'system' &&
                 'mx-auto bg-white text-center text-[#64748b] shadow-sm',
-              message.type === 'buyer' && 'ml-auto bg-[#005bff] text-white',
+              message.type === 'buyer' && 'ml-auto bg-[#9f00ff] text-white',
               message.type === 'seller' && 'bg-white text-[#111827] shadow-sm'
             )}
           >
             {message.author ? (
-              <p className="mb-1 text-xs font-semibold text-[#005bff]">{message.author}</p>
+              <p className="mb-1 text-xs font-semibold text-[#9f00ff]">{message.author}</p>
             ) : null}
             <p>{message.text}</p>
             <p
@@ -505,12 +505,12 @@ function OrderChatPanel() {
           <ImageIcon className="h-5 w-5" />
         </button>
         <input
-          className="min-w-0 flex-1 rounded-xl border border-[#e2e8f0] px-4 text-sm outline-none focus:border-[#005bff]"
+          className="min-w-0 flex-1 rounded-xl border border-[#e2e8f0] px-4 text-sm outline-none focus:border-[#9f00ff]"
           placeholder="Написать продавцу..."
         />
         <button
           type="button"
-          className="rounded-xl bg-[#005bff] px-4 text-sm font-semibold text-white"
+          className="rounded-xl bg-[#9f00ff] px-4 text-sm font-semibold text-white"
         >
           Отправить
         </button>
@@ -539,7 +539,7 @@ function MobileFlow({
       {!isPaid ? (
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#e8edf6] bg-white/95 p-3 shadow-[0_-12px_30px_rgba(15,23,42,0.08)] backdrop-blur">
           <Button
-            className="h-14 w-full rounded-2xl bg-[#005bff] text-base hover:bg-[#004ad6]"
+            className="h-14 w-full rounded-2xl bg-[#9f00ff] text-base hover:bg-[#7f00cc]"
             onClick={onPaid}
           >
             Я оплатил
@@ -600,13 +600,13 @@ export default function SecondLifeOrderCheckout() {
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#334155] shadow-sm transition hover:text-[#005bff]"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#334155] shadow-sm transition hover:text-[#9f00ff]"
           >
             <ArrowLeft className="h-4 w-4" />
             Назад
           </button>
           <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#111827] shadow-sm">
-            <Banknote className="h-4 w-4 text-[#005bff]" />
+            <Banknote className="h-4 w-4 text-[#9f00ff]" />
             Заказ #SL-1024
             <span className="rounded-full bg-[#fff7ed] px-2 py-0.5 text-xs text-[#c2410c]">
               {isPaid ? 'Ожидает продавца' : 'Ожидает оплаты'}

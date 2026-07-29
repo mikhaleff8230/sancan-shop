@@ -82,7 +82,7 @@ const AddressSelectModal: React.FC<AddressSelectModalProps> = ({ onAddNew, onClo
           ))}
         </div>
         <button
-          className="w-full mt-2 py-3 rounded-xl bg-[#f3f6fa] text-[#2563eb] font-bold text-lg hover:bg-[#e0e7ef] transition"
+          className="w-full mt-2 py-3 rounded-xl bg-[#fbf2ff] text-[#9f00ff] font-bold text-lg hover:bg-[#f4dcff] transition"
           onClick={onAddNew}
         >
           Добавить

@@ -618,7 +618,7 @@ export default function Card({ product }: { product: Product }) {
               className="rounded-full bg-light-500 object-cover"
               style={{
                 borderWidth: '2px',
-                borderColor: '#005bff',
+                borderColor: '#9f00ff',
                 borderStyle: 'solid',
               }}
               sizes="35px"

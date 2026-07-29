@@ -116,7 +116,7 @@ export default function ProductPriceBlock({
         )}
         <FavoriteButton
           productId={product.id}
-          className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#eef4ff] text-ozon-blue transition-colors hover:text-ozon-pink"
+          className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fbf2ff] text-ozon-blue transition-colors hover:text-ozon-pink"
         />
       </div>
 

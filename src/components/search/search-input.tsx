@@ -180,7 +180,7 @@ export default function SearchInput({
   return (
     <div className={cn('relative w-full', className)}>
       {/* Поле ввода */}
-      <div className="relative flex rounded-xl border-2 border-brand bg-white p-0.5 shadow-sm transition-shadow focus-within:shadow-[0_0_0_3px_rgba(0,91,255,0.12)]">
+      <div className="relative flex rounded-xl border-2 border-brand bg-white p-0.5 shadow-sm transition-shadow focus-within:shadow-[0_0_0_3px_rgba(159,0,255,0.12)]">
         <input
           ref={inputRef}
           type="text"
