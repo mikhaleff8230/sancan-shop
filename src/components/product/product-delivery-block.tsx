@@ -1,4 +1,3 @@
-import { useTranslation } from 'next-i18next';
 import { motion } from 'framer-motion';
 import { fadeInBottom } from '@/lib/framer-motion/fade-in-bottom';
 import { MapPinIcon } from '@/components/icons/map-pin-icon';
@@ -26,11 +25,10 @@ interface DeliveryDate {
   pvz?: string;
 }
 
-export default function ProductDeliveryBlock({ 
-  product, 
-  className = '' 
+export default function ProductDeliveryBlock({
+  product,
+  className = '',
 }: ProductDeliveryBlockProps) {
-  const { t } = useTranslation('common');
   const router = useRouter();
   const { me } = useMe();
   const { openModal } = useModalAction();
@@ -38,7 +36,6 @@ export default function ProductDeliveryBlock({
   const [deliveryDates, setDeliveryDates] = useState<DeliveryDate>({});
   const [selectedPvz, setSelectedPvz] = useState<any>(null);
 
-  // Получаем адреса пользователя
   const { data: addressesData } = useQuery(
     ['user-addresses', 'pvz'],
     () => userAddressesApi.getAddresses('pvz'),
@@ -48,93 +45,74 @@ export default function ProductDeliveryBlock({
     }
   );
 
-  // Получаем город пользователя из геолокации или профиля
   useEffect(() => {
     const getUserCity = async () => {
       try {
-        // Пробуем получить из сохраненного адреса
         if (addressesData?.data && addressesData.data.length > 0) {
-          const defaultPvz = addressesData.data.find(addr => addr.is_default) || addressesData.data[0];
+          const defaultPvz = addressesData.data.find((addr) => addr.is_default) || addressesData.data[0];
           setSelectedPvz(defaultPvz);
           setUserCity(defaultPvz.city);
+          return;
+        }
+
+        const savedLocation = localStorage.getItem('userLocation');
+        if (savedLocation) {
+          const location = JSON.parse(savedLocation);
+          setUserCity(location.city || 'Москва');
+          return;
+        }
+
+        const geoResponse = await fetch(`${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:8000'}/api/geo/location`);
+        if (geoResponse.ok) {
+          const geoData = await geoResponse.json();
+          setUserCity(geoData.city || 'Москва');
         } else {
-          // Пробуем получить из localStorage или геолокации
-          const savedLocation = localStorage.getItem('userLocation');
-          if (savedLocation) {
-            const location = JSON.parse(savedLocation);
-            setUserCity(location.city || 'Москва');
-          } else {
-            // Определяем через API геолокации
-            const geoResponse = await fetch(`${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:8000'}/api/geo/location`);
-            if (geoResponse.ok) {
-              const geoData = await geoResponse.json();
-              setUserCity(geoData.city || 'Москва');
-            } else {
-              setUserCity('Москва');
-            }
-          }
+          setUserCity('Москва');
         }
       } catch (error) {
         console.error('Error getting user city:', error);
         setUserCity('Москва');
       }
     };
+
     getUserCity();
   }, [addressesData]);
 
-  // Получаем город продавца
   const sellerCity = product?.shop?.address?.city || 'Москва';
 
-  // Рассчитываем дату доставки через СДЭК
   useEffect(() => {
     const calculateDeliveryDates = async () => {
       if (!userCity || !sellerCity) return;
 
       try {
-        // Расчет для курьера (тариф 136 - дверь-дверь)
-        const courierResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:8000'}/api/cdek/calculate`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              from_city: sellerCity,
-              to_city: userCity,
-              tariff_code: 136, // Курьер
-              weight: 1,
-              length: 10,
-              width: 10,
-              height: 10,
-            }),
-          }
-        );
+        const requestBody = {
+          from_city: sellerCity,
+          to_city: userCity,
+          weight: 1,
+          length: 10,
+          width: 10,
+          height: 10,
+        };
 
-        // Расчет для ПВЗ (тариф 137 - склад-склад)
-        const pvzResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:8000'}/api/cdek/calculate`,
-          {
+        const [courierResponse, pvzResponse] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:8000'}/api/cdek/calculate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              from_city: sellerCity,
-              to_city: userCity,
-              tariff_code: 137, // ПВЗ
-              weight: 1,
-              length: 10,
-              width: 10,
-              height: 10,
-            }),
-          }
-        );
+            body: JSON.stringify({ ...requestBody, tariff_code: 136 }),
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:8000'}/api/cdek/calculate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...requestBody, tariff_code: 137 }),
+          }),
+        ]);
 
         if (courierResponse.ok) {
           const courierData = await courierResponse.json();
           if (courierData.period_min && courierData.period_max) {
-            const minDate = dayjs().add(courierData.period_min, 'day');
-            const maxDate = dayjs().add(courierData.period_max, 'day');
-            setDeliveryDates(prev => ({
+            setDeliveryDates((prev) => ({
               ...prev,
-              courier: `${minDate.format('D MMMM')} - ${maxDate.format('D MMMM')}`,
+              courier: `${dayjs().add(courierData.period_min, 'day').format('D MMMM')} - ${dayjs().add(courierData.period_max, 'day').format('D MMMM')}`,
             }));
           }
         }
@@ -142,142 +120,92 @@ export default function ProductDeliveryBlock({
         if (pvzResponse.ok) {
           const pvzData = await pvzResponse.json();
           if (pvzData.period_min && pvzData.period_max) {
-            const minDate = dayjs().add(pvzData.period_min, 'day');
-            const maxDate = dayjs().add(pvzData.period_max, 'day');
-            setDeliveryDates(prev => ({
+            setDeliveryDates((prev) => ({
               ...prev,
-              pvz: `${minDate.format('D MMMM')} - ${maxDate.format('D MMMM')}`,
+              pvz: `${dayjs().add(pvzData.period_min, 'day').format('D MMMM')} - ${dayjs().add(pvzData.period_max, 'day').format('D MMMM')}`,
             }));
           }
         }
       } catch (error) {
         console.error('Error calculating delivery dates:', error);
-        // Fallback даты
-        const tomorrow = dayjs().add(1, 'day');
-        setDeliveryDates({
-          courier: tomorrow.format('D MMMM'),
-          pvz: tomorrow.format('D MMMM'),
-        });
+        const tomorrow = dayjs().add(1, 'day').format('D MMMM');
+        setDeliveryDates({ courier: tomorrow, pvz: tomorrow });
       }
     };
 
-    if (userCity && sellerCity) {
-      calculateDeliveryDates();
-    }
+    calculateDeliveryDates();
   }, [userCity, sellerCity]);
 
-  // Формируем адрес для отображения
-  const displayAddress = selectedPvz 
-    ? selectedPvz.address || selectedPvz.name || 'ПВЗ СДЭК' // Короткий адрес выбранного ПВЗ
-    : userCity 
-      ? `${userCity}, пункты СДЭК` // Если не выбран ПВЗ - показываем город и "пункты СДЭК"
+  const displayAddress = selectedPvz
+    ? selectedPvz.address || selectedPvz.name || 'ПВЗ СДЭК'
+    : userCity
+      ? `${userCity}, пункты СДЭК`
       : 'Выберите город';
 
-  // Обработчик изменения адреса
   const handleChangeAddress = () => {
     if (!me) {
-      // Если не зарегистрирован - открываем модальное окно входа/регистрации
-      // Сохраняем текущую страницу для возврата после регистрации
-      const returnUrl = router.asPath;
-      localStorage.setItem('returnUrl', returnUrl);
+      localStorage.setItem('returnUrl', router.asPath);
       openModal('LOGIN_VIEW');
       return;
     }
-    // Сохраняем текущую страницу для возврата
-    const returnUrl = router.asPath;
-    localStorage.setItem('returnUrl', returnUrl);
+    localStorage.setItem('returnUrl', router.asPath);
     router.push('/select-address');
   };
 
   return (
-    <motion.div 
+    <motion.div
       variants={fadeInBottom()}
-      className={`sancan-ozon-card p-5 shadow-[0_8px_24px_rgba(23,33,43,0.05)] ${className}`}
+      className={`sancan-ozon-card p-5 ${className}`}
     >
-      <h3 className="mb-4 text-lg font-semibold text-ozon-text">
-        {t('text-delivery')}
+      <h3 className="mb-4 text-lg font-bold text-ozon-text">
+        Доставка и возврат
       </h3>
 
-      <div className="space-y-4">
-        {/* Адрес доставки */}
-        <div className="flex items-start space-x-3">
-          <MapPinIcon className="h-5 w-5 text-brand mt-0.5 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="mb-1 text-sm text-ozon-muted">
-              {selectedPvz ? 'Пункт выдачи' : 'Город доставки'}
-            </div>
-            <div className="break-words text-sm font-medium text-ozon-text">
-              {displayAddress}
-            </div>
-            <button 
-              onClick={handleChangeAddress}
-              className="mt-1 text-xs text-brand transition-colors hover:text-brand-dark"
-            >
-              {t('text-change-address')}
-            </button>
-          </div>
-        </div>
+      <button
+        type="button"
+        onClick={handleChangeAddress}
+        className="mb-4 flex w-full items-start gap-3 rounded-2xl bg-[#f3f7fc] p-3 text-left transition hover:bg-[#edf4ff]"
+      >
+        <MapPinIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-ozon-muted" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs text-ozon-muted">
+            {selectedPvz ? 'Пункт выдачи' : 'Город доставки'}
+          </span>
+          <span className="block break-words text-sm font-semibold text-ozon-text">
+            {displayAddress}
+          </span>
+          <span className="mt-1 block text-xs font-semibold text-ozon-blue">
+            Изменить
+          </span>
+        </span>
+        <span className="text-ozon-muted">›</span>
+      </button>
 
-        {/* Способы доставки */}
-        <div className="border-t border-ozon-border pt-3">
-          <div className="space-y-3">
-            {/* Курьером */}
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="mb-1 text-sm font-medium text-ozon-text">
-                  Курьером СДЭК
-                </div>
-                {deliveryDates.courier ? (
-                  <div className="text-xs text-ozon-muted">
-                    {deliveryDates.courier}
-                  </div>
-                ) : (
-                  <div className="text-xs text-ozon-muted">
-                    Расчет даты...
-                  </div>
-                )}
-              </div>
-              <span className="rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-600">
-                Без доплат
-              </span>
+      <div className="space-y-3">
+        {[
+          ['Курьером СДЭК', deliveryDates.courier],
+          ['Пункты выдачи и постаматы', deliveryDates.pvz],
+        ].map(([label, date]) => (
+          <div key={label} className="flex items-start justify-between gap-3 border-b border-ozon-border pb-3 last:border-b-0">
+            <div>
+              <div className="text-sm font-semibold text-ozon-text">{label}</div>
+              <div className="mt-0.5 text-xs text-ozon-muted">{date || 'Расчет даты...'}</div>
             </div>
-
-            {/* Пункты выдачи */}
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="mb-1 text-sm font-medium text-ozon-text">
-                  Пункты выдачи и постаматы
-                </div>
-                {deliveryDates.pvz ? (
-                  <div className="text-xs text-ozon-muted">
-                    {deliveryDates.pvz}
-                  </div>
-                ) : (
-                  <div className="text-xs text-ozon-muted">
-                    Расчет даты...
-                  </div>
-                )}
-              </div>
-              <span className="rounded bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-600">
-                Без доплат
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Информация о возврате */}
-        <div className="border-t border-ozon-border pt-3">
-          <Link 
-            href={routes.return || '/help/return'}
-            className="flex items-start space-x-3 text-sm text-ozon-text transition-colors hover:text-brand"
-          >
-            <InformationIcon className="h-5 w-5 text-brand mt-0.5 flex-shrink-0" />
-            <span className="flex-1">
-              Можно вернуть в течение 21 дня
+            <span className="shrink-0 rounded-lg bg-[#f1f5f9] px-2 py-1 text-xs font-bold text-ozon-text">
+              Без доплат
             </span>
-          </Link>
-        </div>
+          </div>
+        ))}
       </div>
+
+      <Link
+        href={routes.return || '/help/return'}
+        className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f3f7fc] px-3 py-3 text-sm font-semibold text-ozon-text transition hover:text-ozon-blue"
+      >
+        <InformationIcon className="h-5 w-5 text-ozon-muted" />
+        Можно вернуть в течение 21 дня
+        <span className="ml-auto text-ozon-muted">›</span>
+      </Link>
     </motion.div>
   );
-} 
+}

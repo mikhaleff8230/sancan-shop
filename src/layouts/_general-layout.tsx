@@ -17,7 +17,7 @@ export default function GeneralLayout({
       initial="exit"
       animate="enter"
       exit="exit"
-      className="flex min-h-screen w-full flex-col bg-light-300 dark:bg-dark-100"
+      className="sancan-ozon-page flex min-h-screen w-full flex-col"
     >
       <Header showHamburger={false} />
       <motion.div
@@ -33,7 +33,7 @@ export default function GeneralLayout({
             {children}
           </AnimatePresence>
         </main>
-        <Copyright className="px-4 py-7 text-center font-medium text-dark-700 md:py-10 lg:px-8" />
+        <Copyright />
       </motion.div>
       {isMounted && breakpoint === 'xs' && <BottomNavigation />}
     </motion.div>

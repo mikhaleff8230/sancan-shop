@@ -45,7 +45,9 @@ module.exports = withPWA({
       'pixarlaravel.s3.ap-southeast-1.amazonaws.com',
       'pickbazarlaravel.s3.ap-southeast-1.amazonaws.com',
       '45.10.41.84', // добавлен API-домен
-      's3.twcstorage.ru', // добавлен Timeweb S3 домен
+      's3.twcstorage.ru', // Timeweb S3 (legacy URLs in DB)
+      'img.sancan.ru', // CDN custom domain (optional)
+      'nqx1cwsokx.cdn.twcstorage.ru', // Timeweb CDN
       'svetlanashtefan.com', // временно для импортированных товаров
     ],
     remotePatterns: [
@@ -68,6 +70,16 @@ module.exports = withPWA({
       {
         protocol: 'https',
         hostname: 's3.twcstorage.ru',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.sancan.ru',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'nqx1cwsokx.cdn.twcstorage.ru',
         pathname: '/**',
       },
       {

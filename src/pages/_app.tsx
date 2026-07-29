@@ -1,4 +1,4 @@
-import type { AppProps } from 'next/app';
+﻿import type { AppProps } from 'next/app';
 import type { NextPageWithLayout } from '@/types';
 import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider, Hydrate } from '@tanstack/react-query';
@@ -44,6 +44,8 @@ validateEnvironmentVariables();
 
 // Скрипт для установки темы на мобильных устройствах до гидратации React
 if (typeof window !== 'undefined') {
+  localStorage.setItem('theme', 'light');
+  document.documentElement.classList.remove('dark');
   // Проверяем, что это мобильное устройство
   const isMobile = window.innerWidth < 640;
   
@@ -100,8 +102,8 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
         <AddressProvider>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem={true}
+            defaultTheme="light"
+            enableSystem={false}
             storageKey="theme"
           >
             <MobileThemeSync />

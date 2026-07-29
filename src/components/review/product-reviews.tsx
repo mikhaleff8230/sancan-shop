@@ -30,12 +30,21 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId }) => {
   const { t } = useTranslation('common');
   return (
     <div className="block">
-      <div className="flex w-[calc(100%+32px)] flex-col justify-between border-b border-light-500 px-4 py-5 ltr:-ml-4 rtl:-mr-4 dark:border-dark-400 sm:flex-row sm:items-center sm:py-4 md:w-full md:px-0 ltr:md:ml-0 rtl:md:mr-0">
-        <h2 className="text-sm tracking-tight text-dark dark:text-light">
-          {t('text-product-reviews')} ({paginatorInfo?.total ?? 0})
-        </h2>
-        <div className="flex items-center pt-2.5 sm:pt-0">
-          <span className="mr-2 sm:hidden">Sort By :</span>
+      <div className="mb-5 flex flex-col justify-between gap-3 border-b border-ozon-border pb-4 sm:flex-row sm:items-center">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-ozon-text">
+            Отзывы о товаре <sup className="text-sm font-semibold text-ozon-muted">{paginatorInfo?.total ?? 0}</sup>
+          </h2>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <span className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-ozon-text shadow-[0_2px_8px_rgba(23,33,43,0.08)]">
+              Все отзывы
+            </span>
+            <span className="rounded-full bg-[#f1f4f8] px-4 py-2 text-sm font-semibold text-ozon-text">
+              Этот вариант товара
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center">
           <Sorting />
         </div>
       </div>
@@ -50,8 +59,8 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId }) => {
 
           {/* Pagination */}
           {paginatorInfo && (
-            <div className="flex flex-col items-center justify-between space-y-1 border-t border-light-500 py-5 dark:border-dark-400 md:flex-row md:space-y-0 md:py-3">
-              <div className="text-13px text-dark-700 dark:text-light-900 md:mt-2">
+            <div className="flex flex-col items-center justify-between space-y-1 border-t border-ozon-border py-5 md:flex-row md:space-y-0 md:py-3">
+              <div className="text-13px text-ozon-muted md:mt-2">
                 {t('text-page')} {paginatorInfo.currentPage} {t('text-of')}{' '}
                 {Math.ceil(paginatorInfo.total / paginatorInfo.perPage)}
               </div>
@@ -67,8 +76,8 @@ const ProductReviews: React.FC<ProductReviewsProps> = ({ productId }) => {
           )}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center border-b border-light-500 px-5 py-16 dark:border-dark-400">
-          <h3 className="text-lg font-semibold text-dark-600 dark:text-light-600">
+        <div className="flex flex-col items-center justify-center rounded-2xl bg-[#f5f7fb] px-5 py-16">
+          <h3 className="text-lg font-semibold text-ozon-muted">
             {t('text-no-reviews-found')}
           </h3>
         </div>

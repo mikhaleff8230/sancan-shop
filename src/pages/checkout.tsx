@@ -105,11 +105,13 @@ const CheckoutPage: NextPageWithLayout = () => {
   return (
     <>
       <Seo title="Checkout" description="Sancan.ru - вдохновляйся и покупай. Сервис авторских брендов." url={routes?.checkout} />
-      <div className="mx-auto flex h-full w-full max-w-screen-sm flex-col p-4 pt-6 sm:p-5 sm:pt-8 md:pt-10 3xl:pt-12">
+      <div className="sancan-ozon-container grid h-full w-full gap-6 py-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:py-8">
         {/* Форма с инпутами - ВСЕГДА отображается */}
-        <form className="mb-4 bg-light shadow-card dark:bg-dark-250 dark:shadow-none md:mb-5 3xl:mb-6" onSubmit={e => e.preventDefault()}>
-          <h2 className="flex items-center justify-between border-b border-light-400 px-5 py-4 text-sm font-medium text-dark dark:border-dark-400 dark:text-light sm:py-5 sm:px-7 md:text-base">
-            {t('text-checkout-title')}
+        <form className="sancan-ozon-section mb-4 md:mb-5 3xl:mb-6" onSubmit={e => e.preventDefault()}>
+          <h1 className="mb-2 text-3xl font-extrabold text-ozon-text">Оформление заказа</h1>
+          <p className="mb-6 text-sm text-ozon-muted">Заполните контактные данные и выберите доставку.</p>
+          <h2 className="flex items-center justify-between border-b border-ozon-border pb-4 text-lg font-bold text-ozon-text">
+            Контактные данные
           </h2>
           <div className="px-5 py-4 sm:py-6 sm:px-7">
             <CInput label="Имя и Фамилия" value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} required />
@@ -169,10 +171,10 @@ const CheckoutPage: NextPageWithLayout = () => {
           </div>
         </form>
         {/* Блок с товарами */}
-        <div className="bg-light shadow-card dark:bg-dark-250 dark:shadow-none">
-          <h2 className="flex items-center justify-between border-b border-light-400 px-5 py-4 text-sm font-medium text-dark dark:border-dark-400 dark:text-light sm:py-5 sm:px-7 md:text-base">
-            {t('text-checkout-title-two')}
-            <span className="font-normal text-dark-700">({totalItems})</span>
+        <div className="sancan-ozon-section h-fit lg:sticky lg:top-[92px]">
+          <h2 className="flex items-center justify-between border-b border-ozon-border pb-4 text-lg font-bold text-ozon-text">
+            Ваш заказ
+            <span className="font-normal text-ozon-muted">({totalItems})</span>
           </h2>
           <div className="px-5 pt-9 sm:px-7 sm:pt-11">
             {!isEmpty ? (

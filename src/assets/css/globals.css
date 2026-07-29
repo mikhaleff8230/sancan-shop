@@ -9,7 +9,7 @@
     --sancan-ozon-blue: #005bff;
     --sancan-ozon-blue-dark: #004ad6;
     --sancan-ozon-pink: #f91155;
-    --sancan-ozon-bg: #f7f7fa;
+    --sancan-ozon-bg: #f5f7fb;
     --sancan-ozon-card: #ffffff;
     --sancan-ozon-text: #17212b;
     --sancan-ozon-muted: #707f8d;
@@ -92,7 +92,20 @@
   .sancan-ozon-card {
     border: 1px solid var(--sancan-ozon-border);
     background: var(--sancan-ozon-card);
-    border-radius: 12px;
+    border-radius: 18px;
+    box-shadow: 0 10px 28px rgba(23, 33, 43, 0.045);
+  }
+  .sancan-ozon-section {
+    border: 1px solid var(--sancan-ozon-border);
+    background: var(--sancan-ozon-card);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 28px rgba(23, 33, 43, 0.04);
+  }
+  .sancan-ozon-flat {
+    border: 1px solid var(--sancan-ozon-border);
+    background: #fff;
+    border-radius: 16px;
   }
   .sancan-ozon-soft-card {
     background: #f0f3f8;
@@ -136,6 +149,35 @@
     color: #1e3a5f;
     font-size: 13px;
     line-height: 1.45;
+  }
+  .sancan-ozon-spec-row {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr);
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px dotted #d6dce6;
+    font-size: 14px;
+  }
+  .sancan-ozon-price {
+    color: var(--sancan-ozon-pink);
+    letter-spacing: -0.02em;
+  }
+  .sancan-ozon-muted {
+    color: var(--sancan-ozon-muted);
+  }
+  .sancan-ozon-sticky-buy {
+    position: sticky;
+    top: 92px;
+  }
+  @media (max-width: 767px) {
+    .sancan-ozon-section {
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .sancan-ozon-spec-row {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
   }
   @media (min-width: 1024px) {
     .sancan-ozon-container {

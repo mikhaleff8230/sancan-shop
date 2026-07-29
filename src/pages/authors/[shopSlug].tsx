@@ -83,22 +83,22 @@ function AboutShop({ shop }: { shop: Shop }) {
   return (
     <motion.div
       variants={fadeInBottom()}
-      className="mx-auto flex max-w-[480px] flex-col justify-between md:max-w-[1000px] md:flex-row 2xl:max-w-[1280px]"
+      className="sancan-ozon-container grid gap-5 py-6 lg:grid-cols-[minmax(0,1fr)_320px]"
     >
       <div className="flex-shrink-0 md:w-6/12 lg:w-7/12 xl:w-5/12">
-        <h2 className="mb-3 text-sm font-medium text-dark dark:text-light lg:text-15px">
+        <h2 className="mb-3 text-2xl font-bold text-ozon-text">
           {name}
         </h2>
-        <p className="leading-6">{description}</p>
-        <div className="space-y-3.5 pt-4 text-dark/80 dark:text-light/80 md:pt-6 xl:pt-7">
+        <p className="max-w-3xl leading-7 text-ozon-muted">{description}</p>
+        <div className="space-y-3.5 pt-4 text-ozon-text md:pt-6 xl:pt-7">
           <address className="flex max-w-sm items-start not-italic leading-[1.8]">
-            <span className="mt-[3px] w-7 shrink-0 text-dark-800 dark:text-light-900">
+            <span className="mt-[3px] w-7 shrink-0 text-ozon-muted">
               <MapPinIcon className="h-4 w-4" />
             </span>
             {formatAddress(address)}
           </address>
           <div className="flex items-center">
-            <span className="w-7 shrink-0 text-dark-800 dark:text-light-900">
+            <span className="w-7 shrink-0 text-ozon-muted">
               <AtIcon className="h-4 w-4" />
             </span>
             <a href={`mailto:${owner?.email}`} className="hover:text-brand">
@@ -107,22 +107,22 @@ function AboutShop({ shop }: { shop: Shop }) {
           </div>
         </div>
       </div>
-      <div className="mt-7 flex-shrink-0 rounded-md bg-light p-6 shadow-card dark:bg-dark-250 md:mt-0 md:w-72 lg:p-8">
+      <div className="sancan-ozon-card mt-7 flex-shrink-0 p-6 md:mt-0 lg:p-8">
         <div className="-mx-2 flex pb-6 lg:pb-7">
-          <div className="flex flex-shrink-0 flex-col px-2 pr-10 text-13px capitalize text-dark-500 dark:text-light-900 lg:w-1/2 lg:pr-0">
-            <span className="mb-0.5 text-2xl text-dark dark:text-light">
+          <div className="flex flex-shrink-0 flex-col px-2 pr-10 text-13px capitalize text-ozon-muted lg:w-1/2 lg:pr-0">
+            <span className="mb-0.5 text-2xl font-bold text-ozon-text">
               {orders_count}
             </span>
             {t('text-total-sales')}
           </div>
-          <div className="flex flex-shrink-0 flex-col px-2 pr-10 text-13px capitalize text-dark-500 dark:text-light-900 xl:w-1/2 xl:pr-0">
-            <span className="mb-0.5 text-2xl text-dark dark:text-light">
+          <div className="flex flex-shrink-0 flex-col px-2 pr-10 text-13px capitalize text-ozon-muted xl:w-1/2 xl:pr-0">
+            <span className="mb-0.5 text-2xl font-bold text-ozon-text">
               {products_count}
             </span>
             {t('text-products')}
           </div>
         </div>
-        <div className="space-y-3 border-t border-light-300 pt-5 dark:border-dark-500">
+        <div className="space-y-3 border-t border-ozon-border pt-5">
           {socials.map(({ icon, url }, idx) => (
             <a
               key={idx}
@@ -171,7 +171,8 @@ const ShopPage: NextPageWithLayout<
   const shopSlug = router.query.shopSlug as string;
   return (
     <>
-      <div className="shopBanner relative w-full">
+      <div className="sancan-ozon-container pt-5">
+      <div className="shopBanner relative w-full overflow-hidden rounded-[24px]">
         <div className="absolute top-0 left-0 h-full w-full">
           <Image
             alt={name}
@@ -180,8 +181,8 @@ const ShopPage: NextPageWithLayout<
             src={cover_image?.original ?? placeholder}
           />
         </div>
-        <div className="relative z-10 h-full w-full bg-white/[0.85] px-4 pt-10 pb-16 text-center backdrop-blur-sm dark:bg-dark/[0.85] lg:px-8 lg:pt-14 lg:pb-20">
-          <div className="relative mx-auto h-[75px] w-[75px] md:h-20 md:w-20 2xl:h-[90px] 2xl:w-[90px] 3xl:h-[100px] 3xl:w-[100px]">
+        <div className="relative z-10 h-full w-full bg-white/[0.88] px-4 pt-10 pb-16 text-center backdrop-blur-sm lg:px-8 lg:pt-14 lg:pb-20">
+          <div className="relative mx-auto h-[88px] w-[88px] overflow-hidden rounded-3xl border border-ozon-border bg-white shadow-sm md:h-24 md:w-24">
             <Image
               alt={name}
               fill
@@ -190,7 +191,7 @@ const ShopPage: NextPageWithLayout<
               src={logo?.original ?? placeholder}
             />
           </div>
-          <h1 className="mt-3 text-sm font-medium text-dark-100 dark:text-light lg:text-15px 2xl:mt-4">
+          <h1 className="mt-4 text-3xl font-extrabold text-ozon-text">
             {name}
           </h1>
           <div className="mt-3.5 flex justify-center gap-3 md:mt-4 lg:mt-5">
@@ -199,16 +200,16 @@ const ShopPage: NextPageWithLayout<
           </div>
         </div>
       </div>
+      </div>
       <Tab.Group>
-        <Tab.List className="relative z-10 -mt-[34px] space-x-6 px-4 text-center text-13px rtl:space-x-reverse lg:space-x-8">
+        <Tab.List className="sancan-ozon-container relative z-10 -mt-[34px] flex justify-center gap-2 text-13px">
           <Tab
             className={({ selected }) =>
               cn(
-                'relative pb-3.5 before:absolute before:left-0 before:bottom-0 before:h-0.5 before:bg-dark-400 before:transition-all before:duration-300 before:ease-in-out hover:text-dark-100 dark:before:bg-light-400 dark:hover:text-light',
+                'rounded-full border border-ozon-border bg-white px-5 py-2.5 font-bold text-ozon-text transition hover:border-ozon-blue hover:text-ozon-blue',
                 {
-                  'font-semibold text-dark-100 before:w-full dark:text-light':
+                  '!border-ozon-blue !bg-ozon-blue !text-white':
                     selected,
-                  'text-dark-400 before:w-0 dark:text-light-800': !selected,
                 }
               )
             }
@@ -218,11 +219,10 @@ const ShopPage: NextPageWithLayout<
           <Tab
             className={({ selected }) =>
               cn(
-                'relative pb-3.5 before:absolute  before:left-0 before:bottom-0 before:h-0.5 before:bg-dark-400 before:transition-all before:duration-300 before:ease-in-out hover:text-dark-100 dark:before:bg-light-400 dark:hover:text-light',
+                'rounded-full border border-ozon-border bg-white px-5 py-2.5 font-bold text-ozon-text transition hover:border-ozon-blue hover:text-ozon-blue',
                 {
-                  'font-semibold text-dark-100 before:w-full dark:text-light':
+                  '!border-ozon-blue !bg-ozon-blue !text-white':
                     selected,
-                  'text-dark-400 before:w-0 dark:text-light-800': !selected,
                 }
               )
             }
@@ -231,10 +231,10 @@ const ShopPage: NextPageWithLayout<
           </Tab>
         </Tab.List>
         <Tab.Panels className="h-full">
-          <Tab.Panel className="flex h-full focus:outline-none lg:pt-3 xl:pt-4">
+          <Tab.Panel className="sancan-ozon-container flex h-full py-6 focus:outline-none">
             <ShopProducts shopId={shop.id} />
           </Tab.Panel>
-          <Tab.Panel className="px-4 py-6 focus:outline-none md:px-6 md:py-8 lg:py-10 lg:px-8">
+          <Tab.Panel className="focus:outline-none">
             <AboutShop shop={shop} />
           </Tab.Panel>
         </Tab.Panels>

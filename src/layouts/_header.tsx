@@ -3,7 +3,6 @@ import { Fragment, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Avatar from 'react-avatar';
 import routes from '@/config/routes';
-import ThemeSwitcher from '@/components/ui/theme-switcher';
 import ActiveLink from '@/components/ui/links/active-link';
 import { useLogout, useMe } from '@/data/user';
 import { Menu } from '@/components/ui/dropdown';
@@ -21,13 +20,8 @@ import LanguageSwitcher from '@/components/ui/language-switcher';
 import { MapPin } from 'lucide-react';
 import { useTranslation } from 'next-i18next';
 import DropdownCategoriesMenu from '@/components/menu/dropdown-categories-menu';
-import CreatePlaceModal from '@/components/places/CreatePlaceModal';
 import Logo from '@/components/ui/logo';
-import Image from 'next/image'
-import { useState } from 'react';
 import cn from 'classnames';
-import { PlusCircleIcon } from '@/components/icons/plus-circle-icon';
-import ChatButton from '@/components/chat/ChatButton';
 import { LocationWithModal } from '@/components/GeoLocation/LocationWithModal';
 
 const AuthorizedMenuItems = [
@@ -165,8 +159,6 @@ export default function Header({
 }: HeaderProps) {
   const router = useRouter();
   const { asPath } = router;
-  const { t } = useTranslation('common');
-  const { me, isAuthorized, isLoading } = useMe();
   const { openDrawer } = useDrawer();
   
   
@@ -180,7 +172,6 @@ export default function Header({
   const isMultiLangEnable =
     process.env.NEXT_PUBLIC_ENABLE_MULTI_LANG === 'true' &&
     !!process.env.NEXT_PUBLIC_AVAILABLE_LANGUAGES;
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Функция для открытия мобильного меню (сайдбара)
   const handleMobileMenuClick = () => {
@@ -242,14 +233,6 @@ export default function Header({
           <div className="flex h-[72px] items-center justify-between gap-4">
             {/* Левая часть - логотип и кнопка Каталог */}
             <div className="flex items-center gap-2">
-			 {/* Круглая иконка */}
-              <Image
-                src="/icon.png"
-                alt="Icon"
-                width={32}
-                height={32}
-                className="rounded-full border border-ozon-border"
-              />
               {showHamburger && (
                 <Hamburger
                   isToggle={isCollapse}
@@ -257,7 +240,7 @@ export default function Header({
                   className="hidden lg:flex"
                 />
               )}
-              <Logo className="h-10 w-30" />
+              <Logo className="h-10 w-[132px]" />
               <div className="hidden sm:flex">
                 <DropdownCategoriesMenu />
               </div>
@@ -271,9 +254,6 @@ export default function Header({
 
             {/* Правая часть - кнопки и меню */}
             <div className="flex items-center gap-2">
-              <div className="hidden">
-                <ThemeSwitcher />
-              </div>
               {asPath !== routes.checkout && (
                 <CartButton className="hidden h-10 w-10 items-center justify-center rounded-full bg-light-200 text-ozon-text hover:bg-brand-50 hover:text-brand sm:flex" />
               )}
@@ -284,20 +264,6 @@ export default function Header({
               ) : (
                 ''
               )}
-               <button
-                onClick={() => {
-                  if (isAuthorized && me && !isLoading) {
-                    setIsModalOpen(true);
-                  } else {
-                    openDrawer('AUTH_VIEW');
-                  }
-                }}
-                className="sancan-ozon-button hidden items-center space-x-2 px-4 py-2 text-sm font-semibold lg:flex"
-              >
-                <PlusCircleIcon className="h-5 w-5 text-white" />
-                <span>{t('text-create')}</span>
-              </button>
-              <CreatePlaceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
               <LoginMenu />
             </div>
           </div>

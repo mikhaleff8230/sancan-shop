@@ -4,6 +4,7 @@ import cn from 'classnames';
 import { motion } from 'framer-motion';
 import Header from '@/layouts/_header';
 import { Sidebar } from '@/layouts/_layout-sidebar';
+import Copyright from '@/layouts/_copyright';
 import { useBreakpoint } from '@/lib/hooks/use-breakpoint';
 import { useIsMounted } from '@/lib/hooks/use-is-mounted';
 const BottomNavigation = dynamic(() => import('@/layouts/_bottom-navigation'), {
@@ -49,6 +50,7 @@ export default function Layout({
           {children}
         </main>
       </div>
+      <Copyright />
       {isMounted && breakpoint === 'xs' && <BottomNavigation />}
     </motion.div>
   );

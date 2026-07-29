@@ -95,28 +95,26 @@ function SidebarNav() {
   });
   return (
     <div className="flex h-full flex-col">
-      <nav className="hidden grow flex-col text-13px text-dark-900 lg:flex">
+      <nav className="hidden flex-wrap gap-2 text-13px text-ozon-text lg:flex">
         {menuItems?.slice(0, -1)?.map((item) => (
           <ActiveLink
             key={t(item?.label)}
             href={item?.path}
-            className="flex items-center gap-3 px-6 py-3.5 hover:text-dark focus:text-dark dark:hover:text-light dark:focus:text-light "
-            activeClassName="text-dark-100 dark:text-light-400 font-medium bg-light-300/90 dark:bg-dark-400"
+            className="flex items-center gap-2 rounded-full border border-ozon-border bg-white px-4 py-2.5 font-semibold text-ozon-text transition hover:border-ozon-blue hover:text-ozon-blue"
+            activeClassName="!border-ozon-blue !bg-ozon-blue !text-white"
           >
-            <span className="flex w-5 items-start">{item?.icon}</span>{' '}
-            <span className="text-dark-100 dark:text-light-400">
+            <span className="flex w-5 items-start">{item?.icon}</span>
+            <span>
               {t(item?.label)}
             </span>
           </ActiveLink>
         ))}
         <button
           onClick={() => logout()}
-          className="flex w-full items-center gap-2.5 px-6 py-3.5 text-left hover:text-dark focus:text-dark dark:hover:text-light dark:focus:text-light "
+          className="flex items-center gap-2 rounded-full border border-ozon-border bg-white px-4 py-2.5 font-semibold text-ozon-text transition hover:border-ozon-pink hover:text-ozon-pink"
         >
           <LogoutIcon className="h-6 w-6" />
-          <span className="text-dark-100 dark:text-light-400">
-            {t('text-logout')}
-          </span>
+          <span>{t('text-logout')}</span>
         </button>
       </nav>
       {me?.wallet ? (
@@ -226,7 +224,7 @@ export default function Sidebar() {
   const breakpoint = useBreakpoint();
   const isMounted = useIsMounted();
   return (
-    <aside className="border-light-300 dark:border-dark-400 lg:w-60 lg:flex-shrink-0 lg:bg-light ltr:lg:border-r rtl:lg:border-l lg:dark:bg-dark-250">
+    <aside className="w-full">
       {isMounted && ['xs', 'sm', 'md'].indexOf(breakpoint) !== -1 ? (
         <SidebarMobileNav />
       ) : (

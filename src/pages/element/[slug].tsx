@@ -235,13 +235,13 @@ function ProductDescription({ description }: { description: string }) {
   }, [description]);
   
   // Фиксированная высота примерно на 200-250 символов (примерно 3-4 строки при маленьком шрифте)
-  const maxHeight = '120px'; // Фиксированная высота для свернутого состояния
-  const shouldShowExpand = textLength > 200; // Показываем кнопку если больше 200 символов
+  const maxHeight = '420px';
+  const shouldShowExpand = textLength > 900;
   
   return (
     <div className="relative">
       <div 
-        className="text-xs leading-relaxed text-dark dark:text-light prose prose-xs max-w-none dark:prose-invert overflow-hidden transition-all duration-300"
+        className="prose prose-sm max-w-none overflow-hidden text-[15px] leading-7 text-[#1f2a37] transition-all duration-300"
         style={{
           maxHeight: isExpanded ? 'none' : maxHeight,
         }}
@@ -253,7 +253,7 @@ function ProductDescription({ description }: { description: string }) {
       {/* Градиент для плавного перехода (только когда свернуто) */}
       {!isExpanded && shouldShowExpand && (
         <div 
-          className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none bg-gradient-to-b from-transparent to-light-100 dark:to-dark-200"
+          className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-b from-transparent to-white"
         />
       )}
       
@@ -262,9 +262,9 @@ function ProductDescription({ description }: { description: string }) {
         <div className="mt-4 pt-2">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="text-xs text-brand hover:text-brand/80 font-medium transition-colors underline decoration-brand/50 hover:decoration-brand"
+            className="text-sm font-bold text-ozon-blue transition hover:text-ozon-blue-dark"
           >
-            {isExpanded ? 'Скрыть' : 'Показать полностью...'}
+            {isExpanded ? 'Скрыть' : 'Показать полностью'}
           </button>
         </div>
       )}
@@ -310,6 +310,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
     : (gallery && Array.isArray(gallery) ? gallery : []);
   
   const previews = getPreviews(productImages, image);
+  const descriptionMedia = previews[0]?.original || previews[0]?.url || previews[0]?.thumbnail || '';
   
   // Проверяем, нужно ли показывать специальную страницу для черновика/архива
   const isHiddenStatus = status === 'draft' || status === 'unpublish';
@@ -490,7 +491,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               {/* Обычная страница товара для опубликованных товаров */}
               <motion.div
                 variants={staggerTransition()}
-                className="grid gap-6 lg:grid-cols-[minmax(420px,520px)_minmax(0,1fr)] xl:grid-cols-[minmax(420px,520px)_minmax(0,1fr)_320px]"
+                className="grid gap-5 lg:grid-cols-[minmax(360px,520px)_minmax(0,1fr)] xl:grid-cols-[minmax(420px,520px)_minmax(0,1fr)_350px]"
               >
                 {/* Левая колонка - Слайдер изображений */}
                 <motion.div
@@ -507,20 +508,50 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                 {/* Средняя колонка - Информация о товаре */}
                 <motion.div
                   variants={fadeInBottom()}
-                  className="space-y-5"
+                  className="space-y-4"
                 >
                   {/* Описание товара */}
-                  <div className="sancan-ozon-card p-5">
-                    <h1 className="mb-3 text-2xl font-bold leading-tight text-ozon-text">
+                  <div className="sancan-ozon-card p-5 lg:p-6">
+                    <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-ozon-muted">
+                      {categories?.[0]?.name ? <span>{categories[0].name}</span> : null}
+                      {categories?.[0]?.name && type?.name ? <span>•</span> : null}
+                      {type?.name ? <span>{type.name}</span> : null}
+                      {id ? <span className="ml-auto">Артикул: {id}</span> : null}
+                    </div>
+                    <h1 className="mb-3 text-2xl font-extrabold leading-tight text-ozon-text lg:text-3xl">
                       {name}
                     </h1>
-                    <div className="mb-5 flex flex-wrap items-center gap-3 text-sm text-ozon-muted">
-                      <span className="text-[#f5a400]">★</span>
-                      <span>{ratings ? Number(ratings).toFixed(1) : t('text-no-rating')}</span>
+                    <div className="mb-5 flex flex-wrap items-center gap-3 text-sm font-semibold text-ozon-muted">
+                      <span className="text-[#ff9f00]">★</span>
+                      <span className="text-ozon-text">{ratings ? Number(ratings).toFixed(1) : 'Нет рейтинга'}</span>
                       <span>{total_reviews ? `${total_reviews} ${t('text-reviews')}` : t('text-no-reviews')}</span>
                       {shop?.name ? <span>Продавец: {shop.name}</span> : null}
                     </div>
-                    <ProductDescription description={description} />
+                    <div className="rounded-2xl bg-[#f3f7fc] p-4">
+                      <h2 className="mb-3 text-lg font-bold text-ozon-text">О товаре</h2>
+                      <div className="grid gap-2 text-sm">
+                        {type?.name ? (
+                          <div className="flex justify-between gap-4 border-b border-dotted border-[#cfd7e3] pb-2">
+                            <span className="text-ozon-muted">Тип</span>
+                            <span className="text-right font-semibold text-ozon-text">{type.name}</span>
+                          </div>
+                        ) : null}
+                        {shop?.name ? (
+                          <div className="flex justify-between gap-4 border-b border-dotted border-[#cfd7e3] pb-2">
+                            <span className="text-ozon-muted">Продавец</span>
+                            <span className="text-right font-semibold text-ozon-text">{shop.name}</span>
+                          </div>
+                        ) : null}
+                        <div className="flex justify-between gap-4 border-b border-dotted border-[#cfd7e3] pb-2">
+                          <span className="text-ozon-muted">Оплата</span>
+                          <span className="text-right font-semibold text-ozon-text">Напрямую продавцу</span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-ozon-muted">Сделка</span>
+                          <span className="text-right font-semibold text-ozon-text">SANCAN помогает с коммуникацией</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Варианты товара (если товар в группе) */}
@@ -528,17 +559,6 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                     <GroupProductVariations product={product} />
                   </ProductVariationsErrorBoundary>
 
-                  {/* Характеристики товара */}
-                  <div className="sancan-ozon-card p-5">
-                    <ProductAttributes product={product} />
-                  </div>
-
-                  {/* Теги товара */}
-                  {tags && tags.length > 0 && (
-                    <div className="sancan-ozon-card p-5">
-                      <ProductTags tags={tags} />
-                    </div>
-                  )}
                 </motion.div>
 
                 {/* Правая колонка - Покупка и доставка */}
@@ -559,33 +579,67 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                 </motion.div>
               </motion.div>
 
+              <motion.div variants={fadeInBottom()} className="mt-8 space-y-8">
+                <section className="sancan-ozon-section">
+                  <h2 className="mb-4 text-2xl font-bold text-ozon-text">Описание</h2>
+                  <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,480px)] lg:items-start">
+                    <div>
+                      <ProductDescription description={description} />
+                    </div>
+                    {descriptionMedia ? (
+                      <div className="overflow-hidden rounded-2xl bg-[#f4f6f9]">
+                        <Image
+                          src={descriptionMedia}
+                          alt={name}
+                          width={640}
+                          height={640}
+                          className="h-full max-h-[520px] w-full object-contain"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                </section>
+
+                <section className="sancan-ozon-section">
+                  <ProductAttributes product={product} />
+                </section>
+
+                {tags && tags.length > 0 ? (
+                  <section className="sancan-ozon-section">
+                    <ProductTags tags={tags} />
+                  </section>
+                ) : null}
+              </motion.div>
+
               {/* Нижняя часть - Отзывы и вопросы */}
               <motion.div
                 variants={fadeInBottom()}
                 className="mt-12 space-y-8"
               >
                 {/* Отзывы */}
-                <div className="sancan-ozon-card p-5">
-                  <AverageRatings
-                    ratingCount={rating_count}
-                    totalReviews={total_reviews}
-                    ratings={ratings}
-                  />
-                  <ProductReviews productId={id} />
-                </div>
+                <section className="sancan-ozon-section">
+                  <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+                    <ProductReviews productId={id} />
+                    <AverageRatings
+                      ratingCount={rating_count}
+                      totalReviews={total_reviews}
+                      ratings={ratings}
+                    />
+                  </div>
+                </section>
 
                 {/* Вопросы */}
-                <div className="sancan-ozon-card p-5">
+                <section className="sancan-ozon-section">
                   <ProductQuestions
                     productId={id}
                     shopId={shop?.id}
                   />
-                </div>
+                </section>
 
                 {/* Поделиться */}
                 <ProductSocialShare
                   productSlug={slug}
-                  className="sancan-ozon-card p-5"
+                  className="sancan-ozon-section"
                 />
               </motion.div>
 
