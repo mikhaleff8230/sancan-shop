@@ -4,6 +4,7 @@ import { GetServerSideProps } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import GeneralLayout from '@/layouts/_general-layout';
 import type { NextPageWithLayout } from '@/types';
+import { trackPaymentSuccess } from '@/lib/metrika';
 
 const PaymentSuccessPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -13,12 +14,14 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
   useEffect(() => {
     // Получаем номер заказа из localStorage или URL
     const orderData = localStorage.getItem('yookassa_order');
+    let trackedOrderId = '';
     
     if (orderData) {
       try {
         const data = JSON.parse(orderData);
         if (data.order_id) {
           setOrderNumber(data.order_id);
+          trackedOrderId = data.order_id;
         }
       } catch (e) {
         console.error('Error parsing order data:', e);
@@ -29,6 +32,8 @@ const PaymentSuccessPage: NextPageWithLayout = () => {
     if (orderData) {
       localStorage.removeItem('yookassa_order');
     }
+
+    trackPaymentSuccess(trackedOrderId || undefined);
     
     setLoading(false);
   }, []);

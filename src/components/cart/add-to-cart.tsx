@@ -7,6 +7,7 @@ import usePrice from '@/lib/hooks/use-price';
 import type { Product } from '@/types';
 import { generateCartItem } from './lib/generate-cart-item';
 import { useTranslation } from 'next-i18next';
+import { trackAddToCart } from '@/lib/metrika';
 
 interface Props {
   item: Product;
@@ -45,6 +46,7 @@ export default function AddToCart({
     }
     setCartingSuccess(true);
     addItemToCart(generateCartItem(item), 1);
+    trackAddToCart(item, 1);
     toast.success(<b>{t('text-add-to-cart-message')}</b>, {
       className: toastClassName,
     });

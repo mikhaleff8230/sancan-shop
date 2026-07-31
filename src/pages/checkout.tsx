@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { NextPageWithLayout } from '@/types';
 import { useRouter } from 'next/router';
 import routes from '@/config/routes';
@@ -23,6 +23,7 @@ import type { GetStaticProps } from 'next';
 import { toast } from 'react-hot-toast';
 import SavedAddressSelector from '@/components/checkout/SavedAddressSelector';
 import { UserAddress } from '@/data/user-addresses';
+import { trackBeginCheckout, trackCheckoutVerify } from '@/lib/metrika';
 
 const CheckoutPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -58,9 +59,17 @@ const CheckoutPage: NextPageWithLayout = () => {
   const [note, setNote] = useState('');
   const [selectedAddress, setSelectedAddress] = useState<UserAddress | null>(null);
   const [deliveryType, setDeliveryType] = useState<'pvz' | 'courier'>('pvz');
+  const checkoutTrackedRef = useRef(false);
   
   // Используем только локальное состояние телефона
   const finalPhone = phone;
+
+  useEffect(() => {
+    if (!checkoutTrackedRef.current && !isEmpty && items.length > 0) {
+      checkoutTrackedRef.current = true;
+      trackBeginCheckout(items, total);
+    }
+  }, [isEmpty, items, total]);
 
   // Отладочная информация
   console.log('Checkout debug:', {
@@ -89,6 +98,8 @@ const CheckoutPage: NextPageWithLayout = () => {
       comment: note,
       delivery_type: deliveryType,
     };
+
+    trackCheckoutVerify(items, total);
 
     mutate({
       amount: total,

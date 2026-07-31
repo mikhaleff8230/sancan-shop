@@ -25,6 +25,7 @@ import { useTranslation } from 'next-i18next';
 import { PaymentGateway } from '@/types';
 import { useSettings } from '@/data/settings';
 import { useState, useEffect } from 'react';
+import { trackCheckoutSubmit, trackOrderCreated } from '@/lib/metrika';
 
 interface CartCheckoutProps {
   name: string;
@@ -140,6 +141,7 @@ export default function CartCheckout({ name, email, phone, address, note, clearC
 
     setLoading(true);
     const amount = calculateTotal(items);
+    trackCheckoutSubmit(items, amount);
 
     // Подготавливаем данные адреса доставки
     const shippingAddress = deliveryType === 'pvz' && selectedAddress ? {
@@ -231,6 +233,7 @@ export default function CartCheckout({ name, email, phone, address, note, clearC
       
       // Для YooKassa возвращается confirmation_token для виджета
       if (data && data.confirmation_token) {
+        trackOrderCreated(data, items, amount);
         console.log('Redirecting to YooKassa widget...');
         // Сохраняем данные для отображения виджета
         localStorage.setItem('yookassa_order', JSON.stringify(data));
@@ -241,9 +244,11 @@ export default function CartCheckout({ name, email, phone, address, note, clearC
           router.push('/payment/yookassa');
         }, 500);
       } else if (data && data.payment_url) {
+        trackOrderCreated(data, items, amount);
         // Для YooKassa может быть возвращена payment_url
         window.location.href = data.payment_url;
       } else {
+        trackOrderCreated(data, items, amount);
         toast.success('Заказ создан! Проверьте email.');
         clearCart();
       }

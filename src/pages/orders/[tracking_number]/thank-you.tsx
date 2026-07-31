@@ -17,6 +17,7 @@ import type { SettingsQueryOptions } from '@/types';
 import { useOrderPayment, useOrder } from '@/data/order';
 import { toast } from 'react-hot-toast';
 import { PaymentSuccessHandler } from '@/components/payment/payment-success-handler';
+import { trackPurchaseSuccess } from '@/lib/metrika';
 
 const ThankYou: NextPageWithLayout = () => {
   const router = useRouter();
@@ -60,6 +61,17 @@ const ThankYou: NextPageWithLayout = () => {
       });
     }
   }, [order?.payment_status, isLoading, order?.payment_gateway, createOrderPayment, query?.tracking_number]);
+
+  useEffect(() => {
+    if (order?.payment_status === 'payment-success') {
+      const key = `metrika_purchase_${order.tracking_number || order.id}`;
+
+      if (typeof window !== 'undefined' && !sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1');
+        trackPurchaseSuccess(order, order.products || [], order.paid_total || order.amount);
+      }
+    }
+  }, [order]);
 
   return (
     <div className="m-auto flex flex-grow flex-col items-center justify-center px-5">

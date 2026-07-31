@@ -16,6 +16,7 @@ import DefaultSeo from '@/layouts/_default-seo';
 import { SearchProvider } from '@/components/search/search.context';
 import { AddressProvider } from '@/context/address-context';
 import MobileThemeSync from '@/components/ui/mobile-theme-sync';
+import { trackPageView } from '@/lib/metrika';
 
 // base css file
 import '@/assets/css/scrollbar.css';
@@ -74,7 +75,8 @@ type AppPropsWithLayout = AppProps & {
 };
 
 function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
-  const { locale } = useRouter();
+  const router = useRouter();
+  const { locale } = router;
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -94,6 +96,18 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
   useEffect(() => {
     document.documentElement.dir = dir;
   }, [dir]);
+
+  useEffect(() => {
+    const handleRouteChange = (url: string) => {
+      trackPageView(url);
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router.events]);
   
   const authenticationRequired = Component.authorization ?? false;
   return (
