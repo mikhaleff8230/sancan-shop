@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import Link from 'next/link';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/ru';
+import { Loader2, MessageCircle, Search } from 'lucide-react';
+import { useMe } from '@/data/user';
 
 dayjs.extend(relativeTime);
 dayjs.locale('ru');
@@ -47,6 +50,7 @@ export default function ChatSidebar({
   loading,
 }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const { me } = useMe();
 
   const filteredConversations = conversations.filter((conv) => {
     if (!searchQuery) return true;
@@ -62,7 +66,9 @@ export default function ChatSidebar({
   const getConversationName = (conv: Conversation) => {
     if (conv.title) return conv.title;
     if (conv.type === 'private') {
-      return conv.user?.name || conv.shop?.name || 'Безымянный диалог';
+      return String(conv.user?.id) === String(me?.id)
+        ? conv.shop?.name || 'Продавец SANCAN'
+        : conv.user?.name || conv.shop?.name || 'Безымянный диалог';
     }
     return 'Групповой чат';
   };
@@ -75,24 +81,25 @@ export default function ChatSidebar({
 
   if (loading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="h-7 w-7 animate-spin text-brand" />
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="border-b border-ozon-border p-5">
         <h2 className="text-xl font-semibold text-gray-900">Сообщения</h2>
-        <div className="mt-3">
+        <div className="relative mt-4">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ozon-muted" />
           <input
             type="text"
             placeholder="Поиск диалогов..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="h-11 w-full rounded-full border border-transparent bg-[#f5f7fb] pl-11 pr-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
           />
         </div>
       </div>
@@ -107,21 +114,19 @@ export default function ChatSidebar({
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-full min-h-[300px]">
-                <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-brand-50">
+                  <MessageCircle className="h-8 w-8 text-brand" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Нет диалогов</h3>
                 <p className="text-sm text-gray-500 mb-4 max-w-xs">
-                  Начните общение с продавцом, перейдя на страницу его магазина и нажав кнопку "Написать продавцу"
+                  Начните общение с продавцом, перейдя на страницу его магазина и нажав кнопку &quot;Написать продавцу&quot;
                 </p>
-                <a
+                <Link
                   href="/authors"
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Перейти к магазинам
-                </a>
+                </Link>
               </div>
             )}
           </div>
@@ -131,14 +136,14 @@ export default function ChatSidebar({
               <button
                 key={conv.id}
                 onClick={() => onSelect(conv.id)}
-                className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                  selectedId === conv.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                className={`w-full border-l-4 px-4 py-4 text-left transition-colors hover:bg-brand-50/50 ${
+                  String(selectedId) === String(conv.id) ? 'border-brand bg-brand-50' : 'border-transparent'
                 }`}
               >
                 <div className="flex items-start space-x-3">
                   {/* Avatar */}
                   <div className="flex-shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-semibold">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand text-white font-bold">
                       {getConversationAvatar(conv)}
                     </div>
                     {conv.unseen && conv.unseen > 0 && (
@@ -180,11 +185,6 @@ export default function ChatSidebar({
     </div>
   );
 }
-
-
-
-
-
 
 
 

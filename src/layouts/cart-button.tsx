@@ -3,16 +3,27 @@ import { CartIcon } from '@/components/icons/cart-icon';
 import { useCart } from '@/components/cart/lib/cart.context';
 import { useDrawer } from '@/components/drawer-views/context';
 import { useIsMounted } from '@/lib/hooks/use-is-mounted';
+import { useMe } from '@/data/user';
+import { useModalAction } from '@/components/modal-views/context';
 
 export default function CartButton({ className }: { className?: string }) {
   const isMounted = useIsMounted();
   const { openDrawer } = useDrawer();
+  const { openModal } = useModalAction();
+  const { isAuthorized } = useMe();
   const { totalItems } = useCart();
+  const handleClick = () => {
+    if (!isAuthorized) {
+      openModal('LOGIN_VIEW');
+      return;
+    }
+    openDrawer('CART_VIEW');
+  };
   return (
     <Button
       variant="icon"
       aria-label="Cart"
-      onClick={() => openDrawer('CART_VIEW')}
+      onClick={handleClick}
       className={className}
     >
       <span className="relative flex items-center">

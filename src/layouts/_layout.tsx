@@ -14,7 +14,8 @@ const BottomNavigation = dynamic(() => import('@/layouts/_bottom-navigation'), {
 export default function Layout({
   children,
   hideSidebar = false,
-}: React.PropsWithChildren<{ hideSidebar?: boolean }>) {
+  immersive = false,
+}: React.PropsWithChildren<{ hideSidebar?: boolean; immersive?: boolean }>) {
   const breakpoint = useBreakpoint();
   const isMounted = useIsMounted();
   let [collapse, setCollapse] = useState(false);
@@ -50,8 +51,8 @@ export default function Layout({
           {children}
         </main>
       </div>
-      <Copyright />
-      {isMounted && breakpoint === 'xs' && <BottomNavigation />}
+      {!immersive && <Copyright />}
+      {!immersive && isMounted && breakpoint === 'xs' && <BottomNavigation />}
     </motion.div>
   );
 }

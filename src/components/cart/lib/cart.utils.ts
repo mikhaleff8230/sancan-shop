@@ -13,6 +13,7 @@ export interface Item {
     name: string;
   };
   language: string;
+  payment_method?: 'site_payment';
 }
 export interface VerifiedResponse {
   total_tax: number;

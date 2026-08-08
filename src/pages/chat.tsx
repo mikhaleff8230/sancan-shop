@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import client from '@/data/client';
 import { getAuthToken } from '@/data/client/token.utils';
 import ChatSidebar from '@/components/chat/ChatSidebar';
@@ -7,6 +7,7 @@ import ChatWindow from '@/components/chat/ChatWindow';
 import { useRouter } from 'next/router';
 import Layout from '@/layouts/_layout';
 import type { NextPageWithLayout } from '@/types';
+import Link from 'next/link';
 
 const ChatPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -31,8 +32,10 @@ const ChatPage: NextPageWithLayout = () => {
     }
   );
 
-  // Handle different response structures (data or conversations)
-  const conversations = conversationsResponse?.data || conversationsResponse?.conversations || conversationsResponse || [];
+  const conversations = conversationsResponse?.conversations
+    || conversationsResponse?.data?.data
+    || conversationsResponse?.data
+    || [];
 
   // Fetch messages for selected conversation
   const { data: messagesData, isLoading: messagesLoading } = useQuery(
@@ -40,8 +43,16 @@ const ChatPage: NextPageWithLayout = () => {
     () => client.chat.conversation(selectedConversationId!),
     {
       enabled: !!selectedConversationId && !!token,
+      refetchInterval: 8000,
     }
   );
+
+  useEffect(() => {
+    if (!selectedConversationId || !token) return;
+    client.chat.markAsRead(selectedConversationId)
+      .then(() => queryClient.invalidateQueries(['chat-conversations']))
+      .catch(() => undefined);
+  }, [selectedConversationId, token, queryClient, messagesData?.messages?.length]);
 
   // Set conversation from URL
   useEffect(() => {
@@ -57,8 +68,8 @@ const ChatPage: NextPageWithLayout = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <div className="w-1/3 border-r border-gray-200 bg-white">
+    <div className="mx-auto flex h-[calc(100vh-73px)] w-full max-w-[1440px] overflow-hidden bg-[#f5f7fb] sm:p-4 lg:p-6">
+      <div className={`${selectedConversationId ? 'hidden md:block' : 'block'} w-full shrink-0 overflow-hidden border-ozon-border bg-white md:w-[380px] md:rounded-l-3xl md:border md:border-r-0`}>
         <ChatSidebar
           conversations={Array.isArray(conversations) ? conversations : []}
           selectedId={selectedConversationId}
@@ -69,16 +80,20 @@ const ChatPage: NextPageWithLayout = () => {
           loading={conversationsLoading}
         />
       </div>
-      <div className="flex-1 flex flex-col">
+      <div className={`${selectedConversationId ? 'flex' : 'hidden md:flex'} min-w-0 flex-1 flex-col overflow-hidden bg-white md:rounded-r-3xl md:border md:border-ozon-border`}>
         {selectedConversationId ? (
           <ChatWindow
             conversationId={selectedConversationId}
             conversation={messagesData?.conversation}
             messages={messagesData?.messages || []}
             loading={messagesLoading}
+            onBack={() => {
+              setSelectedConversationId(null);
+              router.push('/chat', undefined, { shallow: true });
+            }}
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full bg-gray-50">
+          <div className="flex h-full flex-col items-center justify-center bg-[#f5f7fb]">
             <div className="text-center max-w-md px-6">
               <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
                 <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -94,12 +109,12 @@ const ChatPage: NextPageWithLayout = () => {
                   : 'Выберите диалог из списка слева или начните новый, перейдя на страницу магазина.'}
               </p>
               {(!conversations || conversations.length === 0) && (
-                <a
+                <Link
                   href="/authors"
                   className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Найти магазины
-                </a>
+                </Link>
               )}
             </div>
           </div>
@@ -110,13 +125,12 @@ const ChatPage: NextPageWithLayout = () => {
 };
 
 ChatPage.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
+  return <Layout hideSidebar immersive>{page}</Layout>;
 };
 
+ChatPage.authorization = true;
+
 export default ChatPage;
-
-
-
 
 
 

@@ -108,6 +108,7 @@ const CheckoutPage: NextPageWithLayout = () => {
         order_quantity: item.quantity,
         unit_price: item.price,
         subtotal: item.price * item.quantity,
+        payment_method: item.payment_method,
       })),
       shipping_address: shippingAddress,
       payment_gateway: 'tinkoff',

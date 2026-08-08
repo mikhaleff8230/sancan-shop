@@ -7,6 +7,7 @@ import 'dayjs/locale/ru';
 import { usePusher } from '@/hooks/usePusher';
 import { useMe } from '@/data/user';
 import toast from 'react-hot-toast';
+import { ArrowLeft, Loader2, Paperclip, Send, X } from 'lucide-react';
 
 dayjs.extend(relativeTime);
 dayjs.locale('ru');
@@ -29,6 +30,7 @@ interface Message {
     file_name: string;
     file_size: number;
   }>;
+  chat_attachments?: Message['attachments'];
   created_at: string;
   updated_at: string;
 }
@@ -52,6 +54,7 @@ interface ChatWindowProps {
   conversation?: Conversation;
   messages: Message[];
   loading?: boolean;
+  onBack?: () => void;
 }
 
 export default function ChatWindow({
@@ -59,6 +62,7 @@ export default function ChatWindow({
   conversation,
   messages,
   loading,
+  onBack,
 }: ChatWindowProps) {
   const [messageText, setMessageText] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -72,7 +76,9 @@ export default function ChatWindow({
       if (!oldData) return oldData;
       return {
         ...oldData,
-        messages: [...oldData.messages, data],
+        messages: oldData.messages.some((message: Message) => String(message.id) === String(data.id))
+          ? oldData.messages
+          : [...oldData.messages, data],
       };
     });
     // Scroll to bottom
@@ -126,19 +132,29 @@ export default function ChatWindow({
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setSelectedFiles(Array.from(e.target.files));
+      const files = Array.from(e.target.files);
+      const tooLarge = files.find((file) => file.size > 10 * 1024 * 1024);
+      if (tooLarge) {
+        toast.error(`Файл «${tooLarge.name}» больше 10 МБ`);
+        e.target.value = '';
+        return;
+      }
+      setSelectedFiles(files);
     }
   };
 
   const getConversationName = () => {
     if (conversation?.title) return conversation.title;
     if (conversation?.type === 'private') {
-      return conversation.user?.name || conversation.shop?.name || 'Безымянный диалог';
+      return String(conversation.user?.id) === String(me?.id)
+        ? conversation.shop?.name || 'Продавец SANCAN'
+        : conversation.user?.name || conversation.shop?.name || 'Безымянный диалог';
     }
     return 'Групповой чат';
   };
 
   const currentUserId = me?.id;
+  const apiUrl = (process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:8000').replace(/\/$/, '');
 
   if (loading && messages.length === 0) {
     return (
@@ -149,31 +165,41 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="flex h-full min-h-0 flex-col bg-white">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 bg-white">
-        <h3 className="text-lg font-semibold text-gray-900">{getConversationName()}</h3>
+      <div className="flex h-[72px] shrink-0 items-center gap-3 border-b border-ozon-border bg-white px-4 sm:px-6">
+        <button type="button" onClick={onBack} className="flex h-10 w-10 items-center justify-center rounded-full bg-light-200 md:hidden" aria-label="Назад к диалогам">
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand text-base font-bold text-white">
+          {getConversationName().charAt(0).toUpperCase()}
+        </div>
+        <div className="min-w-0">
+          <h3 className="truncate text-base font-bold text-ozon-text">{getConversationName()}</h3>
+          <p className="text-xs font-medium text-ozon-muted">Продавец SANCAN</p>
+        </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 space-y-3 overflow-y-auto bg-[#f5f7fb] p-4 sm:p-6">
         {messages.length === 0 ? (
           <div className="text-center text-gray-500 py-8">
             Нет сообщений. Начните общение!
           </div>
         ) : (
           messages.map((message) => {
-            const isOwn = message.user_id === currentUserId;
+            const isOwn = String(message.user_id) === String(currentUserId);
+            const attachments = message.attachments || message.chat_attachments || [];
             return (
               <div
                 key={message.id}
                 className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                  className={`max-w-[85%] px-4 py-2.5 shadow-sm sm:max-w-md ${
                     isOwn
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-200 text-gray-900'
+                      ? 'rounded-[20px_20px_6px_20px] bg-brand text-white'
+                      : 'rounded-[20px_20px_20px_6px] bg-white text-ozon-text'
                   }`}
                 >
                   {!isOwn && (
@@ -184,19 +210,19 @@ export default function ChatWindow({
                   <p className="text-sm whitespace-pre-wrap">{message.body}</p>
                   
                   {/* Attachments */}
-                  {message.attachments && message.attachments.length > 0 && (
+                  {attachments.length > 0 && (
                     <div className="mt-2 space-y-2">
-                      {message.attachments.map((attachment) => (
+                      {attachments.map((attachment) => (
                         <div key={attachment.id} className="mt-2">
                           {attachment.file_type === 'image' ? (
                             <img
-                              src={`${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:8000'}/storage/${attachment.file_path}`}
+                              src={`${apiUrl}/storage/${attachment.file_path}`}
                               alt={attachment.file_name}
                               className="max-w-full rounded-lg"
                             />
                           ) : (
                             <a
-                              href={`${process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'http://localhost:8000'}/storage/${attachment.file_path}`}
+                              href={`${apiUrl}/storage/${attachment.file_path}`}
                               download
                               className="text-sm underline hover:no-underline"
                             >
@@ -208,7 +234,7 @@ export default function ChatWindow({
                     </div>
                   )}
 
-                  <p className="text-xs mt-1 opacity-75">
+                  <p className={`mt-1 flex items-center justify-end gap-1 text-[11px] ${isOwn ? 'text-white/75' : 'text-ozon-muted'}`}>
                     {dayjs(message.created_at).format('HH:mm')}
                     {message.read_at && isOwn && ' ✓✓'}
                   </p>
@@ -221,28 +247,29 @@ export default function ChatWindow({
       </div>
 
       {/* Input */}
-      <div className="px-6 py-4 border-t border-gray-200 bg-white">
+      <div className="shrink-0 border-t border-ozon-border bg-white px-3 py-3 sm:px-5">
         {selectedFiles.length > 0 && (
           <div className="mb-2 flex flex-wrap gap-2">
             {selectedFiles.map((file, index) => (
               <div
                 key={index}
-                className="px-2 py-1 bg-gray-100 rounded text-sm flex items-center space-x-2"
+                className="flex items-center gap-2 rounded-xl bg-brand-50 px-3 py-2 text-sm text-brand"
               >
                 <span>{file.name}</span>
                 <button
+                  type="button"
                   onClick={() =>
                     setSelectedFiles(selectedFiles.filter((_, i) => i !== index))
                   }
-                  className="text-red-500 hover:text-red-700"
+                  className="text-[0px] text-ozon-muted hover:text-red-600"
                 >
-                  ×
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             ))}
           </div>
         )}
-        <form onSubmit={handleSendMessage} className="flex items-end space-x-2">
+        <form onSubmit={handleSendMessage} className="flex items-center gap-2">
           <input
             type="file"
             multiple
@@ -252,27 +279,27 @@ export default function ChatWindow({
           />
           <label
             htmlFor="file-input"
-            className="px-4 py-2 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200"
+            className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-full bg-light-200 text-[0px] text-ozon-text transition hover:bg-brand-50 hover:text-brand"
           >
-            📎
+            <Paperclip className="h-5 w-5" />
           </label>
           <input
             type="text"
             value={messageText}
             onChange={(e) => setMessageText(e.target.value)}
             placeholder="Введите сообщение..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="h-11 min-w-0 flex-1 rounded-full border border-ozon-border bg-[#f5f7fb] px-5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/10"
           />
           <button
             type="submit"
             disabled={sendMessageMutation.isLoading || (!messageText.trim() && selectedFiles.length === 0)}
-            className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label="Отправить"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-[0px] text-white transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Отправить
+            {sendMessageMutation.isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
           </button>
         </form>
       </div>
     </div>
   );
 }
-

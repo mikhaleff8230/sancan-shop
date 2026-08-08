@@ -15,6 +15,7 @@ import { useIsMounted } from '@/lib/hooks/use-is-mounted';
 import { useSwapBodyClassOnScrollDirection } from '@/lib/hooks/use-swap-body-class';
 import { useDynamicHeader } from '@/lib/hooks/use-dynamic-header';
 import { useDrawer } from '@/components/drawer-views/context';
+import { useModalAction } from '@/components/modal-views/context';
 import Button from '@/components/ui/button';
 import LanguageSwitcher from '@/components/ui/language-switcher';
 import { MapPin } from 'lucide-react';
@@ -102,7 +103,7 @@ function AuthorizedMenu({ user }: { user: User }) {
 }
 
 function LoginMenu() {
-  const { openDrawer } = useDrawer();
+  const { openModal } = useModalAction();
   const { me, isAuthorized, isLoading } = useMe();
   const isMounted = useIsMounted();
   if (!isMounted) {
@@ -118,7 +119,7 @@ function LoginMenu() {
       variant="icon"
       aria-label="User"
       className="flex h-10 w-10 items-center justify-center rounded-full bg-light-200 text-ozon-text hover:bg-brand-50 hover:text-brand"
-      onClick={() => openDrawer('AUTH_VIEW')}
+      onClick={() => openModal('LOGIN_VIEW')}
     >
       <UserIcon className="h-5 w-5"/>
     </Button>

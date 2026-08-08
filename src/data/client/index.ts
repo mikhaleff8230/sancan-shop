@@ -518,6 +518,8 @@ class Client {
   chat = {
     conversations: () =>
       HttpClient.get<any>(API_ENDPOINTS.CHAT_CONVERSATIONS),
+    createConversation: (shopId: string) =>
+      HttpClient.post<any>('/api/conversations', { shop_id: shopId }),
     conversation: (id: string) =>
       HttpClient.get<any>(`${API_ENDPOINTS.CHAT_CONVERSATIONS}/${id}`),
     sendMessage: (data: {
@@ -561,6 +563,24 @@ class Client {
         `${API_ENDPOINTS.CHAT_CONVERSATIONS}/${conversationId}/read`,
         {}
       ),
+  };
+  secondLife = {
+    paymentOptions: (productId: string | number) => HttpClient.get<any>(`/api/second-life/products/${productId}/payment-options`),
+    paymentOptions: (productId: string | number) => HttpClient.get<any>(`/api/second-life/products/${productId}/payment-options`),
+    createOrder: (productId: string | number) => HttpClient.post<any>('/api/second-life/orders', { product_id: productId }),
+    order: (publicId: string) => HttpClient.get<any>(`/api/second-life/orders/${publicId}`),
+    markPaid: (publicId: string, data: FormData) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/mark-paid`, data),
+    confirmPayment: (publicId: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/confirm-payment`, {}),
+    rejectPayment: (publicId: string, reason: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/reject-payment`, { reason }),
+    openDispute: (publicId: string, reason: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/open-dispute`, { reason }),
+  };
+  secondLife = {
+    createOrder: (productId: string | number) => HttpClient.post<any>('/api/second-life/orders', { product_id: productId }),
+    order: (publicId: string) => HttpClient.get<any>(`/api/second-life/orders/${publicId}`),
+    markPaid: (publicId: string, data: FormData) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/mark-paid`, data),
+    confirmPayment: (publicId: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/confirm-payment`, {}),
+    rejectPayment: (publicId: string, reason: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/reject-payment`, { reason }),
+    openDispute: (publicId: string, reason: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/open-dispute`, { reason }),
   };
   // Auth API
   auth = {

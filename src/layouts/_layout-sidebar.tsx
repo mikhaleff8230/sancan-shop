@@ -27,6 +27,7 @@ import Logo from '@/components/ui/logo';
 import { PlusCircleIcon } from '@/components/icons/plus-circle-icon';
 import CreatePlaceModal from '@/components/places/CreatePlaceModal';
 import { useState } from 'react';
+import { useModalAction } from '@/components/modal-views/context';
 
 interface NavLinkProps {
   href: string;
@@ -65,12 +66,16 @@ function NavLink({ href, icon, title, isCollapse }: NavLinkProps) {
 function CartNavLink({ isCollapse }: { isCollapse?: boolean }) {
   const { t } = useTranslation('common');
   const { openDrawer } = useDrawer();
+  const { openModal } = useModalAction();
+  const { isAuthorized } = useMe();
   const { totalItems } = useCart();
   const isMounted = useIsMounted();
   
   return (
     <button
-      onClick={() => openDrawer('CART_VIEW')}
+      onClick={() =>
+        isAuthorized ? openDrawer('CART_VIEW') : openModal('LOGIN_VIEW')
+      }
       className="mx-2 my-1 flex w-[calc(100%-16px)] items-center gap-2 rounded-xl px-3 py-2.5 text-left text-ozon-text transition-colors hover:bg-brand-50 hover:text-brand xs:px-4 sm:my-1"
     >
       <span
@@ -111,7 +116,7 @@ export function Sidebar({
 }) {
   const { t } = useTranslation('common');
   const { me } = useMe();
-  const { openDrawer } = useDrawer();
+  const { openModal } = useModalAction();
 
   return (
     <aside
@@ -151,7 +156,7 @@ export function Sidebar({
               />
             ) : (
               <button
-                onClick={() => openDrawer('AUTH_VIEW')}
+                onClick={() => openModal('LOGIN_VIEW')}
                 className="mx-2 my-1 flex w-[calc(100%-16px)] items-center gap-2 rounded-xl px-3 py-2.5 text-left text-ozon-text transition-colors hover:bg-brand-50 hover:text-brand xs:px-4 sm:my-1"
               >
                 <span

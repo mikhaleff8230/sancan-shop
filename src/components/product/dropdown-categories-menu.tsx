@@ -497,6 +497,8 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
 
           {/* Десктоп/планшет: широкое меню */}
           {/* Полностью скрываем на мобильных устройствах, показываем только на sm и выше */}
+            </div>
+          </div>
           <div className="absolute left-0 mt-0 z-50 w-[1280px] h-[calc(100vh-80px)] bg-white border border-gray-200 rounded-bl-2xl rounded-br-2xl shadow-2xl animate-fade-in overflow-hidden !hidden sm:!flex">
             {/* Левая панель */}
             <div className="w-72 border-r border-gray-100 bg-gray-50 py-6 flex flex-col transition-all duration-200 overflow-y-auto h-full">
@@ -565,4 +567,4 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
       )}
     </div>
   );
-} 
+}

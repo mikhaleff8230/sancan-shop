@@ -1,4 +1,8 @@
 import { useTranslation } from 'next-i18next';
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import client from '@/data/client';
+import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { fadeInBottom } from '@/lib/framer-motion/fade-in-bottom';
 import { ShoppingCartIcon } from '@/components/icons/shopping-cart-icon';
@@ -27,6 +31,11 @@ export default function ProductPriceBlock({
   className = '',
 }: ProductPriceBlockProps) {
   const { t } = useTranslation('common');
+  const router = useRouter();
+  const [paymentChoiceOpen, setPaymentChoiceOpen] = useState(false);
+  const [creatingOrder, setCreatingOrder] = useState(false);
+  const [commissionRate, setCommissionRate] = useState(0);
+  const [sitePaymentPrice, setSitePaymentPrice] = useState(0);
   const { price, basePrice } = usePrice({
     amount: product.sale_price ? product.sale_price : product.price,
     baseAmount: product.price,
@@ -37,6 +46,29 @@ export default function ProductPriceBlock({
   const discount = oldPrice > currentPrice && currentPrice > 0
     ? Math.round(((oldPrice - currentPrice) / oldPrice) * 100)
     : 0;
+  const isSecondLife = Boolean((product as any).is_personal_item);
+  const sitePrice = sitePaymentPrice || currentPrice;
+  const formatRub = (value: number) => new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
+
+  async function startDirectSbp() {
+    setCreatingOrder(true);
+    try {
+      const response = await client.secondLife.createOrder(product.id);
+      const publicId = response?.order?.public_id;
+      if (!publicId) throw new Error('Заказ не создан');
+      await router.push(`/second-life/orders/${publicId}/payment`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.response?.data?.errors?.payment_profile?.[0] || 'Не удалось создать заказ СБП');
+    } finally { setCreatingOrder(false); }
+  }
+  async function openPaymentChoice() {
+    setPaymentChoiceOpen(true);
+    try {
+      const options = await client.secondLife.paymentOptions(product.id);
+      setCommissionRate(Number(options?.site_payment?.commission_rate || 0));
+      setSitePaymentPrice(Number(options?.site_payment?.price || currentPrice));
+    } catch { setCommissionRate(0); setSitePaymentPrice(currentPrice); }
+  }
 
   return (
     <motion.div
@@ -100,6 +132,11 @@ export default function ProductPriceBlock({
             <ShoppingCartIcon className="h-5 w-5" />
             {product.external_product_button_text || 'В корзину'}
           </Link>
+        ) : !isFreeItem && isSecondLife ? (
+          <button type="button" onClick={openPaymentChoice} className="sancan-ozon-button flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-bold leading-6">
+            <ShoppingCartIcon className="h-5 w-5" />
+            Выбрать способ оплаты
+          </button>
         ) : !isFreeItem ? (
           <AddToCart
             item={product}
@@ -152,6 +189,29 @@ export default function ProductPriceBlock({
           Смотреть во внешнем магазине
           <span>→</span>
         </Link>
+      ) : null}
+      {paymentChoiceOpen ? (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" onClick={() => setPaymentChoiceOpen(false)}>
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <h2 className="text-2xl font-black text-ozon-text">Как оплатить?</h2>
+            <p className="mt-2 text-sm text-ozon-muted">Два независимых варианта оплаты с разной итоговой стоимостью.</p>
+            <div className="mt-5 grid gap-3">
+              <button type="button" disabled={creatingOrder} onClick={startDirectSbp} className="rounded-2xl border-2 border-brand bg-brand-50 p-5 text-left transition hover:bg-brand-100 disabled:opacity-50">
+                <span className="block text-base font-black text-brand">Напрямую продавцу по СБП</span>
+                <span className="mt-1 block text-2xl font-black text-ozon-text">{formatRub(currentPrice)}</span>
+                <span className="mt-2 block text-sm text-ozon-muted">Перевод физлицу. SANCAN не принимает деньги за товар.</span>
+              </button>
+              <div className="rounded-2xl border border-ozon-border p-5 text-left transition hover:border-brand">
+                <span className="block text-base font-black text-ozon-text">Оплата на сайте</span>
+                <span className="mt-1 block text-2xl font-black text-ozon-text">{formatRub(sitePrice)}</span>
+                <span className="mt-2 block text-sm text-ozon-muted">Цена товара + комиссия магазина {commissionRate}%.</span>
+                <span className="mt-3 block text-sm font-bold text-brand">Через существующий checkout и оплату сайта</span>
+                <AddToCart item={{...product, price: sitePrice, sale_price: null, payment_method: 'site_payment'} as Product} withPrice={false} className="mt-4 flex w-full items-center justify-center rounded-xl bg-ozon-pink px-5 py-3 font-black text-white" />
+              </div>
+            </div>
+            <button type="button" onClick={() => setPaymentChoiceOpen(false)} className="mt-4 w-full rounded-xl bg-light-200 px-4 py-3 font-bold">Закрыть</button>
+          </div>
+        </div>
       ) : null}
     </motion.div>
   );
