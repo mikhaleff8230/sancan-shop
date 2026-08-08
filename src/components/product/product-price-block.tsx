@@ -158,7 +158,7 @@ export default function ProductPriceBlock({
       </div>
 
       {product.shop?.name ? (
-        <div className="mt-5 rounded-2xl border border-ozon-border bg-white px-4 py-3">
+        <Link href={`/shops/${product.shop.slug}`} className="mt-5 block rounded-2xl border border-ozon-border bg-white px-4 py-3 transition hover:border-ozon-blue hover:shadow-sm">
           <div className="mb-2 text-sm font-bold text-ozon-text">Магазин</div>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#eef3f8] text-base font-bold text-ozon-text">
@@ -176,7 +176,7 @@ export default function ProductPriceBlock({
               </div>
             ) : null}
           </div>
-        </div>
+        </Link>
       ) : null}
 
       {product.preview_url ? (

@@ -110,7 +110,7 @@ const ChatPage: NextPageWithLayout = () => {
               </p>
               {(!conversations || conversations.length === 0) && (
                 <Link
-                  href="/authors"
+                  href="/shops"
                   className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Найти магазины
@@ -131,7 +131,6 @@ ChatPage.getLayout = function getLayout(page) {
 ChatPage.authorization = true;
 
 export default ChatPage;
-
 
 
 

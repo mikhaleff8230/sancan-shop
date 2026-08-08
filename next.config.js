@@ -11,6 +11,12 @@ const withPWA = require('next-pwa')({
 module.exports = withPWA({
   reactStrictMode: true,
   i18n,
+  async redirects() {
+    return [
+      { source: '/authors', destination: '/shops', permanent: true },
+      { source: '/authors/:slug', destination: '/shops/:slug', permanent: true },
+    ];
+  },
   webpack: (config, { isServer }) => {
     // Исключаем Node.js модули из клиентского бандла
     if (!isServer) {

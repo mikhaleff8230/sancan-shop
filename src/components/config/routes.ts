@@ -1,6 +1,6 @@
 const routes = {
   home: '/',
-  authors: '/authors',
+  authors: '/shops',
   explore: '/explore',
   products: '/products',
   shops: '/shops',
@@ -33,7 +33,7 @@ const routes = {
   categoryUrl: (slug: string) => `/categories/${slug}`,
   tagUrl: (slug: string) => `/products/tags/${slug}`,
   placeHashtagUrl: (slug: string) => `/places/element/${slug}`,
-  shopUrl: (slug: string) => `/authors/${slug}`,
+  shopUrl: (slug: string) => `/shops/${slug}`,
   product: (slug: string) => {
     return `/products/${encodeURIComponent(slug)}`;
   },
