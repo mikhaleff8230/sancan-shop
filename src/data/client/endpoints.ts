@@ -72,7 +72,7 @@ export const API_ENDPOINTS = {
   AUTH_LOGIN: '/api/auth/login',
   AUTH_LOGOUT: '/api/auth/logout',
   AUTH_ME: '/api/auth/me',
-  CHAT_CONVERSATIONS: '/api/chat/conversations',
-  CHAT_MESSAGES: '/api/chat/messages',
-  CHAT_ATTACHMENTS: '/api/chat/attachments',
+  CHAT_CONVERSATIONS: '/chat/conversations',
+  CHAT_MESSAGES: '/chat/messages',
+  CHAT_ATTACHMENTS: '/chat/attachments',
 };

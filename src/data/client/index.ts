@@ -519,7 +519,7 @@ class Client {
     conversations: () =>
       HttpClient.get<any>(API_ENDPOINTS.CHAT_CONVERSATIONS),
     createConversation: (shopId: string) =>
-      HttpClient.post<any>('/api/conversations', { shop_id: shopId }),
+      HttpClient.post<any>('/conversations', { shop_id: shopId }),
     conversation: (id: string) =>
       HttpClient.get<any>(`${API_ENDPOINTS.CHAT_CONVERSATIONS}/${id}`),
     sendMessage: (data: {
