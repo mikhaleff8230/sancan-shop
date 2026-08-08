@@ -275,6 +275,11 @@ function ProductDescription({ description }: { description: string }) {
 const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ product, meta }) => {
   const { t } = useTranslation('common');
   const router = useRouter();
+  const [directSbpAvailable, setDirectSbpAvailable] = useState(false);
+  useEffect(() => {
+    if (!(product as any)?.is_personal_item || !product?.id) return;
+    client.secondLife.paymentOptions(product.id).then((options:any) => setDirectSbpAvailable(Boolean(options?.direct_sbp?.available))).catch(() => setDirectSbpAvailable(false));
+  }, [product?.id]);
   
   // Безопасная деструктуризация с дефолтными значениями
   const {
@@ -542,10 +547,8 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                             <span className="text-right font-semibold text-ozon-text">{shop.name}</span>
                           </div>
                         ) : null}
-                        <div className="flex justify-between gap-4 border-b border-dotted border-[#cfd7e3] pb-2">
-                          <span className="text-ozon-muted">Оплата</span>
-                          <span className="text-right font-semibold text-ozon-text">Напрямую продавцу</span>
-                        </div>
+                        <div className="flex justify-between gap-4 border-b border-dotted border-[#cfd7e3] pb-2"><span className="text-ozon-muted">Оплата</span><span className="text-right font-semibold text-ozon-text">Оплата на сайте</span></div>
+                        {directSbpAvailable ? <div className="flex justify-between gap-4 border-b border-dotted border-[#cfd7e3] pb-2"><span className="text-ozon-muted">Оплата</span><span className="text-right font-semibold text-ozon-text">Напрямую продавцу по СБП</span></div> : null}
                         <div className="flex justify-between gap-4">
                           <span className="text-ozon-muted">Сделка</span>
                           <span className="text-right font-semibold text-ozon-text">SANCAN помогает с коммуникацией</span>

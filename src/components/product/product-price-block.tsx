@@ -1,5 +1,5 @@
 import { useTranslation } from 'next-i18next';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import client from '@/data/client';
 import toast from 'react-hot-toast';
@@ -36,6 +36,7 @@ export default function ProductPriceBlock({
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [commissionRate, setCommissionRate] = useState(0);
   const [sitePaymentPrice, setSitePaymentPrice] = useState(0);
+  const [directSbpAvailable, setDirectSbpAvailable] = useState(false);
   const { price, basePrice } = usePrice({
     amount: product.sale_price ? product.sale_price : product.price,
     baseAmount: product.price,
@@ -49,6 +50,15 @@ export default function ProductPriceBlock({
   const isSecondLife = Boolean((product as any).is_personal_item);
   const sitePrice = sitePaymentPrice || currentPrice;
   const formatRub = (value: number) => new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
+
+  useEffect(() => {
+    if (!isSecondLife) return;
+    client.secondLife.paymentOptions(product.id).then((options:any) => {
+      setDirectSbpAvailable(Boolean(options?.direct_sbp?.available));
+      setCommissionRate(Number(options?.site_payment?.commission_rate || 0));
+      setSitePaymentPrice(Number(options?.site_payment?.price || currentPrice));
+    }).catch(() => { setDirectSbpAvailable(false); setSitePaymentPrice(currentPrice); });
+  }, [product.id, isSecondLife, currentPrice]);
 
   async function startDirectSbp() {
     setCreatingOrder(true);
@@ -108,10 +118,13 @@ export default function ProductPriceBlock({
         ) : null}
       </div>
 
-      <div className="sancan-ozon-trust-note mb-4 px-3 py-2.5">
-        Оплата товара идет напрямую продавцу. SANCAN не принимает платеж за товар
-        и помогает организовать сделку, общение и подтверждения.
-      </div>
+      {isSecondLife && directSbpAvailable ? <div className="group relative mb-4">
+        <button type="button" disabled={creatingOrder} onClick={startDirectSbp} className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#f1f5fb] px-4 py-3 font-extrabold text-ozon-text transition hover:bg-[#e7eef8]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-600 to-fuchsia-500 text-[10px] font-black text-white">СБП</span>
+          {creatingOrder?'Создаём заказ…':'Оплата СБП'}
+        </button>
+        <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-[290px] -translate-x-1/2 rounded-xl bg-ozon-text p-3 text-xs leading-5 text-white shadow-xl group-hover:block">Оплата идёт напрямую продавцу. SANCAN не принимает платёж, но помогает организовать сделку, общение и подтверждение.</div>
+      </div>:null}
 
       <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
         <button className="rounded-xl bg-[#f1f5fb] px-3 py-2.5 font-semibold text-ozon-text">
@@ -133,10 +146,10 @@ export default function ProductPriceBlock({
             {product.external_product_button_text || 'В корзину'}
           </Link>
         ) : !isFreeItem && isSecondLife ? (
-          <button type="button" onClick={openPaymentChoice} className="sancan-ozon-button flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-bold leading-6">
+          <AddToCart item={{...product, price: sitePrice, sale_price: null, payment_method: 'site_payment'} as Product} withPrice={false} className="sancan-ozon-button flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-bold leading-6">
             <ShoppingCartIcon className="h-5 w-5" />
-            Выбрать способ оплаты
-          </button>
+            Добавить в корзину
+          </AddToCart>
         ) : !isFreeItem ? (
           <AddToCart
             item={product}
