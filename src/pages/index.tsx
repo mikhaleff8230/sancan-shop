@@ -6,6 +6,7 @@ import type { NextPageWithLayout } from '@/types';
 import type { GetStaticProps } from 'next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
+import HomepageBanners from '@/components/home/homepage-banners';
 
 interface HomePageProps {}
 
@@ -129,8 +130,7 @@ const Home: NextPageWithLayout<HomePageProps> = () => {
       />
 
       <section className="sancan-ozon-page pb-12">
-        <PromoStrip />
-        <HeroBanner />
+        <HomepageBanners />
         <CategoryFilter />
         <div className="sancan-ozon-container">
           <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
