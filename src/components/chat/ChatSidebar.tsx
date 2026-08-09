@@ -146,7 +146,7 @@ export default function ChatSidebar({
                     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand text-white font-bold">
                       {getConversationAvatar(conv)}
                     </div>
-                    {conv.unseen && conv.unseen > 0 && (
+                    {Number(conv.unseen) > 0 && (
                       <div className="relative -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                         {conv.unseen > 9 ? '9+' : conv.unseen}
                       </div>
@@ -185,6 +185,5 @@ export default function ChatSidebar({
     </div>
   );
 }
-
 
 
