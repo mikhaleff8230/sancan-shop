@@ -38,7 +38,11 @@ export function addItemWithQuantity(
 
   if (existingItemIndex > -1) {
     const newItems = [...items];
-    newItems[existingItemIndex].quantity += quantity;
+    newItems[existingItemIndex] = {
+      ...newItems[existingItemIndex],
+      ...item,
+      quantity: newItems[existingItemIndex].quantity + quantity,
+    };
     return newItems;
   }
   return [...items, { ...item, quantity }];

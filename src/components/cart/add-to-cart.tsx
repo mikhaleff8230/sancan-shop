@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import cn from 'classnames';
 import toast from 'react-hot-toast';
 import Button from '@/components/ui/button';
@@ -25,13 +25,21 @@ export default function AddToCart({
   variant = 'fill',
 }: Props) {
   const { t } = useTranslation('common');
-  const { addItemToCart, updateCartLanguage, language, isInStock } = useCart();
+  const { addItemToCart, updateCartLanguage, language, isInStock, getItemFromCart, updateItemInCart } = useCart();
   const [addToCartLoader, setAddToCartLoader] = useState(false);
   const [cartingSuccess, setCartingSuccess] = useState(false);
   const { price } = usePrice({
     amount: item?.sale_price ? item?.sale_price : item?.price,
     baseAmount: item?.price,
   });
+
+  useEffect(() => {
+    const cartItem = getItemFromCart(item?.id);
+    const freshItem = generateCartItem(item);
+    if (cartItem && (cartItem.price !== freshItem.price || cartItem.payment_method !== freshItem.payment_method)) {
+      updateItemInCart(item.id, freshItem);
+    }
+  }, [item?.id, item?.price, item?.sale_price, item?.payment_method, getItemFromCart, updateItemInCart]);
 
   function handleAddToCart() {
     setAddToCartLoader(true);

@@ -15,6 +15,7 @@ interface CartProviderState extends State {
   addItemToCart: (item: Optional<Item, 'quantity'>, quantity: number) => void;
   removeItemFromCart: (id: Item['id']) => void;
   clearItemFromCart: (id: Item['id']) => void;
+  updateItemInCart: (id: Item['id'], item: Partial<Item>) => void;
   getItemFromCart: (id: Item['id']) => any | undefined;
   isInCart: (id: Item['id']) => boolean;
   isInStock: (id: Item['id']) => boolean;
@@ -63,6 +64,10 @@ export const CartProvider: React.FC<{
     dispatch({ type: 'REMOVE_ITEM_OR_QUANTITY', id });
   const clearItemFromCart = (id: Item['id']) =>
     dispatch({ type: 'REMOVE_ITEM', id });
+  const updateItemInCart = useCallback(
+    (id: Item['id'], item: Partial<Item>) => dispatch({ type: 'UPDATE_ITEM', id, item }),
+    []
+  );
   const setVerifiedResponse = (response: any) =>
     dispatch({ type: 'SET_VERIFIED_RESPONSE', response });
   const isInCart = useCallback(
@@ -86,6 +91,7 @@ export const CartProvider: React.FC<{
       addItemToCart,
       removeItemFromCart,
       clearItemFromCart,
+      updateItemInCart,
       getItemFromCart,
       setVerifiedResponse,
       isInCart,
@@ -93,7 +99,7 @@ export const CartProvider: React.FC<{
       resetCart,
       updateCartLanguage,
     }),
-    [getItemFromCart, isInCart, isInStock, state]
+    [getItemFromCart, isInCart, isInStock, state, updateItemInCart]
   );
   return <cartContext.Provider value={value} {...props} />;
 };

@@ -277,7 +277,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
   const router = useRouter();
   const [directSbpAvailable, setDirectSbpAvailable] = useState(false);
   useEffect(() => {
-    if (!(product as any)?.is_personal_item || !product?.id) return;
+    if (!product?.id) return;
     client.secondLife.paymentOptions(product.id).then((options:any) => setDirectSbpAvailable(Boolean(options?.direct_sbp?.available))).catch(() => setDirectSbpAvailable(false));
   }, [product?.id]);
   

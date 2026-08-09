@@ -47,18 +47,17 @@ export default function ProductPriceBlock({
   const discount = oldPrice > currentPrice && currentPrice > 0
     ? Math.round(((oldPrice - currentPrice) / oldPrice) * 100)
     : 0;
-  const isSecondLife = Boolean((product as any).is_personal_item);
   const sitePrice = sitePaymentPrice || currentPrice;
   const formatRub = (value: number) => new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
 
   useEffect(() => {
-    if (!isSecondLife) return;
+    if (!product?.id) return;
     client.secondLife.paymentOptions(product.id).then((options:any) => {
       setDirectSbpAvailable(Boolean(options?.direct_sbp?.available));
       setCommissionRate(Number(options?.site_payment?.commission_rate || 0));
       setSitePaymentPrice(Number(options?.site_payment?.price || currentPrice));
     }).catch(() => { setDirectSbpAvailable(false); setSitePaymentPrice(currentPrice); });
-  }, [product.id, isSecondLife, currentPrice]);
+  }, [product.id, currentPrice]);
 
   async function startDirectSbp() {
     setCreatingOrder(true);
@@ -118,7 +117,7 @@ export default function ProductPriceBlock({
         ) : null}
       </div>
 
-      {isSecondLife && directSbpAvailable ? <div className="group relative mb-4">
+      {directSbpAvailable ? <div className="group relative mb-4">
         <button type="button" disabled={creatingOrder} onClick={startDirectSbp} className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#f1f5fb] px-4 py-3 font-extrabold text-ozon-text transition hover:bg-[#e7eef8]">
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-600 to-fuchsia-500 text-[10px] font-black text-white">СБП</span>
           {creatingOrder?'Создаём заказ…':'Оплата СБП'}
@@ -145,17 +144,11 @@ export default function ProductPriceBlock({
             <ShoppingCartIcon className="h-5 w-5" />
             {product.external_product_button_text || 'В корзину'}
           </Link>
-        ) : !isFreeItem && isSecondLife ? (
+        ) : !isFreeItem ? (
           <AddToCart item={{...product, price: sitePrice, sale_price: null, payment_method: 'site_payment'} as Product} withPrice={false} className="sancan-ozon-button flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-bold leading-6">
             <ShoppingCartIcon className="h-5 w-5" />
             Добавить в корзину
           </AddToCart>
-        ) : !isFreeItem ? (
-          <AddToCart
-            item={product}
-            withPrice={false}
-            className="sancan-ozon-button flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-bold leading-6"
-          />
         ) : (
           <FreeDownloadButton
             productId={product.id}
