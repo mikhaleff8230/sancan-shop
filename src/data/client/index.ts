@@ -566,15 +566,6 @@ class Client {
   };
   secondLife = {
     paymentOptions: (productId: string | number) => HttpClient.get<any>(`/api/second-life/products/${productId}/payment-options`),
-    paymentOptions: (productId: string | number) => HttpClient.get<any>(`/api/second-life/products/${productId}/payment-options`),
-    createOrder: (productId: string | number) => HttpClient.post<any>('/api/second-life/orders', { product_id: productId }),
-    order: (publicId: string) => HttpClient.get<any>(`/api/second-life/orders/${publicId}`),
-    markPaid: (publicId: string, data: FormData) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/mark-paid`, data),
-    confirmPayment: (publicId: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/confirm-payment`, {}),
-    rejectPayment: (publicId: string, reason: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/reject-payment`, { reason }),
-    openDispute: (publicId: string, reason: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/open-dispute`, { reason }),
-  };
-  secondLife = {
     createOrder: (productId: string | number) => HttpClient.post<any>('/api/second-life/orders', { product_id: productId }),
     order: (publicId: string) => HttpClient.get<any>(`/api/second-life/orders/${publicId}`),
     markPaid: (publicId: string, data: FormData) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/mark-paid`, data),
