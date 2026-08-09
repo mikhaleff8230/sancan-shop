@@ -13,6 +13,7 @@ import AddToCart from '@/components/cart/add-to-cart';
 import FreeDownloadButton from '@/components/product/free-download-button';
 import FavoriteButton from '@/components/favorite/favorite-button';
 import Link from 'next/link';
+import { useCart } from '@/components/cart/lib/cart.context';
 
 interface ProductPriceBlockProps {
   product: Product;
@@ -32,6 +33,7 @@ export default function ProductPriceBlock({
 }: ProductPriceBlockProps) {
   const { t } = useTranslation('common');
   const router = useRouter();
+  const { clearItemFromCart } = useCart();
   const [paymentChoiceOpen, setPaymentChoiceOpen] = useState(false);
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [commissionRate, setCommissionRate] = useState(0);
@@ -65,7 +67,8 @@ export default function ProductPriceBlock({
       const response = await client.secondLife.createOrder(product.id);
       const publicId = response?.order?.public_id;
       if (!publicId) throw new Error('Заказ не создан');
-      await router.push(`/second-life/orders/${publicId}/payment`);
+      clearItemFromCart(product.id);
+      await router.replace(`/second-life/orders/${publicId}/payment`);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || error?.response?.data?.errors?.payment_profile?.[0] || 'Не удалось создать заказ СБП');
     } finally { setCreatingOrder(false); }

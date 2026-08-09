@@ -34,6 +34,7 @@ export default function AddToCart({
   });
 
   useEffect(() => {
+    if (item?.payment_method !== 'site_payment') return;
     const cartItem = getItemFromCart(item?.id);
     const freshItem = generateCartItem(item);
     if (cartItem && (cartItem.price !== freshItem.price || cartItem.payment_method !== freshItem.payment_method)) {
