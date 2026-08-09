@@ -8,6 +8,8 @@ import { useRouter } from 'next/router';
 import Layout from '@/layouts/_layout';
 import type { NextPageWithLayout } from '@/types';
 import Link from 'next/link';
+import type { GetStaticProps } from 'next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 const ChatPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -130,8 +132,14 @@ ChatPage.getLayout = function getLayout(page) {
 
 ChatPage.authorization = true;
 
-export default ChatPage;
+export const getStaticProps: GetStaticProps = async ({ locale }) => ({
+  props: {
+    ...(await serverSideTranslations(locale!, ['common'])),
+  },
+  revalidate: 60,
+});
 
+export default ChatPage;
 
 
 
