@@ -572,6 +572,7 @@ class Client {
     confirmPayment: (publicId: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/confirm-payment`, {}),
     rejectPayment: (publicId: string, reason: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/reject-payment`, { reason }),
     openDispute: (publicId: string, reason: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/open-dispute`, { reason }),
+    cancelOrder: (publicId: string) => HttpClient.post<any>(`/api/second-life/orders/${publicId}/cancel`, {}),
   };
   // Auth API
   auth = {

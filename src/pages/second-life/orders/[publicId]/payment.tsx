@@ -1,3 +1,294 @@
-import { useEffect,useState } from 'react'; import { useRouter } from 'next/router'; import { Copy,ExternalLink,Loader2,ShieldAlert,UploadCloud } from 'lucide-react'; import client from '@/data/client'; import { useMe } from '@/data/user'; import Layout from '@/layouts/_layout'; import type { NextPageWithLayout } from '@/types'; import toast from 'react-hot-toast';
-const PaymentPage:NextPageWithLayout=()=>{const router=useRouter();const {me}=useMe();const id=String(router.query.publicId||'');const [order,setOrder]=useState<any>();const [loading,setLoading]=useState(true);const [modal,setModal]=useState(false);const [comment,setComment]=useState('');const [proof,setProof]=useState<File>();const load=()=>id&&client.secondLife.order(id).then((r:any)=>setOrder(r.order)).catch((e:any)=>toast.error(e?.response?.data?.message||'Заказ не найден')).finally(()=>setLoading(false));useEffect(()=>{load();},[id]);if(loading)return <div className="flex min-h-[60vh] items-center justify-center"><Loader2 className="animate-spin"/></div>;if(!order)return null;const d=order.payment_details||{};const buyer=String(me?.id)===String(order.buyer_id);const paid=order.payment_status==='seller_confirmed_paid';const marked=order.payment_status==='buyer_marked_paid';const submit=async()=>{const f=new FormData();if(comment)f.append('comment',comment);if(proof)f.append('screenshot',proof);await client.secondLife.markPaid(id,f);setModal(false);toast.success('Отметка об оплате отправлена продавцу');load();};return <div className="min-h-screen bg-[#f5f7fb] p-4 sm:p-8"><div className="mx-auto max-w-5xl"><div className="mb-5 flex justify-between"><button onClick={()=>router.back()} className="rounded-full bg-white px-4 py-2 font-bold">← Назад</button><span className="rounded-full bg-white px-4 py-2 font-bold">{order.public_id}</span></div><div className="grid gap-5 lg:grid-cols-[1fr_380px]"><main className="space-y-5"><section className="rounded-3xl bg-white p-6 shadow-sm"><div className="text-sm font-bold text-brand">Оплата продавцу по СБП</div><h1 className="mt-2 text-3xl font-black">{Number(order.price).toLocaleString('ru-RU')} ₽</h1><div className="mt-6 grid gap-3 sm:grid-cols-2"><div className="rounded-2xl bg-[#f5f7fb] p-4"><div className="text-xs text-ozon-muted">Получатель</div><div className="mt-1 font-bold">{d.receiver_name}</div></div><div className="rounded-2xl bg-[#f5f7fb] p-4"><div className="text-xs text-ozon-muted">Банк</div><div className="mt-1 font-bold">{d.bank_name}</div></div><div className="rounded-2xl bg-[#f5f7fb] p-4 sm:col-span-2"><div className="text-xs text-ozon-muted">Телефон СБП</div><div className="mt-1 flex items-center justify-between text-xl font-black"><span>{d.phone}</span><button onClick={()=>navigator.clipboard.writeText(d.phone)} className="rounded-full bg-white p-3 text-brand"><Copy className="h-5 w-5"/></button></div></div></div>{d.payment_link?<a href={d.payment_link} target="_blank" rel="noreferrer" className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-light-200 p-4 font-bold">Открыть платёжную ссылку <ExternalLink className="h-4 w-4"/></a>:null}{d.uploaded_qr_path?<a href={`${process.env.NEXT_PUBLIC_REST_API_ENDPOINT}/api/second-life/orders/${id}/qr`} className="mt-3 block rounded-2xl bg-light-200 p-4 text-center font-bold">Открыть / скачать QR</a>:null}{buyer&&!marked&&!paid?<button onClick={()=>setModal(true)} className="mt-5 w-full rounded-2xl bg-brand p-4 text-lg font-black text-white">Я оплатил</button>:null}{!buyer&&marked?<div className="mt-5 grid gap-3 sm:grid-cols-2"><button onClick={async()=>{await client.secondLife.confirmPayment(id);toast.success('Оплата подтверждена');load();}} className="rounded-2xl bg-emerald-600 p-4 font-black text-white">Оплату получил</button><button onClick={async()=>{const reason=prompt('Причина')||'Платёж не найден';await client.secondLife.rejectPayment(id,reason);load();}} className="rounded-2xl bg-red-50 p-4 font-black text-red-600">Платёж не найден</button></div>:null}</section><section className="rounded-3xl bg-white p-6"><h2 className="text-xl font-black">Как оплатить</h2><ol className="mt-4 space-y-3 text-sm text-ozon-text">{['Скопируйте номер телефона продавца','Откройте приложение своего банка','Выберите перевод через СБП','Проверьте имя получателя','Переведите точную сумму заказа','Вернитесь и нажмите «Я оплатил»'].map((x,i)=><li key={x} className="flex gap-3"><b className="text-brand">{i+1}.</b>{x}</li>)}</ol></section></main><aside className="space-y-5"><section className="rounded-3xl border border-amber-200 bg-amber-50 p-6"><ShieldAlert className="h-7 w-7 text-amber-600"/><h2 className="mt-3 text-lg font-black">Прямой перевод продавцу</h2><p className="mt-2 text-sm leading-6">SANCAN не принимает оплату за товар и не может автоматически отменить банковский перевод. Проверьте имя получателя и сумму.</p></section><section className="rounded-3xl bg-white p-6"><h2 className="font-black">Статус сделки</h2><div className="mt-3 rounded-2xl bg-brand-50 p-4 font-bold text-brand">{order.payment_status}</div><p className="mt-3 text-sm text-ozon-muted">Резерв до {order.reserved_until?new Date(order.reserved_until).toLocaleString('ru-RU'):'—'}</p><button onClick={async()=>{const reason=prompt('Опишите проблему');if(reason){await client.secondLife.openDispute(id,reason);load();}}} className="mt-4 w-full rounded-xl border p-3 font-bold">Открыть спор</button></section></aside></div></div>{modal?<div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4"><div className="w-full max-w-md rounded-3xl bg-white p-6"><h2 className="text-2xl font-black">Подтвердить оплату</h2><p className="mt-2 text-sm">Сумма: {Number(order.price).toLocaleString('ru-RU')} ₽ · {d.receiver_name}</p><textarea value={comment} onChange={e=>setComment(e.target.value)} placeholder="Комментарий" className="mt-4 w-full rounded-xl border p-3"/><label className="mt-3 flex cursor-pointer items-center gap-3 rounded-xl bg-light-200 p-4"><UploadCloud/><span>{proof?.name||'Загрузить скриншот'}</span><input hidden type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setProof(e.target.files?.[0])}/></label><div className="mt-5 grid grid-cols-2 gap-3"><button onClick={()=>setModal(false)} className="rounded-xl bg-light-200 p-3 font-bold">Отмена</button><button onClick={submit} className="rounded-xl bg-brand p-3 font-bold text-white">Подтвердить</button></div></div></div>:null}</div>};
-PaymentPage.authorization=true;PaymentPage.getLayout=(page)=><Layout hideSidebar>{page}</Layout>;export default PaymentPage;
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import {
+  Copy,
+  ExternalLink,
+  Loader2,
+  ShieldAlert,
+  UploadCloud,
+} from 'lucide-react';
+import client from '@/data/client';
+import { useMe } from '@/data/user';
+import Layout from '@/layouts/_layout';
+import type { NextPageWithLayout } from '@/types';
+import toast from 'react-hot-toast';
+
+const PAYMENT_STATUS_LABELS: Record<string, string> = {
+  waiting_payment: 'Ожидает оплаты',
+  buyer_marked_paid: 'Покупатель сообщил об оплате',
+  seller_confirmed_paid: 'Оплата подтверждена продавцом',
+  payment_not_found: 'Платёж не найден',
+  disputed: 'Открыт спор',
+  cancelled: 'Оплата отменена',
+  refunded: 'Средства возвращены',
+};
+
+const PaymentPage: NextPageWithLayout = () => {
+  const router = useRouter();
+  const { me } = useMe();
+  const id = String(router.query.publicId || '');
+  const [order, setOrder] = useState<any>();
+  const [loading, setLoading] = useState(true);
+  const [modal, setModal] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const [comment, setComment] = useState('');
+  const [proof, setProof] = useState<File>();
+  const load = () =>
+    id &&
+    client.secondLife
+      .order(id)
+      .then((r: any) => setOrder(r.order))
+      .catch((e: any) =>
+        toast.error(e?.response?.data?.message || 'Заказ не найден')
+      )
+      .finally(() => setLoading(false));
+  useEffect(() => {
+    load();
+  }, [id]);
+  if (loading)
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  if (!order) return null;
+  const d = order.payment_details || {};
+  const buyer = String(me?.id) === String(order.buyer_id);
+  const paid = order.payment_status === 'seller_confirmed_paid';
+  const marked = order.payment_status === 'buyer_marked_paid';
+  const submit = async () => {
+    const f = new FormData();
+    if (comment) f.append('comment', comment);
+    if (proof) f.append('screenshot', proof);
+    await client.secondLife.markPaid(id, f);
+    setModal(false);
+    toast.success('Отметка об оплате отправлена продавцу');
+    load();
+  };
+  const cancelPayment = async () => {
+    if (!window.confirm('Отменить оплату и снять резерв с товара?')) return;
+    setCancelling(true);
+    try {
+      await client.secondLife.cancelOrder(id);
+      toast.success('Оплата отменена, резерв с товара снят');
+      const productSlug = order.product?.slug;
+      await router.replace(productSlug ? `/element/${productSlug}` : '/');
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message || 'Не удалось отменить оплату'
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
+  return (
+    <div className="min-h-screen bg-[#f5f7fb] p-4 sm:p-8">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-5 flex justify-between">
+          <button
+            onClick={() => router.back()}
+            className="rounded-full bg-white px-4 py-2 font-bold"
+          >
+            ← Назад
+          </button>
+          <span className="rounded-full bg-white px-4 py-2 font-bold">
+            {order.public_id}
+          </span>
+        </div>
+        <div className="grid gap-5 lg:grid-cols-[1fr_380px]">
+          <main className="space-y-5">
+            <section className="rounded-3xl bg-white p-6 shadow-sm">
+              <div className="text-sm font-bold text-brand">
+                Оплата продавцу по СБП
+              </div>
+              <h1 className="mt-2 text-3xl font-black">
+                {Number(order.price).toLocaleString('ru-RU')} ₽
+              </h1>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <div className="rounded-2xl bg-[#f5f7fb] p-4">
+                  <div className="text-xs text-ozon-muted">Получатель</div>
+                  <div className="mt-1 font-bold">{d.receiver_name}</div>
+                </div>
+                <div className="rounded-2xl bg-[#f5f7fb] p-4">
+                  <div className="text-xs text-ozon-muted">Банк</div>
+                  <div className="mt-1 font-bold">{d.bank_name}</div>
+                </div>
+                <div className="rounded-2xl bg-[#f5f7fb] p-4 sm:col-span-2">
+                  <div className="text-xs text-ozon-muted">Телефон СБП</div>
+                  <div className="mt-1 flex items-center justify-between text-xl font-black">
+                    <span>{d.phone}</span>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(d.phone)}
+                      className="rounded-full bg-white p-3 text-brand"
+                    >
+                      <Copy className="h-5 w-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+              {d.payment_link ? (
+                <a
+                  href={d.payment_link}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-light-200 p-4 font-bold"
+                >
+                  Открыть платёжную ссылку <ExternalLink className="h-4 w-4" />
+                </a>
+              ) : null}
+              {d.uploaded_qr_path ? (
+                <a
+                  href={`${process.env.NEXT_PUBLIC_REST_API_ENDPOINT}/api/second-life/orders/${id}/qr`}
+                  className="mt-3 block rounded-2xl bg-light-200 p-4 text-center font-bold"
+                >
+                  Открыть / скачать QR
+                </a>
+              ) : null}
+              {buyer && !marked && !paid ? (
+                <button
+                  onClick={() => setModal(true)}
+                  className="mt-5 w-full rounded-2xl bg-brand p-4 text-lg font-black text-white"
+                >
+                  Я оплатил
+                </button>
+              ) : null}
+              {!buyer && marked ? (
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <button
+                    onClick={async () => {
+                      await client.secondLife.confirmPayment(id);
+                      toast.success('Оплата подтверждена');
+                      load();
+                    }}
+                    className="rounded-2xl bg-emerald-600 p-4 font-black text-white"
+                  >
+                    Оплату получил
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const reason = prompt('Причина') || 'Платёж не найден';
+                      await client.secondLife.rejectPayment(id, reason);
+                      load();
+                    }}
+                    className="rounded-2xl bg-red-50 p-4 font-black text-red-600"
+                  >
+                    Платёж не найден
+                  </button>
+                </div>
+              ) : null}
+            </section>
+            <section className="rounded-3xl bg-white p-6">
+              <h2 className="text-xl font-black">Как оплатить</h2>
+              <ol className="mt-4 space-y-3 text-sm text-ozon-text">
+                {[
+                  'Скопируйте номер телефона продавца',
+                  'Откройте приложение своего банка',
+                  'Выберите перевод через СБП',
+                  'Проверьте имя получателя',
+                  'Переведите точную сумму заказа',
+                  'Вернитесь и нажмите «Я оплатил»',
+                ].map((x, i) => (
+                  <li key={x} className="flex gap-3">
+                    <b className="text-brand">{i + 1}.</b>
+                    {x}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          </main>
+          <aside className="space-y-5">
+            <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6">
+              <ShieldAlert className="h-7 w-7 text-amber-600" />
+              <h2 className="mt-3 text-lg font-black">
+                Прямой перевод продавцу
+              </h2>
+              <p className="mt-2 text-sm leading-6">
+                SANCAN не принимает оплату за товар и не может автоматически
+                отменить банковский перевод. Проверьте имя получателя и сумму.
+              </p>
+            </section>
+            <section className="rounded-3xl bg-white p-6">
+              <h2 className="font-black">Статус сделки</h2>
+              <div className="mt-3 rounded-2xl bg-brand-50 p-4 font-bold text-brand">
+                {PAYMENT_STATUS_LABELS[order.payment_status] ||
+                  order.payment_status}
+              </div>
+              <p className="mt-3 text-sm text-ozon-muted">
+                Резерв до{' '}
+                {order.reserved_until
+                  ? new Date(order.reserved_until).toLocaleString('ru-RU')
+                  : '—'}
+              </p>
+              <button
+                onClick={async () => {
+                  const reason = prompt('Опишите проблему');
+                  if (reason) {
+                    await client.secondLife.openDispute(id, reason);
+                    load();
+                  }
+                }}
+                className="mt-4 w-full rounded-xl border p-3 font-bold"
+              >
+                Открыть спор
+              </button>
+              {buyer && !paid && order.payment_status !== 'cancelled' ? (
+                <button
+                  type="button"
+                  onClick={cancelPayment}
+                  disabled={cancelling}
+                  className="mt-3 w-full rounded-xl border border-red-200 bg-red-50 p-3 font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {cancelling ? 'Отменяем…' : 'Отменить оплату'}
+                </button>
+              ) : null}
+            </section>
+          </aside>
+        </div>
+      </div>
+      {modal ? (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6">
+            <h2 className="text-2xl font-black">Подтвердить оплату</h2>
+            <p className="mt-2 text-sm">
+              Сумма: {Number(order.price).toLocaleString('ru-RU')} ₽ ·{' '}
+              {d.receiver_name}
+            </p>
+            <textarea
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Комментарий"
+              className="mt-4 w-full rounded-xl border p-3"
+            />
+            <label className="mt-3 flex cursor-pointer items-center gap-3 rounded-xl bg-light-200 p-4">
+              <UploadCloud />
+              <span>{proof?.name || 'Загрузить скриншот'}</span>
+              <input
+                hidden
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                onChange={(e) => setProof(e.target.files?.[0])}
+              />
+            </label>
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setModal(false)}
+                className="rounded-xl bg-light-200 p-3 font-bold"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={submit}
+                className="rounded-xl bg-brand p-3 font-bold text-white"
+              >
+                Подтвердить
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+};
+PaymentPage.authorization = true;
+PaymentPage.getLayout = (page) => <Layout hideSidebar>{page}</Layout>;
+export default PaymentPage;
