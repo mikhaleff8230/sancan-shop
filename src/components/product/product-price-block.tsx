@@ -14,6 +14,8 @@ import FreeDownloadButton from '@/components/product/free-download-button';
 import FavoriteButton from '@/components/favorite/favorite-button';
 import Link from 'next/link';
 import { useCart } from '@/components/cart/lib/cart.context';
+import { useMe } from '@/data/user';
+import { useModalAction } from '@/components/modal-views/context';
 
 interface ProductPriceBlockProps {
   product: Product;
@@ -34,6 +36,8 @@ export default function ProductPriceBlock({
   const { t } = useTranslation('common');
   const router = useRouter();
   const { clearItemFromCart } = useCart();
+  const { isAuthorized } = useMe();
+  const { openModal } = useModalAction();
   const [paymentChoiceOpen, setPaymentChoiceOpen] = useState(false);
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [commissionRate, setCommissionRate] = useState(0);
@@ -62,6 +66,10 @@ export default function ProductPriceBlock({
   }, [product.id, currentPrice]);
 
   async function startDirectSbp() {
+    if (!isAuthorized) {
+      openModal('LOGIN_VIEW');
+      return;
+    }
     setCreatingOrder(true);
     try {
       const response = await client.secondLife.createOrder(product.id);
