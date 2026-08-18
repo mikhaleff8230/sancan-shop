@@ -21,6 +21,7 @@ import { useEffect, useState } from 'react';
 import AuthTabs from './auth-tabs';
 import { ReactPhone } from '@/components/ui/forms/phone-input';
 import OtpCodeInput from './otp-code-input';
+import { formatRussianPhone, normalizeRussianPhone, phoneHref } from '@/utils/phone';
 
 const loginValidationSchema = yup.object().shape({
   email: yup.string().email().required(),
@@ -114,7 +115,7 @@ export default function LoginUserForm() {
         });
       } else {
         setIsSendingOtp(false);
-        toast.error(<b>Ошибка отправки кода</b>, {
+        toast.error(<b>{data.message || 'Ошибка отправки кода'}</b>, {
           className: '-mt-10 xs:mt-0',
         });
       }
@@ -131,9 +132,7 @@ export default function LoginUserForm() {
   const { mutate: otpLogin } = useMutation(client.users.otpLogin, {
     onSuccess: (data) => {
       if (!data.token) {
-        toast.error(<b>Ошибка входа</b>, {
-          className: '-mt-10 xs:mt-0',
-        });
+        setIsVerifyingOtp(false);
         return;
       }
       
@@ -196,7 +195,7 @@ export default function LoginUserForm() {
     if (!otpId || !callTo || isVerifyingOtp) return;
     const timer = window.setInterval(() => {
       setIsVerifyingOtp(true);
-      otpLogin({ otp_id: otpId, code: '', phone_number: phoneNumber });
+      otpLogin({ otp_id: otpId, code: '', phone_number: normalizeRussianPhone(phoneNumber) });
     }, 2500);
     return () => window.clearInterval(timer);
   }, [otpId, callTo, isVerifyingOtp, phoneNumber, otpLogin]);
@@ -217,7 +216,7 @@ export default function LoginUserForm() {
     
     setIsSendingOtp(true);
     setOtpError('');
-    sendOtp({ phone_number: phoneNumber });
+    sendOtp({ phone_number: normalizeRussianPhone(phoneNumber), mode: 'login' });
   };
 
   // Обработчик проверки OTP кода
@@ -229,7 +228,7 @@ export default function LoginUserForm() {
     otpLogin({
       otp_id: otpId,
       code: code,
-      phone_number: phoneNumber,
+      phone_number: normalizeRussianPhone(phoneNumber),
     });
   };
 
@@ -301,7 +300,9 @@ export default function LoginUserForm() {
                     <p className="mb-2 text-center text-sm text-dark/70 dark:text-light/70">
                       Позвоните с номера {phoneNumber} на
                     </p>
-                    <a href={`tel:${callTo}`} className="block text-center text-xl font-bold text-brand">{callTo}</a>
+                    <a href={phoneHref(callTo)} className="block text-center text-2xl font-bold tracking-wide text-brand">
+                      {formatRussianPhone(callTo)}
+                    </a>
                     <p className="mt-2 text-center text-xs text-dark/60 dark:text-light/60">Звонок будет сброшен автоматически. Проверяем подтверждение…</p>
                   </div>
 

@@ -10,6 +10,7 @@ import { API_ENDPOINTS } from '@/data/client/endpoints';
 import { getAuthToken } from '@/data/client/token.utils';
 import { useRouter } from 'next/router';
 import { useMe } from '@/data/user';
+import { formatRussianPhone, normalizeRussianPhone } from '@/utils/phone';
 
 // Ключи для хранения данных в localStorage
 const PHONE_NUMBER_KEY = 'saved_phone_number';
@@ -119,7 +120,7 @@ export default function PinLoginForm() {
   // Обработчик проверки PIN-кода
   const handleVerifyPin = (code: string) => {
     // Используем телефон из ручного ввода, если он есть, иначе из сохраненного
-    const phoneToUse = manualPhone || phoneNumber;
+    const phoneToUse = normalizeRussianPhone(manualPhone || phoneNumber);
     
     if (!phoneToUse || phoneToUse.length < 10) {
       setPinError('Введите номер телефона');
@@ -142,8 +143,9 @@ export default function PinLoginForm() {
       return;
     }
     
-    setPhoneNumber(manualPhone);
-    localStorage.setItem(PHONE_NUMBER_KEY, manualPhone);
+    const normalizedPhone = normalizeRussianPhone(manualPhone);
+    setPhoneNumber(normalizedPhone);
+    localStorage.setItem(PHONE_NUMBER_KEY, normalizedPhone);
     setShowPhoneInput(false);
     setPinError('');
   };
@@ -274,7 +276,7 @@ export default function PinLoginForm() {
             <div className="mb-6">
               {phoneNumber && (
                 <p className="mb-3 text-center text-xs text-gray-500 dark:text-gray-400">
-                  Телефон: {phoneNumber}
+                  Телефон: {formatRussianPhone(phoneNumber)}
                 </p>
               )}
               <PinCodeInput

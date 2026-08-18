@@ -283,7 +283,7 @@ class Client {
       ),
     logout: () => HttpClient.post<boolean>(API_ENDPOINTS.USERS_LOGOUT, {}),
     // OTP методы
-    sendOtpCode: (input: { phone_number: string }) =>
+    sendOtpCode: (input: { phone_number: string; mode?: 'login' | 'register' }) =>
       HttpClient.post<any>(API_ENDPOINTS.SEND_OTP_CODE, input),
     verifyOtpCode: (input: { otp_id: string; code: string; phone_number: string }) =>
       HttpClient.post<any>(API_ENDPOINTS.VERIFY_OTP_CODE, input),
