@@ -55,7 +55,11 @@ export default function UpdatePhoneModal({
 
   // Мутация для обновления телефона
   const { mutate: updateContact } = useMutation(client.users.updateContact, {
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (!data?.success) {
+        setIsVerifyingOtp(false);
+        return;
+      }
       toast.success(<b>Телефон успешно обновлен</b>, {
         className: '-mt-10 xs:mt-0',
       });
