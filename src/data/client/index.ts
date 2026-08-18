@@ -287,7 +287,7 @@ class Client {
       HttpClient.post<any>(API_ENDPOINTS.SEND_OTP_CODE, input),
     verifyOtpCode: (input: { otp_id: string; code: string; phone_number: string }) =>
       HttpClient.post<any>(API_ENDPOINTS.VERIFY_OTP_CODE, input),
-    otpLogin: (input: { otp_id: string; code: string; phone_number: string; name?: string; email?: string }) =>
+    otpLogin: (input: { otp_id: string; code: string; phone_number: string; name?: string; email?: string; permission?: string }) =>
       HttpClient.post<AuthResponse>(API_ENDPOINTS.OTP_LOGIN, input),
     updateContact: (input: { otp_id: string; code: string; phone_number: string; user_id: string }) =>
       HttpClient.post<any>(API_ENDPOINTS.UPDATE_CONTACT, input),

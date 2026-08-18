@@ -6,6 +6,7 @@ import { ReactPhone } from '@/components/ui/forms/phone-input';
 import OtpCodeInput from '@/components/auth/otp-code-input';
 import client from '@/data/client';
 import { useModalAction } from '@/components/modal-views/context';
+import { formatRussianPhone, normalizeRussianPhone, phoneHref } from '@/utils/phone';
 
 interface UpdatePhoneModalProps {
   currentPhone?: string;
@@ -75,7 +76,7 @@ export default function UpdatePhoneModal({
     if (!otpId || !callTo || isVerifyingOtp) return;
     const timer = window.setInterval(() => {
       setIsVerifyingOtp(true);
-      updateContact({ otp_id: otpId, code: '', phone_number: phoneNumber, user_id: userId });
+      updateContact({ otp_id: otpId, code: '', phone_number: normalizeRussianPhone(phoneNumber), user_id: userId });
     }, 2500);
     return () => window.clearInterval(timer);
   }, [otpId, callTo, isVerifyingOtp, phoneNumber, userId, updateContact]);
@@ -91,7 +92,7 @@ export default function UpdatePhoneModal({
     
     setIsSendingOtp(true);
     setOtpError('');
-    sendOtp({ phone_number: phoneNumber });
+    sendOtp({ phone_number: normalizeRussianPhone(phoneNumber) });
   };
 
   // Обработчик проверки OTP кода
@@ -103,7 +104,7 @@ export default function UpdatePhoneModal({
     updateContact({
       otp_id: otpId,
       code: code,
-      phone_number: phoneNumber,
+      phone_number: normalizeRussianPhone(phoneNumber),
       user_id: userId,
     });
   };
@@ -155,7 +156,9 @@ export default function UpdatePhoneModal({
             <p className="mb-2 text-center text-sm text-dark/70 dark:text-light/70">
               Позвоните с номера {phoneNumber} на
             </p>
-            <a href={`tel:${callTo}`} className="block text-center text-xl font-bold text-brand">{callTo}</a>
+            <a href={phoneHref(callTo)} className="block text-center text-2xl font-bold tracking-wide text-brand">
+              {formatRussianPhone(callTo)}
+            </a>
             <p className="mt-2 text-center text-xs text-dark/60 dark:text-light/60">Звонок будет сброшен автоматически. Проверяем подтверждение…</p>
           </div>
 

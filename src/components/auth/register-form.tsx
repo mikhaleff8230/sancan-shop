@@ -21,6 +21,7 @@ import { getAuthToken } from '@/data/client/token.utils';
 import AuthTabs from './auth-tabs';
 import { ReactPhone } from '@/components/ui/forms/phone-input';
 import OtpCodeInput from './otp-code-input';
+import { formatRussianPhone, normalizeRussianPhone, phoneHref } from '@/utils/phone';
 
 const registerUserValidationSchema = yup.object().shape({
   name: yup.string().max(20).required(),
@@ -137,7 +138,7 @@ export default function RegisterUserForm({
         });
       } else {
         setIsSendingOtp(false);
-        toast.error(<b>Ошибка отправки кода</b>, {
+        toast.error(<b>{data.message || 'Ошибка отправки кода'}</b>, {
           className: '-mt-10 xs:mt-0',
         });
       }
@@ -154,9 +155,7 @@ export default function RegisterUserForm({
   const { mutate: registerWithOtp } = useMutation(client.users.otpLogin, {
     onSuccess: (res) => {
       if (!res.token) {
-        toast.error(<b>Ошибка регистрации</b>, {
-          className: '-mt-10 xs:mt-0',
-        });
+        setIsVerifyingOtp(false);
         return;
       }
       
@@ -212,9 +211,10 @@ export default function RegisterUserForm({
       registerWithOtp({
         otp_id: otpId,
         code: '',
-        phone_number: phoneNumber,
+        phone_number: normalizeRussianPhone(phoneNumber),
         name,
-        email: email || `${phoneNumber}@phone.auth`,
+        email: email || `${normalizeRussianPhone(phoneNumber)}@phone.auth`,
+        permission: mode === 'seller' ? 'store_owner' : undefined,
       });
     }, 2500);
     return () => window.clearInterval(timer);
@@ -243,7 +243,7 @@ export default function RegisterUserForm({
     
     setIsSendingOtp(true);
     setOtpError('');
-    sendOtp({ phone_number: phoneNumber });
+    sendOtp({ phone_number: normalizeRussianPhone(phoneNumber), mode: 'register' });
   };
 
   // Обработчик проверки OTP кода
@@ -255,9 +255,10 @@ export default function RegisterUserForm({
     registerWithOtp({
       otp_id: otpId,
       code: code,
-      phone_number: phoneNumber,
+      phone_number: normalizeRussianPhone(phoneNumber),
       name: name,
-      email: email || `${phoneNumber}@phone.auth`,
+      email: email || `${normalizeRussianPhone(phoneNumber)}@phone.auth`,
+      permission: mode === 'seller' ? 'store_owner' : undefined,
     });
   };
 
@@ -374,7 +375,9 @@ export default function RegisterUserForm({
                     <p className="mb-2 text-center text-sm text-dark/70 dark:text-light/70">
                       Позвоните с номера {phoneNumber} на
                     </p>
-                    <a href={`tel:${callTo}`} className="block text-center text-xl font-bold text-brand">{callTo}</a>
+                    <a href={phoneHref(callTo)} className="block text-center text-2xl font-bold tracking-wide text-brand">
+                      {formatRussianPhone(callTo)}
+                    </a>
                     <p className="mt-2 text-center text-xs text-dark/60 dark:text-light/60">Звонок будет сброшен автоматически. Проверяем подтверждение…</p>
                   </div>
 
