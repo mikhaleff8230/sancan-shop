@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import Button from '@/components/ui/button';
@@ -21,6 +21,7 @@ export default function UpdatePhoneModal({
   const { closeModal } = useModalAction();
   const [phoneNumber, setPhoneNumber] = useState(currentPhone || '');
   const [otpId, setOtpId] = useState<string | null>(null);
+  const [callTo, setCallTo] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
@@ -31,8 +32,9 @@ export default function UpdatePhoneModal({
     onSuccess: (data) => {
       if (data.success && data.id) {
         setOtpId(data.id);
+        setCallTo(data.call_to || null);
         setIsSendingOtp(false);
-        toast.success(<b>Код отправлен на {phoneNumber}</b>, {
+        toast.success(<b>Позвоните на указанный номер для подтверждения</b>, {
           className: '-mt-10 xs:mt-0',
         });
       } else {
@@ -61,12 +63,22 @@ export default function UpdatePhoneModal({
     },
     onError: (error: any) => {
       setIsVerifyingOtp(false);
+      if (callTo) return;
       setOtpError(error.response?.data?.message || 'Неверный код');
       toast.error(<b>{error.response?.data?.message || 'Неверный код'}</b>, {
         className: '-mt-10 xs:mt-0',
       });
     },
   });
+
+  useEffect(() => {
+    if (!otpId || !callTo || isVerifyingOtp) return;
+    const timer = window.setInterval(() => {
+      setIsVerifyingOtp(true);
+      updateContact({ otp_id: otpId, code: '', phone_number: phoneNumber, user_id: userId });
+    }, 2500);
+    return () => window.clearInterval(timer);
+  }, [otpId, callTo, isVerifyingOtp, phoneNumber, userId, updateContact]);
 
   // Обработчик отправки OTP
   const handleSendOtp = () => {
@@ -133,24 +145,18 @@ export default function UpdatePhoneModal({
               loading={isSendingOtp}
               className="flex-1"
             >
-              {isSendingOtp ? 'Отправка...' : 'ПОЛУЧИТЬ КОД'}
+              {isSendingOtp ? 'Подготовка...' : 'ПОДТВЕРДИТЬ ЗВОНКОМ'}
             </Button>
           </div>
         </>
       ) : (
         <>
           <div className="mb-4">
-            <p className="mb-4 text-center text-sm text-dark/70 dark:text-light/70">
-              Введите код из SMS, отправленный на {phoneNumber}
+            <p className="mb-2 text-center text-sm text-dark/70 dark:text-light/70">
+              Позвоните с номера {phoneNumber} на
             </p>
-            <OtpCodeInput
-              length={6}
-              value={otpCode}
-              onChange={setOtpCode}
-              onComplete={handleVerifyOtp}
-              disabled={isVerifyingOtp}
-              error={otpError}
-            />
+            <a href={`tel:${callTo}`} className="block text-center text-xl font-bold text-brand">{callTo}</a>
+            <p className="mt-2 text-center text-xs text-dark/60 dark:text-light/60">Звонок будет сброшен автоматически. Проверяем подтверждение…</p>
           </div>
 
           <div className="flex gap-2">
@@ -159,6 +165,7 @@ export default function UpdatePhoneModal({
               variant="outline"
               onClick={() => {
                 setOtpId(null);
+                setCallTo(null);
                 setOtpCode('');
                 setOtpError('');
               }}
@@ -174,7 +181,7 @@ export default function UpdatePhoneModal({
               disabled={isSendingOtp || isVerifyingOtp}
               className="flex-1"
             >
-              Отправить снова
+              Получить новый номер
             </Button>
           </div>
         </>

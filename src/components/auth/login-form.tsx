@@ -17,7 +17,7 @@ import { useRouter } from 'next/router';
 import YandexAuthButton from './yandex-auth-button';
 import { API_ENDPOINTS } from '@/data/client/endpoints';
 import { getAuthToken } from '@/data/client/token.utils';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AuthTabs from './auth-tabs';
 import { ReactPhone } from '@/components/ui/forms/phone-input';
 import OtpCodeInput from './otp-code-input';
@@ -44,6 +44,7 @@ export default function LoginUserForm() {
   // Состояние для OTP
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpId, setOtpId] = useState<string | null>(null);
+  const [callTo, setCallTo] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
@@ -106,8 +107,9 @@ export default function LoginUserForm() {
     onSuccess: (data) => {
       if (data.success && data.id) {
         setOtpId(data.id);
+        setCallTo(data.call_to || null);
         setIsSendingOtp(false);
-        toast.success(<b>Код отправлен на {phoneNumber}</b>, {
+        toast.success(<b>Позвоните на указанный номер для подтверждения</b>, {
           className: '-mt-10 xs:mt-0',
         });
       } else {
@@ -182,12 +184,22 @@ export default function LoginUserForm() {
     },
     onError: (error: any) => {
       setIsVerifyingOtp(false);
+      if (callTo) return;
       setOtpError(error.response?.data?.message || 'Неверный код');
       toast.error(<b>{error.response?.data?.message || 'Неверный код'}</b>, {
         className: '-mt-10 xs:mt-0',
       });
     },
   });
+
+  useEffect(() => {
+    if (!otpId || !callTo || isVerifyingOtp) return;
+    const timer = window.setInterval(() => {
+      setIsVerifyingOtp(true);
+      otpLogin({ otp_id: otpId, code: '', phone_number: phoneNumber });
+    }, 2500);
+    return () => window.clearInterval(timer);
+  }, [otpId, callTo, isVerifyingOtp, phoneNumber, otpLogin]);
 
   // Обработчик отправки формы по email
   const onSubmit: SubmitHandler<LoginUserInput> = (data) => {
@@ -225,6 +237,7 @@ export default function LoginUserForm() {
   const handleTabChange = (tab: 'phone' | 'email') => {
     setActiveTab(tab);
     setOtpId(null);
+    setCallTo(null);
     setOtpCode('');
     setOtpError('');
     setPhoneNumber('');
@@ -279,24 +292,17 @@ export default function LoginUserForm() {
                     loading={isSendingOtp}
                     className="!mt-5 w-full text-sm tracking-[0.2px] lg:!mt-7"
                   >
-                    {isSendingOtp ? 'Отправка...' : 'ПОЛУЧИТЬ КОД'}
+                    {isSendingOtp ? 'Подготовка...' : 'ВОЙТИ ПО ЗВОНКУ'}
                   </Button>
                 </>
               ) : (
                 <>
-                  {/* Поле ввода OTP кода */}
                   <div>
-                    <p className="mb-4 text-center text-sm text-dark/70 dark:text-light/70">
-                      Введите код из SMS, отправленный на {phoneNumber}
+                    <p className="mb-2 text-center text-sm text-dark/70 dark:text-light/70">
+                      Позвоните с номера {phoneNumber} на
                     </p>
-                    <OtpCodeInput
-                      length={6}
-                      value={otpCode}
-                      onChange={setOtpCode}
-                      onComplete={handleVerifyOtp}
-                      disabled={isVerifyingOtp}
-                      error={otpError}
-                    />
+                    <a href={`tel:${callTo}`} className="block text-center text-xl font-bold text-brand">{callTo}</a>
+                    <p className="mt-2 text-center text-xs text-dark/60 dark:text-light/60">Звонок будет сброшен автоматически. Проверяем подтверждение…</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -305,6 +311,7 @@ export default function LoginUserForm() {
                       variant="outline"
                       onClick={() => {
                         setOtpId(null);
+                        setCallTo(null);
                         setOtpCode('');
                         setOtpError('');
                       }}
@@ -320,7 +327,7 @@ export default function LoginUserForm() {
                       disabled={isSendingOtp || isVerifyingOtp}
                       className="flex-1"
                     >
-                      Отправить снова
+                      Получить новый номер
                     </Button>
                   </div>
                 </>

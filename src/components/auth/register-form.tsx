@@ -68,6 +68,7 @@ export default function RegisterUserForm({
   // Состояние для OTP
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otpId, setOtpId] = useState<string | null>(null);
+  const [callTo, setCallTo] = useState<string | null>(null);
   const [otpCode, setOtpCode] = useState('');
   const [isSendingOtp, setIsSendingOtp] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
@@ -129,8 +130,9 @@ export default function RegisterUserForm({
     onSuccess: (data) => {
       if (data.success && data.id) {
         setOtpId(data.id);
+        setCallTo(data.call_to || null);
         setIsSendingOtp(false);
-        toast.success(<b>Код отправлен на {phoneNumber}</b>, {
+        toast.success(<b>Позвоните на указанный номер для подтверждения</b>, {
           className: '-mt-10 xs:mt-0',
         });
       } else {
@@ -195,12 +197,28 @@ export default function RegisterUserForm({
     },
     onError: (error: any) => {
       setIsVerifyingOtp(false);
+      if (callTo) return;
       setOtpError(error.response?.data?.message || 'Неверный код');
       toast.error(<b>{error.response?.data?.message || 'Неверный код'}</b>, {
         className: '-mt-10 xs:mt-0',
       });
     },
   });
+
+  useEffect(() => {
+    if (!otpId || !callTo || isVerifyingOtp) return;
+    const timer = window.setInterval(() => {
+      setIsVerifyingOtp(true);
+      registerWithOtp({
+        otp_id: otpId,
+        code: '',
+        phone_number: phoneNumber,
+        name,
+        email: email || `${phoneNumber}@phone.auth`,
+      });
+    }, 2500);
+    return () => window.clearInterval(timer);
+  }, [otpId, callTo, isVerifyingOtp, phoneNumber, name, email, registerWithOtp]);
 
   // Обработчик отправки формы по email
   const onSubmit: SubmitHandler<RegisterUserInput> = (data) => {
@@ -247,6 +265,7 @@ export default function RegisterUserForm({
   const handleTabChange = (tab: 'phone' | 'email') => {
     setActiveTab(tab);
     setOtpId(null);
+    setCallTo(null);
     setOtpCode('');
     setOtpError('');
     setPhoneNumber('');
@@ -346,24 +365,17 @@ export default function RegisterUserForm({
                     loading={isSendingOtp}
                     className="!mt-5 w-full text-sm tracking-[0.2px] lg:!mt-7"
                   >
-                    {isSendingOtp ? 'Отправка...' : 'ПОЛУЧИТЬ КОД'}
+                    {isSendingOtp ? 'Подготовка...' : 'ПОДТВЕРДИТЬ ЗВОНКОМ'}
                   </Button>
                 </>
               ) : (
                 <>
-                  {/* Поле ввода OTP кода */}
                   <div>
-                    <p className="mb-4 text-center text-sm text-dark/70 dark:text-light/70">
-                      Введите код из SMS, отправленный на {phoneNumber}
+                    <p className="mb-2 text-center text-sm text-dark/70 dark:text-light/70">
+                      Позвоните с номера {phoneNumber} на
                     </p>
-                    <OtpCodeInput
-                      length={6}
-                      value={otpCode}
-                      onChange={setOtpCode}
-                      onComplete={handleVerifyOtp}
-                      disabled={isVerifyingOtp}
-                      error={otpError}
-                    />
+                    <a href={`tel:${callTo}`} className="block text-center text-xl font-bold text-brand">{callTo}</a>
+                    <p className="mt-2 text-center text-xs text-dark/60 dark:text-light/60">Звонок будет сброшен автоматически. Проверяем подтверждение…</p>
                   </div>
 
                   <div className="flex gap-2">
@@ -372,6 +384,7 @@ export default function RegisterUserForm({
                       variant="outline"
                       onClick={() => {
                         setOtpId(null);
+                        setCallTo(null);
                         setOtpCode('');
                         setOtpError('');
                       }}
@@ -387,7 +400,7 @@ export default function RegisterUserForm({
                       disabled={isSendingOtp || isVerifyingOtp}
                       className="flex-1"
                     >
-                      Отправить снова
+                      Получить новый номер
                     </Button>
                   </div>
                 </>

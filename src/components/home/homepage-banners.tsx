@@ -13,7 +13,7 @@ function Action({href,children,style,className}:{href?:string;children:any;style
 
 export default function HomepageBanners(){
  const [rows,setRows]=useState<Banner[]>(defaults),[autoplay,setAutoplay]=useState(true),[interval,setIntervalValue]=useState(5000),[hero,setHero]=useState(0),[strip,setStrip]=useState(0);
- useEffect(()=>{HttpClient.get<any>('/homepage-banners').then(d=>{if(d.banners?.length)setRows(d.banners);setAutoplay(d.autoplay);setIntervalValue(d.interval_ms||5000);}).catch(()=>{});},[]);
+ useEffect(()=>{HttpClient.get<any>('/api/homepage-banners').then(d=>{if(d.banners?.length)setRows(d.banners);setAutoplay(d.autoplay);setIntervalValue(d.interval_ms||5000);}).catch((error)=>{if(process.env.NODE_ENV==='development')console.error('Homepage banners request failed',error);});},[]);
  const heroes=useMemo(()=>rows.filter(x=>x.kind==='hero'),[rows]),strips=useMemo(()=>rows.filter(x=>x.kind==='strip'),[rows]);
  useEffect(()=>{if(!autoplay)return;const timer=window.setInterval(()=>{setHero(x=>heroes.length?(x+1)%heroes.length:0);setStrip(x=>strips.length?(x+1)%strips.length:0);},interval);return()=>window.clearInterval(timer);},[autoplay,interval,heroes.length,strips.length]);
  const s=strips[strip%Math.max(strips.length,1)]?.content,h=heroes[hero%Math.max(heroes.length,1)]?.content;

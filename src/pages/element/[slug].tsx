@@ -20,6 +20,7 @@ import { TitleSeo } from '@/components/seo/title-seo';
 import Image from '@/components/ui/image';
 import routes from '@/config/routes';
 import client from '@/data/client';
+import { HttpClient } from '@/data/client/http-client';
 import MarketplaceLayout from '@/layouts/_marketplace-layout';
 import {
   fadeInBottom,
@@ -280,6 +281,11 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
     if (!product?.id) return;
     client.secondLife.paymentOptions(product.id).then((options:any) => setDirectSbpAvailable(Boolean(options?.direct_sbp?.available))).catch(() => setDirectSbpAvailable(false));
   }, [product?.id]);
+  useEffect(() => {
+    if (!router.isReady || !product?.id) return;
+    const yclid = Array.isArray(router.query.yclid) ? router.query.yclid[0] : router.query.yclid;
+    HttpClient.post('/api/promotion/visit', { product_id: product.id, yclid: yclid || null }).catch(() => undefined);
+  }, [router.isReady, router.query.yclid, product?.id]);
   
   // Безопасная деструктуризация с дефолтными значениями
   const {
