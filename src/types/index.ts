@@ -248,6 +248,10 @@ export interface RegisterUserInput {
   name: string;
   email: string;
   password: string;
+  accept_terms: boolean;
+  accept_privacy: boolean;
+  marketing_email_consent?: boolean;
+  marketing_push_consent?: boolean;
 }
 
 export interface ForgetPasswordInput {

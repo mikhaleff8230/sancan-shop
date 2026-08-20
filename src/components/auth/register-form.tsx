@@ -22,6 +22,7 @@ import AuthTabs from './auth-tabs';
 import { ReactPhone } from '@/components/ui/forms/phone-input';
 import OtpCodeInput from './otp-code-input';
 import { formatRussianPhone, normalizeRussianPhone, phoneHref } from '@/utils/phone';
+import RegistrationConsents from './registration-consents';
 
 const registerUserValidationSchema = yup.object().shape({
   name: yup.string().max(20).required(),
@@ -76,6 +77,13 @@ export default function RegisterUserForm({
   const [otpError, setOtpError] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [consents, setConsents] = useState({ terms: false, privacy: false, emailMarketing: false, pushMarketing: false });
+  const consentPayload = {
+    accept_terms: consents.terms,
+    accept_privacy: consents.privacy,
+    marketing_email_consent: consents.emailMarketing,
+    marketing_push_consent: consents.pushMarketing,
+  };
 
   // Автозаполнение полей при получении данных из Яндекс
   useEffect(() => {
@@ -215,6 +223,7 @@ export default function RegisterUserForm({
         name,
         email: email || `${normalizeRussianPhone(phoneNumber)}@phone.auth`,
         permission: mode === 'seller' ? 'store_owner' : undefined,
+        ...consentPayload,
       });
     }, 2500);
     return () => window.clearInterval(timer);
@@ -222,11 +231,19 @@ export default function RegisterUserForm({
 
   // Обработчик отправки формы по email
   const onSubmit: SubmitHandler<RegisterUserInput> = (data) => {
-    mutate(data);
+    if (!consents.terms || !consents.privacy) {
+      toast.error(<b>Примите обязательные документы и согласие на обработку данных</b>);
+      return;
+    }
+    mutate({ ...data, ...consentPayload });
   };
 
   // Обработчик отправки OTP
   const handleSendOtp = () => {
+    if (!consents.terms || !consents.privacy) {
+      toast.error(<b>Примите обязательные документы и согласие на обработку данных</b>);
+      return;
+    }
     if (!phoneNumber || phoneNumber.length < 10) {
       toast.error(<b>Введите корректный номер телефона</b>, {
         className: '-mt-10 xs:mt-0',
@@ -259,6 +276,7 @@ export default function RegisterUserForm({
       name: name,
       email: email || `${normalizeRussianPhone(phoneNumber)}@phone.auth`,
       permission: mode === 'seller' ? 'store_owner' : undefined,
+      ...consentPayload,
     });
   };
 
@@ -477,6 +495,7 @@ export default function RegisterUserForm({
                     {...register('password')}
                     error={errors.password?.message}
                   />
+                  <RegistrationConsents {...consents} onChange={(field, value) => setConsents((current) => ({ ...current, [field]: value }))} />
                   <Button
                     type="submit"
                     className="!mt-5 w-full text-sm tracking-[0.2px] lg:!mt-7"
@@ -487,6 +506,9 @@ export default function RegisterUserForm({
               );
             }}
           </Form>
+          )}
+          {activeTab === 'phone' && !otpId && (
+            <RegistrationConsents {...consents} onChange={(field, value) => setConsents((current) => ({ ...current, [field]: value }))} />
           )}
         </div>
       </div>
