@@ -18,7 +18,7 @@ import { useDrawer } from '@/components/drawer-views/context';
 import { useModalAction } from '@/components/modal-views/context';
 import Button from '@/components/ui/button';
 import LanguageSwitcher from '@/components/ui/language-switcher';
-import { MapPin } from 'lucide-react';
+import { MapPin, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'next-i18next';
 import DropdownCategoriesMenu from '@/components/menu/dropdown-categories-menu';
 import Logo from '@/components/ui/logo';
@@ -47,8 +47,9 @@ const AuthorizedMenuItems = [
     path: routes.password,
   },
   {
-    label: 'Сообщения',
-    path: '/chat',
+    label: 'Чат',
+    path: routes.chat,
+    icon: <MessageCircle className="h-4 w-4" />,
   },
 ];
 
@@ -83,6 +84,7 @@ function AuthorizedMenu({ user }: { user: User }) {
                 href={item.path}
                 className="transition-fill-colors flex w-full items-center px-5 py-2.5 hover:bg-light-400 dark:hover:bg-dark-600"
               >
+                {'icon' in item && item.icon ? <span className="mr-2 flex w-5 items-center">{item.icon}</span> : null}
                 {t(item.label)}
               </ActiveLink>
             </Menu.Item>

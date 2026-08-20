@@ -19,6 +19,7 @@ import { CreditCardIcon } from '@/components/icons/credit-card-icon';
 import { useMe } from '@/data/user';
 import usePrice from '@/lib/hooks/use-price';
 import { LayoutIcon } from '@/components/icons/layout-icon';
+import { MessageCircle } from 'lucide-react';
 
 // Мои карты - временно скрыто (в разработке)
 // Плейсы - удалено из меню
@@ -71,6 +72,12 @@ const menuItems = [
     icon: <UserFollowingIcon className="h-[18px] w-[18px] sm:h-5 sm:w-5" />,
     label: 'text-followed-authors',
     path: routes.followedShop,
+  },
+  {
+    id: 10,
+    icon: <MessageCircle className="h-[18px] w-[18px] sm:h-5 sm:w-5" />,
+    label: 'Чат',
+    path: routes.chat,
   },
   {
     id: 8,

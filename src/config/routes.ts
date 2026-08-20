@@ -12,6 +12,7 @@ const routes = {
   reports: '/reports',
   questions: '/questions',
   profile: '/profile',
+  chat: '/chat',
   checkout: '/checkout',
   help: '/help',
   return: '/help/return',

@@ -192,6 +192,16 @@ export function Sidebar({
           <nav className="mt-auto flex flex-col pb-4">
             <CartNavLink isCollapse={isCollapse} />
             <NavLink
+              title="Чат"
+              href={routes.chat}
+              isCollapse={isCollapse}
+              icon={
+                <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M21 11.5a8.38 8.38 0 01-9 8.5 9.5 9.5 0 01-4.3-.98L3 20l1.42-3.79A8.1 8.1 0 013 11.5C3 6.81 7.03 3 12 3s9 3.81 9 8.5Z" />
+                </svg>
+              }
+            />
+            <NavLink
               title="Профиль"
               href={routes.profile}
               isCollapse={isCollapse}
