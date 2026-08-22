@@ -16,6 +16,7 @@ import Link from 'next/link';
 import { useCart } from '@/components/cart/lib/cart.context';
 import { useMe } from '@/data/user';
 import { useModalAction } from '@/components/modal-views/context';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ProductPriceBlockProps {
   product: Product;
@@ -38,7 +39,12 @@ export default function ProductPriceBlock({
   const { clearItemFromCart } = useCart();
   const { isAuthorized } = useMe();
   const { openModal } = useModalAction();
+  const queryClient = useQueryClient();
   const [paymentChoiceOpen, setPaymentChoiceOpen] = useState(false);
+  const [discountRequestOpen, setDiscountRequestOpen] = useState(false);
+  const [requestedDiscount, setRequestedDiscount] = useState(10);
+  const [openingChat, setOpeningChat] = useState(false);
+  const [sendingDiscountRequest, setSendingDiscountRequest] = useState(false);
   const [creatingOrder, setCreatingOrder] = useState(false);
   const [commissionRate, setCommissionRate] = useState(0);
   const [sitePaymentPrice, setSitePaymentPrice] = useState(0);
@@ -55,6 +61,57 @@ export default function ProductPriceBlock({
     : 0;
   const sitePrice = sitePaymentPrice || currentPrice;
   const formatRub = (value: number) => new Intl.NumberFormat('ru-RU').format(value) + ' ₽';
+  const requestedPrice = Math.max(0, Math.round(currentPrice * (100 - requestedDiscount) / 100));
+
+  async function createSellerConversation() {
+    const shopId = product.shop?.id;
+    if (!shopId) throw new Error('У товара не указан продавец');
+    const response = await client.chat.createConversation(String(shopId));
+    const conversationId = response?.id || response?.data?.id || response?.conversation?.id;
+    if (!conversationId) throw new Error('Не удалось открыть диалог');
+    queryClient.invalidateQueries(['chat-conversations']);
+    return String(conversationId);
+  }
+
+  async function openSellerChat() {
+    if (!isAuthorized) {
+      openModal('LOGIN_VIEW');
+      return;
+    }
+    setOpeningChat(true);
+    try {
+      const conversationId = await createSellerConversation();
+      await router.push(`/chat?id=${conversationId}`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Не удалось открыть чат');
+    } finally {
+      setOpeningChat(false);
+    }
+  }
+
+  async function sendDiscountRequest() {
+    if (!isAuthorized) {
+      setDiscountRequestOpen(false);
+      openModal('LOGIN_VIEW');
+      return;
+    }
+    setSendingDiscountRequest(true);
+    try {
+      const conversationId = await createSellerConversation();
+      await client.chat.sendMessage({
+        conversation_id: conversationId,
+        body: `Запрос скидки ${requestedDiscount}%. Итоговая цена ${formatRub(requestedPrice)}.`,
+      });
+      queryClient.invalidateQueries(['chat-messages', conversationId]);
+      queryClient.invalidateQueries(['chat-conversations']);
+      setDiscountRequestOpen(false);
+      await router.push(`/chat?id=${conversationId}`);
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || error?.message || 'Не удалось отправить запрос скидки');
+    } finally {
+      setSendingDiscountRequest(false);
+    }
+  }
 
   useEffect(() => {
     if (!product?.id) return;
@@ -137,10 +194,10 @@ export default function ProductPriceBlock({
       </div>:null}
 
       <div className="mb-4 grid grid-cols-2 gap-2 text-sm">
-        <button className="rounded-xl bg-[#f1f5fb] px-3 py-2.5 font-semibold text-ozon-text">
-          Купить сейчас
+        <button type="button" disabled={openingChat} onClick={openSellerChat} className="rounded-xl bg-[#f1f5fb] px-3 py-2.5 font-semibold text-ozon-text transition hover:bg-[#e7eef8] disabled:opacity-60">
+          {openingChat ? 'Открываем…' : 'В чат'}
         </button>
-        <button className="rounded-xl bg-[#f1f5fb] px-3 py-2.5 font-semibold text-ozon-text">
+        <button type="button" onClick={() => isAuthorized ? setDiscountRequestOpen(true) : openModal('LOGIN_VIEW')} className="rounded-xl bg-[#f1f5fb] px-3 py-2.5 font-semibold text-ozon-text transition hover:bg-[#e7eef8]">
           Хочу скидку
         </button>
       </div>
@@ -227,6 +284,26 @@ export default function ProductPriceBlock({
               </div>
             </div>
             <button type="button" onClick={() => setPaymentChoiceOpen(false)} className="mt-4 w-full rounded-xl bg-light-200 px-4 py-3 font-bold">Закрыть</button>
+          </div>
+        </div>
+      ) : null}
+      {discountRequestOpen ? (
+        <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50 p-4" onClick={() => !sendingDiscountRequest && setDiscountRequestOpen(false)}>
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <h2 className="text-2xl font-black text-ozon-text">Запросить скидку</h2>
+            <div className="mt-5 rounded-2xl bg-pink-50 p-4">
+              <div className="text-sm font-semibold text-ozon-muted">Размер скидки</div>
+              <div className="mt-1 text-3xl font-black text-ozon-pink">{requestedDiscount}%</div>
+              <div className="mt-4 text-sm font-semibold text-ozon-muted">Итоговая цена</div>
+              <div className="mt-1 text-2xl font-black text-ozon-text">{formatRub(requestedPrice)}</div>
+            </div>
+            <label htmlFor="discount-request" className="mt-5 block text-sm font-bold text-ozon-text">Выберите скидку от 1% до 100%</label>
+            <input id="discount-request" type="range" min="1" max="100" step="1" value={requestedDiscount} onChange={(event) => setRequestedDiscount(Number(event.target.value))} className="mt-3 w-full accent-[#f91155]" />
+            <div className="mt-1 flex justify-between text-xs text-ozon-muted"><span>1%</span><span>100%</span></div>
+            <button type="button" disabled={sendingDiscountRequest} onClick={sendDiscountRequest} className="mt-6 w-full rounded-xl bg-ozon-pink px-5 py-3 font-black text-white transition hover:opacity-90 disabled:opacity-60">
+              {sendingDiscountRequest ? 'Отправляем…' : 'Отправить запрос'}
+            </button>
+            <button type="button" disabled={sendingDiscountRequest} onClick={() => setDiscountRequestOpen(false)} className="mt-2 w-full rounded-xl bg-light-200 px-4 py-3 font-bold disabled:opacity-60">Отмена</button>
           </div>
         </div>
       ) : null}
