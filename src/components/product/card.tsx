@@ -333,7 +333,7 @@ export default function Card({ product }: { product: Product }) {
             }
             toggleWishlist({ product_id: id?.toString() || '' });
           }}
-          className="absolute right-2 top-2 z-40 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-ozon-muted shadow-sm transition-colors hover:text-ozon-pink"
+          className="absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-ozon-muted shadow-sm transition-colors hover:text-ozon-pink"
           title={inWishlist ? 'Удалить из избранного' : 'Добавить в избранное'}
         >
           {inWishlist ? (

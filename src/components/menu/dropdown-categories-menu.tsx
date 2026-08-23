@@ -7,6 +7,7 @@ import { useCategoriesForMenu } from '@/data/category';
 import type { Category } from '@/types';
 import { ChevronLeft } from '@/components/icons/chevron-left';
 import { ChevronRight } from '@/components/icons/chevron-right';
+import { useRouter } from 'next/router';
 
 // Маппинг иконок для категорий
 const getCategoryIcon = (iconName?: string) => {
@@ -134,6 +135,7 @@ interface NavigationState {
 }
 
 export default function DropdownCategoriesMenu({ compact = false }: { compact?: boolean }) {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -194,7 +196,8 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
       setMobileNav({ level: 'level2', categoryId });
     } else {
       // Если нет подкатегорий, переходим сразу на страницу категории
-      window.location.href = `/categories/${category.slug}`;
+      handleCloseMenu();
+      void router.push(`/categories/${category.slug}`);
     }
   };
 
@@ -211,7 +214,8 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
     } else if (sectionSlug && sectionSlug !== '#') {
       // Если нет подкатегорий 3-го уровня, но есть slug, переходим на страницу
       // Используем router для перехода без закрытия меню сразу
-      window.location.href = `/categories/${sectionSlug}`;
+      handleCloseMenu();
+      void router.push(`/categories/${sectionSlug}`);
     } else {
       // Если нет ни items, ни slug, просто закрываем меню
       handleLinkClick();
@@ -418,7 +422,7 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
             <div className="p-4">
               {allSections.length > 0 ? (
                 allSections.map((section, idx) => {
-                  const hasSubmenu = (section.items && section.items.length > 0) || (section.slug && section.slug !== '#');
+                  const hasSubmenu = Boolean(section.items && section.items.length > 0);
 
                   return (
                     <button
@@ -468,7 +472,7 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
               {targetSection.items.map((item: any, idx: number) => (
                 <button
                   key={idx}
-                  onClick={() => window.location.href = `/categories/${item.slug}`}
+                  onClick={() => { handleCloseMenu(); void router.push(`/categories/${item.slug}`); }}
                   className="block w-full px-4 py-4 mb-2 bg-white border border-gray-200 rounded-lg hover:border-brand hover:bg-brand/5 active:bg-brand/10 transition-all duration-150 focus:outline-none"
                   style={{ touchAction: 'manipulation', cursor: 'pointer' }}
                 >

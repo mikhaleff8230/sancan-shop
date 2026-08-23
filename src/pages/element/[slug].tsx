@@ -242,7 +242,7 @@ function ProductDescription({ description }: { description: string }) {
   return (
     <div className="relative">
       <div 
-        className="prose prose-sm max-w-none overflow-hidden text-[15px] leading-7 text-[#1f2a37] transition-all duration-300"
+        className="prose prose-sm min-w-0 max-w-full overflow-hidden break-words text-[15px] leading-7 text-[#1f2a37] transition-all duration-300 [&_*]:max-w-full [&_a]:break-all [&_img]:h-auto [&_img]:max-w-full [&_pre]:max-w-full [&_pre]:overflow-x-auto [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto"
         style={{
           maxHeight: isExpanded ? 'none' : maxHeight,
         }}
@@ -589,10 +589,10 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               </motion.div>
 
               <motion.div variants={fadeInBottom()} className="mt-8 space-y-8">
-                <section className="sancan-ozon-section">
+                <section className="sancan-ozon-section min-w-0 overflow-hidden">
                   <h2 className="mb-4 text-2xl font-bold text-ozon-text">Описание</h2>
                   <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,480px)] lg:items-start">
-                    <div>
+                    <div className="min-w-0">
                       <ProductDescription description={description} />
                     </div>
                     {descriptionMedia ? (

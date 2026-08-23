@@ -277,7 +277,7 @@ export default function Header({
       {/* Скрываем на странице товара */}
       <header 
         className={cn(
-          "app-header sticky top-0 z-50 w-full border-b border-ozon-border bg-white ltr:left-0 rtl:right-0 transition-all duration-300 ease-in-out sm:hidden",
+          "app-header sticky top-0 z-50 w-full overflow-hidden rounded-b-[26px] bg-gradient-to-br from-[#7c45ed] via-[#6937dc] to-[#402083] text-white shadow-[0_10px_28px_rgba(70,34,140,0.25)] ltr:left-0 rtl:right-0 transition-all duration-300 ease-in-out sm:hidden",
           {
             "transform translate-y-0": isVisible,
             "shadow-sm": isCompact,
@@ -292,26 +292,14 @@ export default function Header({
             "opacity-95": !isVisible,
           }
         )}>
-          <div className="flex items-center justify-between h-14 gap-2">
+          <div className="flex min-h-[116px] flex-col gap-2 py-2.5">
             {/* Логотип */}
-            <div className="flex-shrink-0">
-              <Logo className="w-20 h-8" />
-            </div>
+            <div className="flex min-w-0 items-center gap-2 px-1"><MapPin className="h-5 w-5 shrink-0"/><div className="min-w-0 flex-1 truncate text-sm font-semibold [&_button]:!max-w-full [&_button]:!truncate [&_button]:!p-0 [&_button]:!text-white [&_button]:hover:!bg-transparent"><LocationWithModal /></div><button type="button" onClick={() => router.push(routes.chat)} aria-label="Чат" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15"><MessageCircle className="h-5 w-5"/></button></div>
 
             {/* Поиск */}
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 rounded-2xl bg-white p-0.5 shadow-sm">
               <SearchInput className="w-full" />
             </div>
-            <HeaderLocation compact />
-
-            {/* Кнопка меню */}
-            {showHamburger && (
-              <Hamburger
-                isToggle={isCollapse}
-                onClick={handleMobileMenuClick}
-                className="flex-shrink-0"
-              />
-            )}
           </div>
         </div>
       </header>
