@@ -234,9 +234,19 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
     }
   };
 
+  const navigateToCategory = (slug?: string) => {
+    if (!slug || slug === '#') return;
+    handleCloseMenu();
+    void router.push(`/categories/${slug}`);
+  };
+
   // Закрываем меню при клике вне компонента
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // Мобильное меню рендерится portal-ом в document.body и поэтому всегда
+      // находится за пределами menuRef. Закрывать по outside-click нужно только
+      // десктопное мега-меню; у мобильного есть собственная кнопка закрытия.
+      if (window.innerWidth < 640) return;
       if (
         menuRef.current &&
         !menuRef.current.contains(event.target as Node)
@@ -420,6 +430,14 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
             }`}
           >
             <div className="p-4">
+              <button
+                type="button"
+                onClick={() => navigateToCategory(category.slug)}
+                className="mb-3 flex w-full items-center justify-between rounded-xl bg-brand px-4 py-4 text-left text-base font-bold text-white shadow-sm"
+              >
+                <span>Все товары категории</span>
+                <ChevronRight className="h-5 w-5 shrink-0" />
+              </button>
               {allSections.length > 0 ? (
                 allSections.map((section, idx) => {
                   const hasSubmenu = Boolean(section.items && section.items.length > 0);
@@ -469,10 +487,18 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
             }`}
           >
             <div className="p-4">
+              <button
+                type="button"
+                onClick={() => navigateToCategory(targetSection.slug)}
+                className="mb-3 flex w-full items-center justify-between rounded-xl bg-brand px-4 py-4 text-left text-base font-bold text-white shadow-sm"
+              >
+                <span>Все товары раздела</span>
+                <ChevronRight className="h-5 w-5 shrink-0" />
+              </button>
               {targetSection.items.map((item: any, idx: number) => (
                 <button
                   key={idx}
-                  onClick={() => { handleCloseMenu(); void router.push(`/categories/${item.slug}`); }}
+                  onClick={() => navigateToCategory(item.slug)}
                   className="block w-full px-4 py-4 mb-2 bg-white border border-gray-200 rounded-lg hover:border-brand hover:bg-brand/5 active:bg-brand/10 transition-all duration-150 focus:outline-none"
                   style={{ touchAction: 'manipulation', cursor: 'pointer' }}
                 >
