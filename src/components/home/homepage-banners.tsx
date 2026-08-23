@@ -148,11 +148,27 @@ export default function HomepageBanners() {
     <>
       {m && (
         <div className="px-3 pt-3 sm:hidden">
-          <div style={background(m)} className="relative min-h-[154px] overflow-hidden rounded-[24px] p-5 shadow-sm">
-            <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/25 to-transparent" />
+          <div
+            style={background(m)}
+            className="relative min-h-[154px] overflow-hidden rounded-[24px] p-5 shadow-sm"
+          >
+            <div className="from-black/65 absolute inset-0 bg-gradient-to-r via-black/25 to-transparent" />
             <div className="relative z-[1] flex min-h-[114px] max-w-[62%] flex-col items-start justify-center">
-              <h1 style={{ color: m.title_color }} className="text-[24px] font-extrabold leading-[1.05]">{m.title}</h1>
-              {m.cta_text && <Action href={m.cta_url} style={{ color: m.cta_color, background: m.cta_background }} className="mt-4 inline-flex rounded-lg px-3 py-2 text-sm font-bold">{m.cta_text} ›</Action>}
+              <h1
+                style={{ color: m.title_color }}
+                className="text-[24px] font-extrabold leading-[1.05]"
+              >
+                {m.title}
+              </h1>
+              {m.cta_text && (
+                <Action
+                  href={m.cta_url}
+                  style={{ color: m.cta_color, background: m.cta_background }}
+                  className="mt-4 inline-flex rounded-lg px-3 py-2 text-sm font-bold"
+                >
+                  {m.cta_text} ›
+                </Action>
+              )}
             </div>
           </div>
         </div>
@@ -185,126 +201,128 @@ export default function HomepageBanners() {
         </div>
       )}
       {h && (
-        <div className="sancan-ozon-container hidden overflow-hidden pt-3 sm:block">
-          <AnimatePresence initial={false} mode="popLayout">
-          <MotionDiv
-            key={heroes[hero % Math.max(heroes.length, 1)]?.id ?? hero}
-            style={background(h)}
-            className="relative min-h-[210px] overflow-hidden rounded-[22px] px-6 py-7 shadow-sm md:min-h-[270px] md:px-12 lg:px-16"
-            initial={{ x: '100%', opacity: 0.65 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '-100%', opacity: 0.65 }}
-            transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {heroes.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  aria-label="Предыдущий баннер"
-                  onClick={() =>
-                    setHero((x) => (x - 1 + heroes.length) % heroes.length)
-                  }
-                  className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-2xl shadow-sm"
-                >
-                  ‹
-                </button>
-                <button
-                  type="button"
-                  aria-label="Следующий баннер"
-                  onClick={() => setHero((x) => (x + 1) % heroes.length)}
-                  className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-2xl shadow-sm"
-                >
-                  ›
-                </button>
-              </>
-            )}
-            <div className="relative z-[1] grid gap-6 md:grid-cols-[1fr_380px] md:items-center">
-              <div>
-                {h.eyebrow && (
+        <div className="sancan-ozon-container hidden pt-3 sm:block">
+          <div className="relative min-h-[210px] w-full overflow-hidden rounded-[22px] shadow-sm md:min-h-[270px]">
+            <AnimatePresence initial={false}>
+              <MotionDiv
+                key={heroes[hero % Math.max(heroes.length, 1)]?.id ?? hero}
+                style={background(h)}
+                className="absolute inset-0 h-full w-full overflow-hidden px-6 py-7 md:px-12 lg:px-16"
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '-100%' }}
+                transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {heroes.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      aria-label="Предыдущий баннер"
+                      onClick={() =>
+                        setHero((x) => (x - 1 + heroes.length) % heroes.length)
+                      }
+                      className="absolute left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-2xl shadow-sm"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Следующий баннер"
+                      onClick={() => setHero((x) => (x + 1) % heroes.length)}
+                      className="absolute right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-2xl shadow-sm"
+                    >
+                      ›
+                    </button>
+                  </>
+                )}
+                <div className="relative z-[1] grid gap-6 md:grid-cols-[1fr_380px] md:items-center">
+                  <div>
+                    {h.eyebrow && (
+                      <div
+                        style={{
+                          color: h.eyebrow_color,
+                          background: h.eyebrow_background,
+                        }}
+                        className="mb-5 inline-flex rounded-[28px] px-5 py-3 text-lg font-black shadow-sm md:text-2xl"
+                      >
+                        {h.eyebrow}
+                      </div>
+                    )}
+                    <h1
+                      style={{ color: h.title_color }}
+                      className="max-w-[620px] text-4xl font-black leading-[0.95] tracking-[-0.02em] md:text-6xl"
+                    >
+                      {h.title}
+                    </h1>
+                    <p
+                      style={{ color: h.description_color }}
+                      className="mt-5 max-w-[520px] text-base font-semibold md:text-lg"
+                    >
+                      {h.description}
+                    </p>
+                    <div className="mt-6 flex flex-wrap gap-3">
+                      {h.button_one_text && (
+                        <Action
+                          href={h.button_one_url}
+                          style={{
+                            color: h.button_one_color,
+                            background: h.button_one_background,
+                          }}
+                          className="rounded-2xl px-5 py-3 text-sm font-black shadow-sm"
+                        >
+                          {h.button_one_text}
+                        </Action>
+                      )}
+                      {h.button_two_text && (
+                        <Action
+                          href={h.button_two_url}
+                          style={{
+                            color: h.button_two_color,
+                            background: h.button_two_background,
+                          }}
+                          className="rounded-2xl px-5 py-3 text-sm font-black shadow-sm"
+                        >
+                          {h.button_two_text}
+                        </Action>
+                      )}
+                    </div>
+                  </div>
                   <div
                     style={{
-                      color: h.eyebrow_color,
-                      background: h.eyebrow_background,
+                      color: h.card_text_color,
+                      background: h.card_background,
                     }}
-                    className="mb-5 inline-flex rounded-[28px] px-5 py-3 text-lg font-black shadow-sm md:text-2xl"
+                    className="relative hidden h-[210px] rounded-[32px] p-6 shadow-[0_20px_50px_rgba(91,58,255,0.28)] md:block"
                   >
-                    {h.eyebrow}
+                    <div className="absolute right-7 top-8 rotate-6 rounded-2xl bg-white px-5 py-4 text-4xl font-black text-ozon-pink shadow-lg">
+                      {h.card_badge}
+                    </div>
+                    <div className="absolute bottom-8 left-8 max-w-[240px] text-3xl font-black leading-tight">
+                      {h.card_text}
+                    </div>
+                    <div className="absolute bottom-6 right-7 text-2xl font-bold opacity-60">
+                      {h.card_note}
+                    </div>
+                  </div>
+                </div>
+                {heroes.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2">
+                    {heroes.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        aria-label={`Баннер ${i + 1}`}
+                        onClick={() => setHero(i)}
+                        className={`h-2 rounded-full bg-white shadow ${
+                          i === hero ? 'w-7' : 'w-2 opacity-70'
+                        }`}
+                      />
+                    ))}
                   </div>
                 )}
-                <h1
-                  style={{ color: h.title_color }}
-                  className="max-w-[620px] text-4xl font-black leading-[0.95] tracking-[-0.02em] md:text-6xl"
-                >
-                  {h.title}
-                </h1>
-                <p
-                  style={{ color: h.description_color }}
-                  className="mt-5 max-w-[520px] text-base font-semibold md:text-lg"
-                >
-                  {h.description}
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  {h.button_one_text && (
-                    <Action
-                      href={h.button_one_url}
-                      style={{
-                        color: h.button_one_color,
-                        background: h.button_one_background,
-                      }}
-                      className="rounded-2xl px-5 py-3 text-sm font-black shadow-sm"
-                    >
-                      {h.button_one_text}
-                    </Action>
-                  )}
-                  {h.button_two_text && (
-                    <Action
-                      href={h.button_two_url}
-                      style={{
-                        color: h.button_two_color,
-                        background: h.button_two_background,
-                      }}
-                      className="rounded-2xl px-5 py-3 text-sm font-black shadow-sm"
-                    >
-                      {h.button_two_text}
-                    </Action>
-                  )}
-                </div>
-              </div>
-              <div
-                style={{
-                  color: h.card_text_color,
-                  background: h.card_background,
-                }}
-                className="relative hidden h-[210px] rounded-[32px] p-6 shadow-[0_20px_50px_rgba(91,58,255,0.28)] md:block"
-              >
-                <div className="absolute right-7 top-8 rotate-6 rounded-2xl bg-white px-5 py-4 text-4xl font-black text-ozon-pink shadow-lg">
-                  {h.card_badge}
-                </div>
-                <div className="absolute bottom-8 left-8 max-w-[240px] text-3xl font-black leading-tight">
-                  {h.card_text}
-                </div>
-                <div className="absolute bottom-6 right-7 text-2xl font-bold opacity-60">
-                  {h.card_note}
-                </div>
-              </div>
-            </div>
-            {heroes.length > 1 && (
-              <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2">
-                {heroes.map((_, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    aria-label={`Баннер ${i + 1}`}
-                    onClick={() => setHero(i)}
-                    className={`h-2 rounded-full bg-white shadow ${
-                      i === hero ? 'w-7' : 'w-2 opacity-70'
-                    }`}
-                  />
-                ))}
-              </div>
-            )}
-          </MotionDiv>
-          </AnimatePresence>
+              </MotionDiv>
+            </AnimatePresence>
+          </div>
         </div>
       )}
     </>
