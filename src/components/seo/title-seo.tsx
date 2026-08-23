@@ -9,6 +9,7 @@ type Props = {
   ogType?: string;
   productPrice?: number;
   productCurrency?: string;
+  exactTitle?: boolean;
 };
 
 export const TitleSeo = (props: Props) => {
@@ -57,7 +58,7 @@ export const TitleSeo = (props: Props) => {
         },
       ]}
       title={props.title ?? settings?.seo?.metaTitle}
-      titleTemplate={`%s  ${
+      titleTemplate={props.exactTitle ? '%s' : `%s  ${
         settings?.seo?.metaTitle ||
         settings?.siteTitle ||
         'купить недорого в интернет магазине.'

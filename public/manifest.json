@@ -1,9 +1,9 @@
 {
   "name": "SANCAN",
   "short_name": "SANCAN",
-  "theme_color": "#348155",
-  "background_color": "#595552",
-  "display": "fullscreen",
+  "theme_color": "#6d38e0",
+  "background_color": "#f7f4ef",
+  "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
   "start_url": "/",
