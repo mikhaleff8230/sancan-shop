@@ -202,12 +202,12 @@ export default function HomepageBanners() {
       )}
       {h && (
         <div className="sancan-ozon-container hidden pt-3 sm:block">
-          <div className="relative min-h-[210px] w-full overflow-hidden rounded-[22px] shadow-sm md:min-h-[270px]">
+          <div className="relative grid w-full overflow-hidden rounded-[22px] shadow-sm">
             <AnimatePresence initial={false}>
               <MotionDiv
                 key={heroes[hero % Math.max(heroes.length, 1)]?.id ?? hero}
                 style={background(h)}
-                className="absolute inset-0 h-full w-full overflow-hidden px-6 py-7 md:px-12 lg:px-16"
+                className="relative col-start-1 row-start-1 min-h-[210px] w-full overflow-hidden px-6 py-7 md:min-h-[270px] md:px-12 lg:px-16"
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
