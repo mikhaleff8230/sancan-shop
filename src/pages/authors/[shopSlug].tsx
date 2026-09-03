@@ -80,6 +80,34 @@ function AboutShop({ shop }: { shop: Shop }) {
     settings: { socials },
   } = shop;
   const { t } = useTranslation('common');
+  const socialLinks = (Array.isArray(socials) ? socials : []).flatMap(
+    (social) => {
+      const icon = typeof social?.icon === 'string' ? social.icon.trim() : '';
+      const url = typeof social?.url === 'string' ? social.url.trim() : '';
+
+      if (!icon || !url) {
+        return [];
+      }
+
+      try {
+        const parsedUrl = new URL(url);
+        if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+          return [];
+        }
+
+        return [
+          {
+            icon,
+            url,
+            label: parsedUrl.hostname.replace(/^www\./, ''),
+          },
+        ];
+      } catch {
+        return [];
+      }
+    }
+  );
+
   return (
     <motion.div
       variants={fadeInBottom()}
@@ -123,7 +151,7 @@ function AboutShop({ shop }: { shop: Shop }) {
           </div>
         </div>
         <div className="space-y-3 border-t border-ozon-border pt-5">
-          {socials.map(({ icon, url }, idx) => (
+          {socialLinks.map(({ icon, url, label }, idx) => (
             <a
               key={idx}
               href={url}
@@ -138,7 +166,7 @@ function AboutShop({ shop }: { shop: Shop }) {
                   'w-3.5 h-3.5 text-dark-800 dark:text-light-900 shrink-0',
               })}
               <span className="transition-colors group-hover:text-dark ltr:pl-2 rtl:pr-2 dark:group-hover:text-light">
-                {url.slice(12, -1).split('/').slice(0, 1)}
+                {label}
               </span>
             </a>
           ))}
