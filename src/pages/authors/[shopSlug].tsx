@@ -30,8 +30,20 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useRouter } from 'next/router';
 
 // Dynamic rendering - no static generation
+type PublicShop = Omit<
+  Shop,
+  'description' | 'logo' | 'cover_image' | 'settings' | 'address' | 'owner'
+> & {
+  description: string | null;
+  logo: Shop['logo'] | null;
+  cover_image: Shop['cover_image'] | null;
+  settings: { socials?: Shop['settings']['socials'] | null } | null;
+  address: Shop['address'] | null;
+  owner: (Omit<Shop['owner'], 'email'> & { email: string | null }) | null;
+};
+
 type PageProps = {
-  shop: Shop;
+  shop: PublicShop;
 };
 
 export const getServerSideProps: GetServerSideProps<
@@ -69,17 +81,18 @@ export const getServerSideProps: GetServerSideProps<
   }
 };
 
-function AboutShop({ shop }: { shop: Shop }) {
+function AboutShop({ shop }: { shop: PublicShop }) {
   const {
     description,
     name,
     address,
     owner,
-    orders_count,
-    products_count,
-    settings: { socials },
+    orders_count = 0,
+    products_count = 0,
   } = shop;
   const { t } = useTranslation('common');
+  const formattedAddress = formatAddress(address);
+  const socials = shop.settings?.socials;
   const socialLinks = (Array.isArray(socials) ? socials : []).flatMap(
     (social) => {
       const icon = typeof social?.icon === 'string' ? social.icon.trim() : '';
@@ -117,23 +130,31 @@ function AboutShop({ shop }: { shop: Shop }) {
         <h2 className="mb-3 text-2xl font-bold text-ozon-text">
           {name}
         </h2>
-        <p className="max-w-3xl leading-7 text-ozon-muted">{description}</p>
-        <div className="space-y-3.5 pt-4 text-ozon-text md:pt-6 xl:pt-7">
-          <address className="flex max-w-sm items-start not-italic leading-[1.8]">
-            <span className="mt-[3px] w-7 shrink-0 text-ozon-muted">
-              <MapPinIcon className="h-4 w-4" />
-            </span>
-            {formatAddress(address)}
-          </address>
-          <div className="flex items-center">
-            <span className="w-7 shrink-0 text-ozon-muted">
-              <AtIcon className="h-4 w-4" />
-            </span>
-            <a href={`mailto:${owner?.email}`} className="hover:text-brand">
-              {owner?.email}
-            </a>
+        {description ? (
+          <p className="max-w-3xl leading-7 text-ozon-muted">{description}</p>
+        ) : null}
+        {formattedAddress || owner?.email ? (
+          <div className="space-y-3.5 pt-4 text-ozon-text md:pt-6 xl:pt-7">
+            {formattedAddress ? (
+              <address className="flex max-w-sm items-start not-italic leading-[1.8]">
+                <span className="mt-[3px] w-7 shrink-0 text-ozon-muted">
+                  <MapPinIcon className="h-4 w-4" />
+                </span>
+                {formattedAddress}
+              </address>
+            ) : null}
+            {owner?.email ? (
+              <div className="flex items-center">
+                <span className="w-7 shrink-0 text-ozon-muted">
+                  <AtIcon className="h-4 w-4" />
+                </span>
+                <a href={`mailto:${owner.email}`} className="hover:text-brand">
+                  {owner.email}
+                </a>
+              </div>
+            ) : null}
           </div>
-        </div>
+        ) : null}
       </div>
       <div className="sancan-ozon-card mt-7 flex-shrink-0 p-6 md:mt-0 lg:p-8">
         <div className="-mx-2 flex pb-6 lg:pb-7">

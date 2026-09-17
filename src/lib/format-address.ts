@@ -4,7 +4,7 @@ function removeFalsy(obj: any) {
   return Object.fromEntries(Object.entries(obj).filter(([_, v]) => Boolean(v)));
 }
 
-export function formatAddress(address: Address) {
+export function formatAddress(address: Address | null | undefined) {
   if (!address) return;
   const temp = ['street_address', 'state', 'city', 'zip', 'country'].reduce(
     (acc, k) => ({ ...acc, [k]: (address as any)[k] }),
