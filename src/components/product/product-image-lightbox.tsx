@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { createPortal } from 'react-dom';
 import { ChevronLeft } from '@/components/icons/chevron-left';
 import { ChevronRight } from '@/components/icons/chevron-right';
 import { CloseIcon } from '@/components/icons/close-icon';
@@ -19,9 +20,15 @@ export default function ProductImageLightbox({
   onClose
 }: ProductImageLightboxProps) {
   const [currentIndex, setCurrentIndex] = useState(startIndex);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
   const thumbsContainerRef = useRef<HTMLDivElement>(null);
+  const swipeStartRef = useRef<number | null>(null);
+  const swipeEndRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
   // Обновляем индекс при изменении startIndex
   useEffect(() => {
@@ -53,14 +60,13 @@ export default function ProductImageLightbox({
   // Блокируем скролл body
   useEffect(() => {
     if (isOpen) {
+      const previousOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
 
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
+      return () => {
+        document.body.style.overflow = previousOverflow;
+      };
+    }
   }, [isOpen]);
 
   const nextImage = () => {
@@ -75,19 +81,27 @@ export default function ProductImageLightbox({
     setCurrentIndex(index);
   };
 
-  // Swipe handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
+  const startSwipe = (clientX: number) => {
+    swipeStartRef.current = clientX;
+    swipeEndRef.current = null;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+  const moveSwipe = (clientX: number) => {
+    if (swipeStartRef.current !== null) {
+      swipeEndRef.current = clientX;
+    }
   };
 
-  const handleTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+  const endSwipe = () => {
+    const swipeStart = swipeStartRef.current;
+    const swipeEnd = swipeEndRef.current;
+
+    swipeStartRef.current = null;
+    swipeEndRef.current = null;
+
+    if (swipeStart === null || swipeEnd === null) return;
     
-    const distance = touchStart - touchEnd;
+    const distance = swipeStart - swipeEnd;
     const isLeftSwipe = distance > 50;
     const isRightSwipe = distance < -50;
 
@@ -97,8 +111,6 @@ export default function ProductImageLightbox({
       prevImage();
     }
 
-    setTouchStart(0);
-    setTouchEnd(0);
   };
 
   // Автоскролл к активной миниатюре
@@ -115,15 +127,22 @@ export default function ProductImageLightbox({
     }
   }, [currentIndex]);
 
-  if (!isOpen || images.length === 0) return null;
+  if (!isMounted || !isOpen || images.length === 0) return null;
 
   const currentImage = images[currentIndex];
   const placeholder = '/placeholders/placeholder-450.svg';
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90">
+  return createPortal(
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black/90"
+      style={{ zIndex: 2147483647 }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Галерея изображений товара"
+      onClick={onClose}
+    >
       {/* Вертикальные миниатюры слева */}
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 z-10">
+      <div className="absolute left-4 top-1/2 z-10 hidden -translate-y-1/2 lg:block" onClick={(event) => event.stopPropagation()}>
         <div
           ref={thumbsContainerRef}
           className="flex h-[600px] w-20 flex-col gap-3 overflow-y-auto pr-2 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-light-400 dark:scrollbar-thumb-dark-400"
@@ -164,12 +183,20 @@ export default function ProductImageLightbox({
       </div>
 
       {/* Основное изображение по центру */}
-      <div className="relative flex h-full w-full items-center justify-center px-24">
+      <div className="relative flex h-full w-full items-center justify-center px-4 sm:px-16 lg:px-24" onClick={(event) => event.stopPropagation()}>
         <div
           className="relative h-full w-full max-w-4xl"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          style={{ touchAction: 'pan-y pinch-zoom' }}
+          onTouchStart={(e) => startSwipe(e.targetTouches[0].clientX)}
+          onTouchMove={(e) => moveSwipe(e.targetTouches[0].clientX)}
+          onTouchEnd={endSwipe}
+          onTouchCancel={endSwipe}
+          onMouseDown={(e) => startSwipe(e.clientX)}
+          onMouseMove={(e) => moveSwipe(e.clientX)}
+          onMouseUp={endSwipe}
+          onMouseLeave={() => {
+            if (swipeStartRef.current !== null) endSwipe();
+          }}
         >
           {currentImage && (currentImage?.original || currentImage?.thumbnail) ? (
             <Image
@@ -178,6 +205,7 @@ export default function ProductImageLightbox({
               quality={100}
               src={currentImage?.original || currentImage?.thumbnail}
               className="object-contain"
+              draggable={false}
               onError={() => {
                 console.warn(`Failed to load lightbox image at index ${currentIndex}`);
               }}
@@ -189,6 +217,7 @@ export default function ProductImageLightbox({
               quality={100}
               src={placeholder}
               className="object-contain"
+              draggable={false}
             />
           )}
         </div>
@@ -198,13 +227,15 @@ export default function ProductImageLightbox({
           <>
             <button
               onClick={prevImage}
-              className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/30 hover:scale-110"
+              className="absolute left-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-white/30 lg:left-28"
+              aria-label="Предыдущее изображение"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
             <button
               onClick={nextImage}
-              className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/30 hover:scale-110"
+              className="absolute right-4 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-all hover:scale-110 hover:bg-white/30"
+              aria-label="Следующее изображение"
             >
               <ChevronRight className="h-6 w-6" />
             </button>
@@ -221,11 +252,16 @@ export default function ProductImageLightbox({
 
       {/* Кнопка закрытия */}
       <button
-        onClick={onClose}
-        className="absolute right-6 top-6 rounded-full bg-white/20 p-3 text-white backdrop-blur-sm transition-all hover:bg-white/30 hover:scale-110"
+        onClick={(event) => {
+          event.stopPropagation();
+          onClose();
+        }}
+        className="absolute right-4 top-4 z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/25 p-3 text-white shadow-lg backdrop-blur-sm transition-all hover:scale-110 hover:bg-white/40 sm:right-6 sm:top-6"
+        aria-label="Закрыть галерею"
       >
         <CloseIcon className="h-6 w-6" />
       </button>
-    </div>
+    </div>,
+    document.body
   );
 }

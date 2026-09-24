@@ -43,8 +43,18 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
     data: ProductVideo;
   };
 
-  // Получаем медиа-элементы: сначала главное фото, потом галерея, потом видео
+  // Видеообложка должна быть первым медиа-элементом на странице товара.
   const mediaItems: MediaItem[] = [];
+  const usesVideoCover = Boolean(
+    product.has_video_as_cover ?? product.video_as_cover
+  );
+  const coverVideo = usesVideoCover
+    ? product.cover_video || product.videos?.[0]
+    : undefined;
+
+  if (coverVideo) {
+    mediaItems.push({ type: 'video', data: coverVideo });
+  }
   
   // Добавляем главное изображение
   if (product.image) {
@@ -61,7 +71,9 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
   // Добавляем видео
   if (product.videos && Array.isArray(product.videos) && product.videos.length > 0) {
     product.videos.forEach(video => {
-      mediaItems.push({ type: 'video', data: video });
+      if (!coverVideo || String(video.id) !== String(coverVideo.id)) {
+        mediaItems.push({ type: 'video', data: video });
+      }
     });
   }
 
@@ -82,6 +94,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
   }
 
   const placeholder = '/placeholders/placeholder-450.svg';
+  const fallbackImage = product.image?.original || product.image?.thumbnail || placeholder;
 
   // Валидация медиа-элементов
   const validMediaItems = mediaItems.filter(item => {
@@ -113,24 +126,6 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
         url: item.type === 'video' ? (item.data?.url || item.data?.video_url || item.data?.preview_url) : (item.data?.original || item.data?.thumbnail),
       })),
     });
-  }
-
-  // Если нет медиа-элементов, показываем placeholder
-  if (validMediaItems.length === 0) {
-    return (
-      <motion.div variants={fadeInBottom()} className={`${className}`}>
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-light-500 dark:bg-dark-300">
-          <Image
-            alt={product.name || 'Product placeholder'}
-            fill
-            quality={100}
-            src={placeholder}
-            className="object-cover"
-            unoptimized={true}
-          />
-        </div>
-      </motion.div>
-    );
   }
 
   const selectMedia = (index: number) => {
@@ -180,21 +175,43 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
     };
   }, []);
 
-  const handleMobileImageClick = () => {
+  const handleMobileMediaClick = (index: number) => {
+    setCurrentImageIndex(index);
+
+    if (validMediaItems[index]?.type === 'image') {
+      // Use the portal-based lightbox on mobile as well. It stays above the
+      // PWA navigation and provides native-feeling horizontal swipe support.
+      setIsLightboxOpen(true);
+      return;
+    }
+
     setIsMobileFullscreen(true);
   };
 
   // Автоскролл к активной миниатюре (только для вертикальных миниатюр на десктопе)
   useEffect(() => {
-    if (thumbsContainerRef.current && window.innerWidth >= 1024) {
-      const activeThumb = thumbsContainerRef.current.children[currentImageIndex] as HTMLElement;
-      if (activeThumb) {
-        activeThumb.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
-      }
+    const container = thumbsContainerRef.current;
+    const activeThumb = thumbRefs.current[currentImageIndex];
+
+    if (!container || !activeThumb || window.innerWidth < 1024) return;
+
+    // Меняем только scrollTop контейнера. scrollIntoView здесь использовать нельзя:
+    // браузер может вместе с колонкой миниатюр прокрутить всю страницу.
+    const containerRect = container.getBoundingClientRect();
+    const thumbRect = activeThumb.getBoundingClientRect();
+    const topOverflow = thumbRect.top - containerRect.top;
+    const bottomOverflow = thumbRect.bottom - containerRect.bottom;
+
+    if (topOverflow < 0) {
+      container.scrollTo({
+        top: Math.max(0, container.scrollTop + topOverflow),
+        behavior: 'smooth',
+      });
+    } else if (bottomOverflow > 0) {
+      container.scrollTo({
+        top: container.scrollTop + bottomOverflow,
+        behavior: 'smooth',
+      });
     }
   }, [currentImageIndex]);
 
@@ -225,25 +242,46 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
     };
   }, [isMobileFullscreen]);
 
+  // Возврат должен быть после всех hooks, чтобы их порядок не зависел от наличия медиа.
+  if (validMediaItems.length === 0) {
+    return (
+      <motion.div variants={fadeInBottom()} className={`${className}`}>
+        <div className="relative aspect-square overflow-hidden rounded-lg bg-light-500 dark:bg-dark-300">
+          <Image
+            alt={product.name || 'Product placeholder'}
+            fill
+            quality={100}
+            src={placeholder}
+            className="object-cover"
+            unoptimized={true}
+          />
+        </div>
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div variants={fadeInBottom()} className={`${className} relative`}>
-      <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[84px_1fr]">
+      <div className="flex flex-col gap-4 lg:grid lg:min-h-0 lg:grid-cols-[84px_minmax(0,1fr)]">
         {/* Вертикальные миниатюры слева (только на lg+) */}
         {validMediaItems.length > 1 ? (
-          <div
-            ref={thumbsContainerRef}
-            className="hidden h-[520px] flex-col gap-2 overflow-y-auto pr-1 lg:flex"
-            style={{
-              WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'thin',
-            }}
-          >
+          <div className="relative hidden min-h-0 lg:block">
+            <div
+              ref={thumbsContainerRef}
+              className="absolute inset-0 flex min-h-0 flex-col gap-2 overflow-x-hidden overflow-y-auto overscroll-contain pr-1 touch-pan-y"
+              style={{
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'thin',
+              }}
+            >
             {validMediaItems.map((item, index) => (
               <button
                 key={index}
-                ref={(node) => (thumbRefs.current[index] = node)}
+                ref={(node) => {
+                  thumbRefs.current[index] = node;
+                }}
                 onClick={() => selectMedia(index)}
-                className={`relative h-20 w-20 overflow-hidden rounded-lg border-2 transition-colors ${
+                className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
                   index === currentImageIndex
                     ? 'border-brand'
                     : 'border-light-300 dark:border-dark-400 hover:border-light-400 dark:hover:border-dark-500'
@@ -280,7 +318,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                         alt={`${product.name || 'Product'} - видео ${index + 1}`}
                         fill
                         quality={100}
-                        src={item.data.thumbnail_url || item.data.poster_url}
+                        src={(item.data.thumbnail_url || item.data.poster_url)!}
                         className="object-cover"
                         unoptimized={true}
                       />
@@ -291,6 +329,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                 )}
               </button>
             ))}
+            </div>
           </div>
         ) : (
           <div className="hidden lg:block" />
@@ -342,7 +381,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                   scrollSnapAlign: 'center',
                   scrollSnapStop: 'always',
                 }}
-                onClick={handleMobileImageClick}
+                onClick={() => handleMobileMediaClick(index)}
               >
                 {item.type === 'image' ? (
                   item.data && (item.data?.original || item.data?.thumbnail) ? (
@@ -370,6 +409,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                 ) : item.type === 'video' ? (
                   <ProductVideoPlayer
                     video={item.data}
+                    fallbackImage={fallbackImage}
                     className="h-full w-full"
                     controls={true}
                   />
@@ -416,6 +456,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
             ) : validMediaItems[currentImageIndex]?.type === 'video' ? (
               <ProductVideoPlayer
                 video={validMediaItems[currentImageIndex].data}
+                fallbackImage={fallbackImage}
                 className="h-full w-full"
                 controls={true}
               />
@@ -466,12 +507,13 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
 
       {/* Точки (индикаторы) слайдера */}
       {validMediaItems.length > 1 && (
-        <div className="mt-4 flex justify-center gap-2">
+        <div className="mt-4 max-w-full overflow-x-auto overscroll-x-contain pb-1">
+          <div className="flex w-max min-w-full justify-center gap-2 px-1">
           {validMediaItems.map((_, index) => (
             <button
               key={index}
               onClick={() => selectMedia(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
+              className={`h-3 w-3 shrink-0 rounded-full transition-all duration-200 ${
                 index === currentImageIndex
                   ? 'bg-brand scale-110 shadow-md'
                   : 'bg-light-400 dark:bg-dark-400 hover:bg-light-500 dark:hover:bg-dark-500 hover:scale-105'
@@ -479,10 +521,11 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
               title={`Перейти к медиа ${index + 1}`}
             />
           ))}
+          </div>
         </div>
       )}
 
-      {/* Лайтбокс только для десктопа (только изображения) */}
+      {/* Лайтбокс изображений для desktop и mobile */}
       <ProductImageLightbox
         images={validMediaItems.filter(item => item.type === 'image').map(item => item.data)}
         startIndex={validMediaItems.slice(0, currentImageIndex).filter(item => item.type === 'image').length}
@@ -528,6 +571,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
               <div className="w-full h-full flex items-center justify-center">
                 <ProductVideoPlayer
                   video={validMediaItems[currentImageIndex].data}
+                  fallbackImage={fallbackImage}
                   className="w-full h-full"
                   controls={true}
                 />

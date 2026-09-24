@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { PlayIcon } from '@/components/icons/play-icon';
 import { PauseIcon } from '@/components/icons/pause-icon';
 import type { ProductVideo } from '@/types';
+import Image from '@/components/ui/image';
 
 interface ProductVideoPlayerProps {
   video: ProductVideo;
@@ -10,6 +11,7 @@ interface ProductVideoPlayerProps {
   poster?: string;
   autoplay?: boolean;
   controls?: boolean;
+  fallbackImage?: string;
 }
 
 export default function ProductVideoPlayer({
@@ -18,6 +20,7 @@ export default function ProductVideoPlayer({
   poster,
   autoplay = false,
   controls = true,
+  fallbackImage,
 }: ProductVideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(autoplay);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,6 +30,12 @@ export default function ProductVideoPlayer({
   // Получаем URL видео
   const videoUrl = video.video_url || video.url || video.preview_url;
   const posterUrl = poster || video.poster_url || video.thumbnail_url;
+
+  useEffect(() => {
+    setIsLoading(true);
+    setError(null);
+    setIsPlaying(autoplay);
+  }, [videoUrl, autoplay]);
 
   useEffect(() => {
     if (videoRef.current) {
@@ -104,14 +113,24 @@ export default function ProductVideoPlayer({
       {/* Сообщение об ошибке */}
       {error && (
         <div className="absolute inset-0 flex items-center justify-center bg-dark-300">
-          <p className="text-sm text-light-400">{error}</p>
+          {fallbackImage ? (
+            <Image
+              alt="Фото товара"
+              fill
+              src={fallbackImage}
+              className="object-contain"
+              unoptimized
+            />
+          ) : (
+            <p className="text-sm text-light-400">{error}</p>
+          )}
         </div>
       )}
 
       {/* Длительность видео (если есть) */}
       {video.duration && !isPlaying && (
         <div className="absolute bottom-2 right-2 rounded bg-black bg-opacity-70 px-2 py-1 text-xs text-white">
-          {formatDuration(video.duration)}
+          {formatDuration(Number(video.duration))}
         </div>
       )}
     </div>

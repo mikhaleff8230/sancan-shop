@@ -36,6 +36,8 @@ export default function Card({ product }: { product: Product }) {
     baseAmount: product.price,
   });
   const [isHovered, setIsHovered] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [posterFailed, setPosterFailed] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -76,10 +78,23 @@ export default function Card({ product }: { product: Product }) {
     });
   }
   
-  const shouldShowVideo = has_video_as_cover && cover_video && isHovered;
-  const posterUrl = has_video_as_cover && cover_video ? (cover_video.poster_url || cover_video.thumbnail_url) : null;
-  const previewUrl = has_video_as_cover && cover_video ? cover_video.preview_url : null;
-  
+  const hasVideoCover = Boolean(
+    (has_video_as_cover ?? product.video_as_cover) && cover_video
+  );
+  const shouldShowVideo = hasVideoCover && !videoFailed && isHovered;
+  const posterUrl =
+    hasVideoCover && !posterFailed
+      ? cover_video?.poster_url || cover_video?.thumbnail_url
+      : null;
+  const previewUrl =
+    hasVideoCover && cover_video
+      ? cover_video.preview_url || cover_video.video_url || cover_video.url
+      : null;
+
+  useEffect(() => {
+    setVideoFailed(false);
+    setPosterFailed(false);
+  }, [previewUrl, cover_video?.poster_url, cover_video?.thumbnail_url]);
   if (process.env.NODE_ENV === 'development' && has_video_as_cover) {
     console.log('Card - video URLs:', {
       shouldShowVideo,
@@ -357,6 +372,7 @@ export default function Card({ product }: { product: Product }) {
             onError={(e) => {
               console.error('Video playback error:', e);
               console.error('Video src:', previewUrl);
+              setVideoFailed(true);
             }}
             onLoadStart={() => {
               if (process.env.NODE_ENV === 'development') {
@@ -364,7 +380,7 @@ export default function Card({ product }: { product: Product }) {
               }
             }}
           />
-        ) : has_video_as_cover && cover_video && posterUrl ? (
+        ) : hasVideoCover && posterUrl ? (
           /* Показываем постер видео, когда не наведено */
           <div className="relative w-full h-full">
             <Image
@@ -377,30 +393,8 @@ export default function Card({ product }: { product: Product }) {
                   (max-width: 1200px) 50vw,
                   33vw"
               priority
+              onError={() => setPosterFailed(true)}
             />
-            {/* Слайдер изображений поверх постера (если есть другие изображения) */}
-            {displayImages.length > 0 && (
-              <>
-                {displayImages.map((img, index) => (
-                  <Image
-                    key={index}
-                    alt={`${name} - ${index + 1}`}
-                    fill
-                    quality={85}
-                    src={img?.original || img?.thumbnail || placeholder}
-                    className={cn(
-                      "absolute inset-0 rounded-xl bg-[#f3f5f9] object-cover transition-opacity duration-300 pointer-events-none",
-                      index === currentImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-                    )}
-                    sizes="(max-width: 768px) 100vw,
-                        (max-width: 1200px) 50vw,
-                        33vw"
-                    loading={index === 0 ? "eager" : "lazy"}
-                    priority={index === 0}
-                  />
-                ))}
-              </>
-            )}
           </div>
         ) : (
           /* Слайдер изображений */
@@ -529,7 +523,9 @@ export default function Card({ product }: { product: Product }) {
         )}
         
         {/* Индикаторы (точки) внизу карточки - показываем только если есть несколько изображений и нет наведения (чтобы не мешать кнопке) */}
-        {((hasMultipleImages && !shouldShowVideo) || (has_video_as_cover && cover_video && displayImages.length > 0 && !shouldShowVideo)) && !isHovered && (
+        {hasMultipleImages &&
+          (!hasVideoCover || posterFailed) &&
+          !isHovered && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-40 flex gap-1.5 pointer-events-auto">
             {displayImages.map((_, index) => (
               <button

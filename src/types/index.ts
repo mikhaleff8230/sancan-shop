@@ -424,18 +424,19 @@ export interface RatingCount {
 }
 
 export interface ProductVideo {
-  id: string;
-  product_id: string;
+  id: string | number;
+  product_id: string | number;
   url: string;
-  video_url?: string; // Добавляем video_url из appends
-  preview_url?: string;
-  poster_url?: string;
-  thumbnail_url?: string;
-  duration?: number;
-  width?: number;
-  height?: number;
-  file_size?: number;
-  mime_type?: string;
+  video_url?: string | null;
+  preview_url?: string | null;
+  poster_url?: string | null;
+  thumbnail_url?: string | null;
+  duration?: number | string | null;
+  width?: number | null;
+  height?: number | null;
+  file_size?: number | string | null;
+  mime_type?: string | null;
+  status?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -445,7 +446,9 @@ export interface Product {
   name: string;
   slug: string;
   has_video_as_cover?: boolean;
-  cover_video?: ProductVideo;
+  video_as_cover?: boolean;
+  cover_video_id?: string | number | null;
+  cover_video?: ProductVideo | null;
   description: string;
   price: number;
   sale_price: number;
