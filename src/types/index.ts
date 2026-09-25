@@ -9,6 +9,7 @@ export interface QueryOptions {
 
 export interface GetParams {
   slug: string;
+  url?: string;
   language?: string;
 }
 
@@ -457,6 +458,7 @@ export interface Product {
   image: Attachment;
   gallery: Attachment[];
   videos?: ProductVideo[];
+  media_order?: string[];
   shop: Shop;
   created_at: string;
   updated_at: string;

@@ -8,8 +8,9 @@ import { ChevronRight } from '@/components/icons/chevron-right';
 import { PlayIcon } from '@/components/icons/play-icon';
 import ProductImageLightbox from './product-image-lightbox';
 import ProductVideoPlayer from './product-video-player';
-import type { Product, ProductVideo } from '@/types';
+import type { Product } from '@/types';
 import cn from 'classnames';
+import { getOrderedProductMedia } from '@/lib/product-media';
 
 interface ProductImageSliderProps {
   product: Product;
@@ -34,48 +35,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
     }
   };
 
-  // Тип медиа-элемента: изображение или видео
-  type MediaItem = {
-    type: 'image';
-    data: any; // Attachment
-  } | {
-    type: 'video';
-    data: ProductVideo;
-  };
-
-  // Видеообложка должна быть первым медиа-элементом на странице товара.
-  const mediaItems: MediaItem[] = [];
-  const usesVideoCover = Boolean(
-    product.has_video_as_cover ?? product.video_as_cover
-  );
-  const coverVideo = usesVideoCover
-    ? product.cover_video || product.videos?.[0]
-    : undefined;
-
-  if (coverVideo) {
-    mediaItems.push({ type: 'video', data: coverVideo });
-  }
-  
-  // Добавляем главное изображение
-  if (product.image) {
-    mediaItems.push({ type: 'image', data: product.image });
-  }
-  
-  // Добавляем галерею
-  if (product.gallery && Array.isArray(product.gallery)) {
-    product.gallery.forEach(img => {
-      mediaItems.push({ type: 'image', data: img });
-    });
-  }
-  
-  // Добавляем видео
-  if (product.videos && Array.isArray(product.videos) && product.videos.length > 0) {
-    product.videos.forEach(video => {
-      if (!coverVideo || String(video.id) !== String(coverVideo.id)) {
-        mediaItems.push({ type: 'video', data: video });
-      }
-    });
-  }
+  const mediaItems = getOrderedProductMedia(product);
 
   // Отладочная информация
   if (process.env.NODE_ENV === 'development') {

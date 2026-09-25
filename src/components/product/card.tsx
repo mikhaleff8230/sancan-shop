@@ -18,9 +18,10 @@ import { useMe } from '@/data/user';
 import { useModalAction } from '@/components/modal-views/context';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { getOrderedProductMedia } from '@/lib/product-media';
 
 export default function Card({ product }: { product: Product }) {
-  const { name, slug, image, gallery, shop, is_external, has_video_as_cover, cover_video, id, url } = product ?? {};
+  const { name, slug, shop, is_external, has_video_as_cover, cover_video, id, url } = product ?? {};
   const router = useRouter();
   const { isAuthorized } = useMe();
   const { toggleWishlist } = useToggleWishlist(id?.toString() || '');
@@ -56,14 +57,10 @@ export default function Card({ product }: { product: Product }) {
   const { t } = useTranslation('common');
   const isFreeItem = isFree(product?.sale_price ?? product?.price);
   
-  // Собираем все изображения: главное + галерея
-  const allImages: Array<{ thumbnail?: string; original?: string }> = [];
-  if (image) {
-    allImages.push(image);
-  }
-  if (gallery && Array.isArray(gallery)) {
-    allImages.push(...gallery);
-  }
+  const orderedMedia = getOrderedProductMedia(product);
+  const displayImages = orderedMedia
+    .filter((item) => item.type === 'image')
+    .map((item) => item.data);
   
   // Определяем, показывать ли видео вместо изображения
   // Добавляем отладочную информацию
@@ -81,20 +78,27 @@ export default function Card({ product }: { product: Product }) {
   const hasVideoCover = Boolean(
     (has_video_as_cover ?? product.video_as_cover) && cover_video
   );
-  const shouldShowVideo = hasVideoCover && !videoFailed && isHovered;
+  // Для обычной фотообложки видео-превью включается, только когда продавец
+  // поставил видео вторым элементом media-ленты.
+  const hoverVideo = hasVideoCover
+    ? cover_video
+    : orderedMedia[1]?.type === 'video'
+      ? orderedMedia[1].data
+      : null;
+  const shouldShowVideo = Boolean(hoverVideo && !videoFailed && isHovered);
   const posterUrl =
-    hasVideoCover && !posterFailed
-      ? cover_video?.poster_url || cover_video?.thumbnail_url
+    hoverVideo && !posterFailed
+      ? hoverVideo.poster_url || hoverVideo.thumbnail_url
       : null;
   const previewUrl =
-    hasVideoCover && cover_video
-      ? cover_video.preview_url || cover_video.video_url || cover_video.url
+    hoverVideo
+      ? hoverVideo.preview_url || hoverVideo.video_url || hoverVideo.url
       : null;
 
   useEffect(() => {
     setVideoFailed(false);
     setPosterFailed(false);
-  }, [previewUrl, cover_video?.poster_url, cover_video?.thumbnail_url]);
+  }, [previewUrl, hoverVideo?.poster_url, hoverVideo?.thumbnail_url]);
   if (process.env.NODE_ENV === 'development' && has_video_as_cover) {
     console.log('Card - video URLs:', {
       shouldShowVideo,
@@ -104,10 +108,6 @@ export default function Card({ product }: { product: Product }) {
       cover_video_id: cover_video?.id,
     });
   }
-  
-  // Если есть видео-обложка, НЕ добавляем постер в слайдер, так как он будет показан отдельно
-  // Постер будет показан как основное изображение, когда не наведено
-  const displayImages = allImages;
   
   const hasMultipleImages = displayImages.length > 1;
   const currentImage = displayImages[currentImageIndex] || displayImages[0];
