@@ -153,7 +153,7 @@ export default function DynamicProductGrid({
   // Определяем классы для grid или list вида
   const gridClasses = viewMode === 'list'
     ? 'flex flex-col gap-4'
-    : 'grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5';
+    : 'grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5';
 
   return (
     <div
