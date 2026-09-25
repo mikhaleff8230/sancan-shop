@@ -12,6 +12,7 @@ import { useViewMode } from '@/components/product/grid-switcher';
 interface DynamicGridProps {
   limit?: number;
   showLoadMore?: boolean;
+  showSummary?: boolean;
   className?: string;
   filters?: {
     categories?: string;
@@ -28,6 +29,7 @@ interface DynamicGridProps {
 export default function DynamicProductGrid({
   limit = 20,
   showLoadMore = true,
+  showSummary = true,
   className = '',
   filters = {},
   onProductClick,
@@ -69,7 +71,7 @@ export default function DynamicProductGrid({
 
   // Intersection Observer для автолоада (только на клиенте)
   useEffect(() => {
-    if (isLoading || typeof window === 'undefined') return;
+    if (!showLoadMore || isLoading || typeof window === 'undefined') return;
 
     observer.current = new IntersectionObserver(
       (entries) => {
@@ -89,7 +91,7 @@ export default function DynamicProductGrid({
         observer.current.disconnect();
       }
     };
-  }, [hasNextPage, isFetching, loadMore, isLoading]);
+  }, [hasNextPage, isFetching, loadMore, isLoading, showLoadMore]);
 
   // Анимация появления
   const staggerTransition = {
@@ -154,7 +156,13 @@ export default function DynamicProductGrid({
     : 'grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5';
 
   return (
-    <div className={cn('w-full pb-9 md:pb-10 lg:pb-12', className)}>
+    <div
+      className={cn(
+        'w-full',
+        showSummary ? 'pb-9 md:pb-10 lg:pb-12' : 'pb-0',
+        className
+      )}
+    >
       <motion.div
         variants={staggerTransition}
         initial="initial"
@@ -199,14 +207,14 @@ export default function DynamicProductGrid({
       )}
 
       {/* Индикатор окончания списка */}
-      {!hasNextPage && products && products.length > 0 && (
+      {showSummary && !hasNextPage && products && products.length > 0 && (
         <div className="text-center py-8 text-light-base dark:text-dark-base text-sm">
           Все товары загружены
         </div>
       )}
 
       {/* Информация о загруженных товарах */}
-      {paginatorInfo && (
+      {showSummary && paginatorInfo && (
         <div className="text-center py-4 text-sm text-gray-500">
           Показано {products?.length || 0} из {paginatorInfo.total} товаров
         </div>

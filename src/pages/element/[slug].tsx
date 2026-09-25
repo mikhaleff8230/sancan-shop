@@ -286,6 +286,29 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
     const yclid = Array.isArray(router.query.yclid) ? router.query.yclid[0] : router.query.yclid;
     HttpClient.post('/api/promotion/visit', { product_id: product.id, yclid: yclid || null }).catch(() => undefined);
   }, [router.isReady, router.query.yclid, product?.id]);
+  useEffect(() => {
+    if (!router.isReady || !product?.id || typeof window === 'undefined') return;
+
+    const storageKey = `sancan:product-view:${product.id}`;
+    const twelveHours = 12 * 60 * 60 * 1000;
+
+    try {
+      const lastViewedAt = Number(window.localStorage.getItem(storageKey) || 0);
+      if (Date.now() - lastViewedAt < twelveHours) return;
+    } catch {
+      // View counting should never interfere with opening a product card.
+    }
+
+    HttpClient.post(`/products/${product.id}/view`, {})
+      .then(() => {
+        try {
+          window.localStorage.setItem(storageKey, String(Date.now()));
+        } catch {
+          // localStorage can be unavailable in private/restricted browser modes.
+        }
+      })
+      .catch(() => undefined);
+  }, [router.isReady, product?.id]);
   
   // Безопасная деструктуризация с дефолтными значениями
   const {
@@ -502,7 +525,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               {/* Обычная страница товара для опубликованных товаров */}
               <motion.div
                 variants={staggerTransition()}
-                className="grid gap-5 lg:grid-cols-[minmax(360px,520px)_minmax(0,1fr)] xl:grid-cols-[minmax(420px,520px)_minmax(0,1fr)_350px]"
+                className="grid gap-5 lg:grid-cols-[minmax(400px,560px)_minmax(0,1fr)] xl:grid-cols-[minmax(460px,560px)_minmax(0,1fr)_350px]"
               >
                 {/* Левая колонка - Слайдер изображений */}
                 <motion.div

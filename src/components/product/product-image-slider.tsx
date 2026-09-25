@@ -246,7 +246,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
   if (validMediaItems.length === 0) {
     return (
       <motion.div variants={fadeInBottom()} className={`${className}`}>
-        <div className="relative aspect-square overflow-hidden rounded-lg bg-light-500 dark:bg-dark-300">
+        <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-light-500 dark:bg-dark-300">
           <Image
             alt={product.name || 'Product placeholder'}
             fill
@@ -262,7 +262,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
 
   return (
     <motion.div variants={fadeInBottom()} className={`${className} relative`}>
-      <div className="flex flex-col gap-4 lg:grid lg:min-h-0 lg:grid-cols-[84px_minmax(0,1fr)]">
+      <div className="flex flex-col gap-4 lg:grid lg:min-h-0 lg:grid-cols-[68px_minmax(0,1fr)]">
         {/* Вертикальные миниатюры слева (только на lg+) */}
         {validMediaItems.length > 1 ? (
           <div className="relative hidden min-h-0 lg:block">
@@ -281,7 +281,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                   thumbRefs.current[index] = node;
                 }}
                 onClick={() => selectMedia(index)}
-                className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
+                className={`relative h-20 w-[60px] shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
                   index === currentImageIndex
                     ? 'border-brand'
                     : 'border-light-300 dark:border-dark-400 hover:border-light-400 dark:hover:border-dark-500'
@@ -336,7 +336,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
         )}
 
         {/* Большое изображение (справа на десктопе, сверху на мобиле) */}
-        <div className="group relative aspect-square overflow-hidden rounded-xl bg-white">
+        <div className="group relative aspect-[3/4] overflow-hidden rounded-xl bg-white">
           {/* Кнопка "Назад" для мобильных (поверх изображения) - вне контейнера для правильного z-index */}
           <button
             onClick={(e) => {
@@ -390,7 +390,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                       fill
                       quality={100}
                       src={item.data?.original || item.data?.thumbnail}
-                      className="object-contain"
+                      className="object-cover"
                       unoptimized={true}
                       onError={() => {
                         console.warn(`Failed to load product image at index ${index}`);
@@ -402,7 +402,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                       fill
                       quality={100}
                       src={placeholder}
-                      className="object-contain"
+                      className="object-cover"
                       unoptimized={true}
                     />
                   )
@@ -419,7 +419,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                     fill
                     quality={100}
                     src={placeholder}
-                    className="object-contain"
+                    className="object-cover"
                   />
                 )}
               </div>
@@ -438,7 +438,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                   fill
                   quality={100}
                   src={validMediaItems[currentImageIndex].data?.original || validMediaItems[currentImageIndex].data?.thumbnail}
-                  className="object-contain"
+                  className="object-cover"
                   unoptimized={true}
                   onError={() => {
                     console.warn(`Failed to load product image at index ${currentImageIndex}`);
@@ -450,7 +450,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                   fill
                   quality={100}
                   src={placeholder}
-                  className="object-contain"
+                  className="object-cover"
                 />
               )
             ) : validMediaItems[currentImageIndex]?.type === 'video' ? (

@@ -28,7 +28,7 @@ export const getStaticProps: GetStaticProps<HomePageProps> = async ({ locale }) 
   }
 };
 
-function Products() {
+function Products({ orderBy }: { orderBy: 'created_at' | 'views_count' }) {
   const { query } = useRouter();
 
   const filters = {
@@ -38,9 +38,10 @@ function Products() {
 
   return (
     <DynamicProductGrid
-      limit={30}
-      filters={filters}
-      showLoadMore={true}
+      limit={20}
+      filters={{ ...filters, orderBy, sortedBy: 'desc' }}
+      showLoadMore={false}
+      showSummary={false}
       className="px-0 pt-0"
     />
   );
@@ -133,20 +134,30 @@ const Home: NextPageWithLayout<HomePageProps> = () => {
         <HomepageBanners />
         <CategoryFilter />
         <div className="sancan-ozon-container">
-          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+          <div className="mb-5">
+            <h2 className="text-2xl font-bold text-ozon-text md:text-3xl">
+              Новые товары
+            </h2>
+            <p className="mt-1 text-sm text-ozon-muted">
+              Последние товары наших продавцов на SANCAN.
+            </p>
+          </div>
+          <Products orderBy="created_at" />
+
+          <div className="mb-5 mt-10 flex flex-wrap items-end justify-between gap-3 md:mt-12">
             <div>
               <h2 className="text-2xl font-bold text-ozon-text md:text-3xl">
                 Популярные товары
               </h2>
               <p className="mt-1 text-sm text-ozon-muted">
-                Последние обновления каталога SANCAN.
+                Товары, которые имели больше всего просмотров.
               </p>
             </div>
             <div className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand shadow-sm">
-              Новинки и хиты
+              Часто смотрят
             </div>
           </div>
-          <Products />
+          <Products orderBy="views_count" />
         </div>
       </section>
     </>
