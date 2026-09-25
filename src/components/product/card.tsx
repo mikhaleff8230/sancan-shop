@@ -40,6 +40,7 @@ export default function Card({ product }: { product: Product }) {
   const [videoFailed, setVideoFailed] = useState(false);
   const [posterFailed, setPosterFailed] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const mouseMovedRef = useRef(false);
@@ -58,7 +59,30 @@ export default function Card({ product }: { product: Product }) {
   const isFreeItem = isFree(product?.sale_price ?? product?.price);
   
   const orderedMedia = getOrderedProductMedia(product);
-  const displayImages = orderedMedia
+  const resolvedCoverVideo = cover_video || product.videos?.[0] || null;
+  const hasVideoCover = Boolean(
+    (has_video_as_cover ?? product.video_as_cover) && resolvedCoverVideo
+  );
+  // В гриде отдельно загруженное главное фото всегда остаётся первым.
+  // Остальные media (включая видео) сохраняют заданный продавцом порядок.
+  const primaryImageMedia = orderedMedia.find((item) => {
+    if (item.type !== 'image' || !product.image) return false;
+    if (item.data === product.image) return true;
+    if (item.data?.id && product.image?.id) {
+      return String(item.data.id) === String(product.image.id);
+    }
+    const itemSource = item.data?.thumbnail || item.data?.url || item.data?.original;
+    const primarySource =
+      product.image?.thumbnail || product.image?.url || product.image?.original;
+    return Boolean(itemSource && primarySource && itemSource === primarySource);
+  });
+  const cardMedia = !hasVideoCover && primaryImageMedia
+    ? [
+        primaryImageMedia,
+        ...orderedMedia.filter((item) => item.key !== primaryImageMedia.key),
+      ]
+    : orderedMedia;
+  const displayImages = cardMedia
     .filter((item) => item.type === 'image')
     .map((item) => item.data);
   
@@ -75,15 +99,13 @@ export default function Card({ product }: { product: Product }) {
     });
   }
   
-  const hasVideoCover = Boolean(
-    (has_video_as_cover ?? product.video_as_cover) && cover_video
-  );
-  // Для обычной фотообложки видео-превью включается, только когда продавец
-  // поставил видео вторым элементом media-ленты.
-  const hoverVideo = hasVideoCover
-    ? cover_video
-    : orderedMedia[1]?.type === 'video'
-      ? orderedMedia[1].data
+  // На десктопе каждая зона карточки соответствует элементу общей
+  // media-ленты. Видео не должно выпадать из последовательности между фото.
+  const activeMedia = cardMedia[currentMediaIndex] || cardMedia[0];
+  const hoverVideo = activeMedia?.type === 'video'
+    ? activeMedia.data
+    : hasVideoCover && currentMediaIndex === 0
+      ? resolvedCoverVideo
       : null;
   const shouldShowVideo = Boolean(hoverVideo && !videoFailed && isHovered);
   const posterUrl =
@@ -110,8 +132,7 @@ export default function Card({ product }: { product: Product }) {
   }
   
   const hasMultipleImages = displayImages.length > 1;
-  const currentImage = displayImages[currentImageIndex] || displayImages[0];
-  const defaultImageSrc = currentImage?.thumbnail || currentImage?.original || placeholder;
+  const hasMultipleMedia = cardMedia.length > 1;
 
   // Управление воспроизведением видео при наведении (3 секунды)
   useEffect(() => {
@@ -144,6 +165,7 @@ export default function Card({ product }: { product: Product }) {
   useEffect(() => {
     if (!isHovered) {
       setCurrentImageIndex(0);
+      setCurrentMediaIndex(0);
     }
   }, [isHovered]);
 
@@ -228,17 +250,7 @@ export default function Card({ product }: { product: Product }) {
 
   // Обработка движения мыши для смены изображений
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    // ВАЖНО: Проверяем только наличие карточки и множественных изображений
-    if (!cardRef.current) {
-      return;
-    }
-    
-    if (!hasMultipleImages) {
-      return;
-    }
-    
-    // Если показывается видео, не меняем слайды (видео имеет приоритет)
-    if (shouldShowVideo) {
+    if (!cardRef.current || !hasMultipleMedia) {
       return;
     }
     
@@ -254,13 +266,12 @@ export default function Card({ product }: { product: Product }) {
     const width = rect.width;
     const percentage = x / width;
     
-    // Определяем индекс на основе позиции мыши
-    // Делим карточку на зоны по количеству изображений
-    const newIndex = Math.floor(percentage * displayImages.length);
-    const clampedIndex = Math.max(0, Math.min(newIndex, displayImages.length - 1));
-    
-    if (clampedIndex !== currentImageIndex) {
-      setCurrentImageIndex(clampedIndex);
+    // Делим карточку на зоны по количеству всех media, включая видео.
+    const newIndex = Math.floor(percentage * cardMedia.length);
+    const clampedIndex = Math.max(0, Math.min(newIndex, cardMedia.length - 1));
+
+    if (clampedIndex !== currentMediaIndex) {
+      setCurrentMediaIndex(clampedIndex);
     }
   };
   
@@ -274,6 +285,7 @@ export default function Card({ product }: { product: Product }) {
   
   const handleMouseLeave = () => {
     setIsHovered(false);
+    setCurrentMediaIndex(0);
     mouseMovedRef.current = false;
     lastMouseXRef.current = null;
     mouseDownXRef.current = null;
@@ -396,6 +408,44 @@ export default function Card({ product }: { product: Product }) {
               onError={() => setPosterFailed(true)}
             />
           </div>
+        ) : activeMedia?.type === 'video' && videoFailed ? (
+          /* Ошибка превью не должна оставлять пустой слайд между фото. */
+          <div className="relative w-full h-full">
+            <Image
+              alt={name}
+              fill
+              quality={85}
+              src={
+                posterUrl ||
+                primaryImageMedia?.data?.thumbnail ||
+                primaryImageMedia?.data?.original ||
+                placeholder
+              }
+              className="pointer-events-none rounded-xl bg-[#f3f5f9] object-cover"
+              sizes="(max-width: 768px) 100vw,
+                  (max-width: 1200px) 50vw,
+                  33vw"
+            />
+          </div>
+        ) : hasVideoCover && currentMediaIndex === 0 && primaryImageMedia ? (
+          /* Если постер видео недоступен, карточка не должна оставаться пустой. */
+          <div className="relative w-full h-full">
+            <Image
+              alt={name}
+              fill
+              quality={85}
+              src={
+                primaryImageMedia.data?.thumbnail ||
+                primaryImageMedia.data?.original ||
+                placeholder
+              }
+              className="pointer-events-none rounded-xl bg-[#f3f5f9] object-cover"
+              sizes="(max-width: 768px) 100vw,
+                  (max-width: 1200px) 50vw,
+                  33vw"
+              priority
+            />
+          </div>
         ) : (
           /* Слайдер изображений */
           <div 
@@ -445,25 +495,27 @@ export default function Card({ product }: { product: Product }) {
                     ))}
                   </div>
                 ) : (
-                  /* На десктопе - обычное отображение с opacity */
-                  displayImages.map((img, index) => (
-                    <Image
-                      key={index}
-                      alt={`${name} - ${index + 1}`}
-                      fill
-                      quality={90}
-                      src={img?.thumbnail || img?.original || placeholder}
-                      className={cn(
-                        "absolute inset-0 rounded-xl bg-[#f3f5f9] object-cover transition-opacity duration-300 pointer-events-none",
-                        index === currentImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"
-                      )}
-                      sizes="(max-width: 768px) 100vw,
-                          (max-width: 1200px) 50vw,
-                          33vw"
-                      loading={index === 0 ? "eager" : "lazy"}
-                      priority={index === 0}
-                    />
-                  ))
+                  /* На десктопе индекс совпадает с общей media-лентой. */
+                  cardMedia.map((media, index) =>
+                    media.type === 'image' ? (
+                      <Image
+                        key={media.key}
+                        alt={`${name} - ${index + 1}`}
+                        fill
+                        quality={90}
+                        src={media.data?.thumbnail || media.data?.original || placeholder}
+                        className={cn(
+                          "absolute inset-0 rounded-xl bg-[#f3f5f9] object-cover transition-opacity duration-300 pointer-events-none",
+                          index === currentMediaIndex ? "opacity-100 z-10" : "opacity-0 z-0"
+                        )}
+                        sizes="(max-width: 768px) 100vw,
+                            (max-width: 1200px) 50vw,
+                            33vw"
+                        loading={index === 0 ? "eager" : "lazy"}
+                        priority={index === 0}
+                      />
+                    ) : null
+                  )
                 )}
               </>
             ) : (
@@ -522,26 +574,26 @@ export default function Card({ product }: { product: Product }) {
           </div>
         )}
         
-        {/* Индикаторы (точки) внизу карточки - показываем только если есть несколько изображений и нет наведения (чтобы не мешать кнопке) */}
-        {hasMultipleImages &&
+        {/* Точки тоже отражают общий порядок фото и видео. */}
+        {hasMultipleMedia &&
           (!hasVideoCover || posterFailed) &&
           !isHovered && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-40 flex gap-1.5 pointer-events-auto">
-            {displayImages.map((_, index) => (
+            {cardMedia.map((media, index) => (
               <button
-                key={index}
+                key={media.key}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  setCurrentImageIndex(index);
+                  setCurrentMediaIndex(index);
                 }}
                 className={cn(
                   "w-1.5 h-1.5 rounded-full transition-all duration-200",
-                  index === currentImageIndex
+                  index === currentMediaIndex
                     ? "bg-white scale-125 shadow-md"
                     : "bg-white/50 hover:bg-white/75"
                 )}
-                aria-label={`Перейти к изображению ${index + 1}`}
+                aria-label={`Перейти к медиа ${index + 1}`}
               />
             ))}
           </div>
