@@ -491,6 +491,8 @@ export interface Category {
   slug: string;
   icon?: string;
   image?: any;
+  menu_icon?: any;
+  menu_banner?: any;
   parent?: string | number | null | { id?: string | number };
   parent_id?: string | number | null;
   children?: Category[];

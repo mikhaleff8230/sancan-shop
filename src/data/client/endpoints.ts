@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
   CATEGORIES: '/categories',
   TAGS: '/tags',
   HASHTAGS: '/hashtags',
+  COMMUNITIES: '/social/communities',
   TYPES: '/types',
   SHOPS: '/shops',
   MY_SHOPS: '/my-shops',

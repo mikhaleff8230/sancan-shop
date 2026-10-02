@@ -450,6 +450,18 @@ class Client {
     searchProducts: (query: { q: string; limit?: number; shop_id?: string }) =>
       HttpClient.get<any>(`${API_ENDPOINTS.PLACES}/search/products`, query),
   };
+  communities = {
+    all: (query?: { search?: string }) =>
+      HttpClient.get<any>(API_ENDPOINTS.COMMUNITIES, query),
+    get: (slug: string) =>
+      HttpClient.get<any>(`${API_ENDPOINTS.COMMUNITIES}/${slug}`),
+    join: (id: string | number) =>
+      HttpClient.post<any>(`${API_ENDPOINTS.COMMUNITIES}/${id}/join`, {}),
+    leave: (id: string | number) =>
+      HttpClient.delete<any>(`${API_ENDPOINTS.COMMUNITIES}/${id}/join`),
+    places: (id: string | number, query?: { page?: number; limit?: number }) =>
+      HttpClient.get<any>(`${API_ENDPOINTS.COMMUNITIES}/${id}/places`, query),
+  };
   placeLike = {
     toggle: (input: { place_id: string }) =>
       HttpClient.post<{ liked: boolean; likes_count: number }>(

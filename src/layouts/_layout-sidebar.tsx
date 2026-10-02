@@ -25,9 +25,8 @@ import { useTranslation } from 'next-i18next';
 import { LocationWithModal } from '@/components/GeoLocation/LocationWithModal';
 import Logo from '@/components/ui/logo';
 import { PlusCircleIcon } from '@/components/icons/plus-circle-icon';
-import CreatePlaceModal from '@/components/places/CreatePlaceModal';
-import { useState } from 'react';
 import { useModalAction } from '@/components/modal-views/context';
+import { useRouter } from 'next/router';
 
 interface NavLinkProps {
   href: string;
@@ -276,7 +275,7 @@ export function Sidebar({
 export default function SidebarDrawerView() {
   const { closeDrawer } = useDrawer();
   const { t } = useTranslation('common');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
   
   return (
     <>
@@ -288,8 +287,8 @@ export default function SidebarDrawerView() {
             <button
               type="button"
               onClick={() => {
-                setIsModalOpen(true);
                 closeDrawer();
+                router.push('/places/create');
               }}
               className="p-2 text-dark-900 outline-none transition-all hover:text-dark dark:text-dark-800 hover:dark:text-light-200 touch-manipulation"
               aria-label={t('text-create')}
@@ -311,7 +310,6 @@ export default function SidebarDrawerView() {
           <Sidebar isCollapse={true} className="flex text-13px relative z-50" />
         </div>
       </div>
-      <CreatePlaceModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </>
   );
 }

@@ -21,6 +21,9 @@ const getCategoryIcon = (iconName?: string) => {
   );
 };
 
+const getAttachmentUrl = (attachment?: any) =>
+  attachment?.original || attachment?.thumbnail || null;
+
 // Функция для создания структуры меню из категорий
 const createMenuStructure = (categories: Category[]) => {
   if (!Array.isArray(categories)) {
@@ -53,7 +56,8 @@ const createMenuStructure = (categories: Category[]) => {
         name: category.name || 'Категория',
         slug: safeSlug(category.slug),
         icon: category.icon || undefined,
-        image: category.image?.original || category.image?.thumbnail || null,
+        menuIcon: getAttachmentUrl(category.menu_icon),
+        image: getAttachmentUrl(category.menu_banner) || getAttachmentUrl(category.image),
         details: category.details || '',
         columns: createColumnsFromCategory(category),
       };
@@ -546,8 +550,10 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
                   onMouseEnter={() => setActiveCategory(String(cat.id))}
                   onClick={handleLinkClick}
                 >
-                  <span className={activeCategory === cat.id ? 'text-brand' : 'text-[#9aa4b2]'}>
-                    {getCategoryIcon(cat.icon)}
+                  <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${activeCategory === cat.id ? 'bg-white/75 text-brand' : 'bg-white text-[#9aa4b2]'}`}>
+                    {cat.menuIcon ? (
+                      <Image src={cat.menuIcon} alt="" width={20} height={20} unoptimized className="h-5 w-5 object-contain" />
+                    ) : getCategoryIcon(cat.icon)}
                   </span>
                   <span className="truncate">{cat.name}</span>
                 </Link>

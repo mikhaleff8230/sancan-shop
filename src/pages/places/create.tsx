@@ -1,12 +1,20 @@
-import React from 'react';
+import CreatePlacePage from '@/components/places/CreatePlacePage';
+import { TitleSeo } from '@/components/seo/title-seo';
+import MarketplaceLayout from '@/layouts/_marketplace-layout';
+import type { NextPageWithLayout } from '@/types';
+import type { GetStaticProps } from 'next';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
-export default function CreatePlacePageStub() {
-  return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="p-8 bg-white dark:bg-dark-200 rounded shadow text-center">
-        <h1 className="text-2xl font-bold mb-4">Страница создания плейса больше не используется</h1>
-        <p className="text-lg">Пожалуйста, используйте модальное окно для добавления нового плейса.</p>
-      </div>
-    </div>
-  );
-} 
+export const getStaticProps: GetStaticProps = async ({ locale }) => ({
+  props: { ...(await serverSideTranslations(locale!, ['common'])) },
+});
+
+const CreatePlaceRoute: NextPageWithLayout = () => (
+  <>
+    <TitleSeo title="Создание Place — SANCAN" description="Создайте новый Place в SANCAN." />
+    <CreatePlacePage />
+  </>
+);
+
+CreatePlaceRoute.getLayout = (page) => <MarketplaceLayout>{page}</MarketplaceLayout>;
+export default CreatePlaceRoute;

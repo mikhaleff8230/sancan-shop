@@ -29,7 +29,7 @@ interface CommerceProductListingProps {
 
 function CategoryChip({ category, active }: { category: Category; active: boolean }) {
   const [imageFailed, setImageFailed] = useState(false);
-  const source = category.image?.thumbnail || category.image?.original;
+  const source = category.menu_banner?.thumbnail || category.menu_banner?.original || category.image?.thumbnail || category.image?.original;
 
   return (
     <Link
