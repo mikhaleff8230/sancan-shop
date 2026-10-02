@@ -3,13 +3,10 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'next-i18next';
 import { ChevronLeft } from '@/components/icons/chevron-left';
 import { ChevronRight } from '@/components/icons/chevron-right';
-import { NormalGridIcon } from '@/components/icons/normal-grid-icon';
-import { CompactGridIcon } from '@/components/icons/compact-grid-icon';
 import { useScrollableSlider } from '@/lib/hooks/use-scrollable-slider';
 import { useQuery } from '@tanstack/react-query';
 import client from '@/data/client';
 import { getColorHex } from '@/lib/utils/color-utils';
-import { useViewMode } from '@/components/product/grid-switcher';
 import cn from 'classnames';
 
 function ozonFilterPillClass(isActive: boolean) {
@@ -677,7 +674,6 @@ export default function ProductFilterBar({ categoryId, onSortChange, onFilterCha
   // Храним выбранные диапазоны для атрибутов типа range: { attributeId: { min: string, max: string } }
   const [selectedRanges, setSelectedRanges] = useState<Record<string, { min: string; max: string }>>({});
   const [sortBy, setSortBy] = useState('popularity');
-  const { viewMode, setViewMode } = useViewMode();
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const [showAllFilters, setShowAllFilters] = useState(false); // Показывать/скрывать фильтры справа (по умолчанию скрыты)
   const sortDropdownRef = useRef<HTMLDivElement>(null);
@@ -904,11 +900,6 @@ export default function ProductFilterBar({ categoryId, onSortChange, onFilterCha
       onSortChange(selectedOption.orderBy, selectedOption.sortedBy);
     }
   };
-
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode);
-  };
-
 
   // Вычисление позиции dropdown при наведении
   const updateDropdownPosition = () => {
@@ -1199,21 +1190,6 @@ export default function ProductFilterBar({ categoryId, onSortChange, onFilterCha
             </>
           )}
 
-          {/* Переключатель вида */}
-          <div className="flex items-center ml-auto">
-            <button
-              onClick={() => handleViewModeChange(viewMode === 'grid' ? 'list' : 'grid')}
-              className="p-2 rounded bg-light-400 text-dark-100 hover:bg-light-500 dark:bg-dark-400 dark:text-light-100 dark:hover:bg-dark-500 transition-colors"
-              title={viewMode === 'grid' ? 'Переключить на список' : 'Переключить на сетку'}
-              aria-label={viewMode === 'grid' ? 'Переключить на список' : 'Переключить на сетку'}
-            >
-              {viewMode === 'grid' ? (
-                <CompactGridIcon className="h-4 w-4" />
-              ) : (
-                <NormalGridIcon className="h-4 w-4" />
-              )}
-            </button>
-          </div>
         </div>
         </div>
 

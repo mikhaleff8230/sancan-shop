@@ -1,6 +1,6 @@
-import CategoryFilter from '@/components/product/category-filter';
-import DynamicProductGrid from '@/components/product/dynamic-grid';
+import CommerceProductListing from '@/components/product/commerce-product-listing';
 import { TitleSeo } from '@/components/seo/title-seo';
+import { useCategoriesForMenu } from '@/data/category';
 import MarketplaceLayout from '@/layouts/_marketplace-layout';
 import type { NextPageWithLayout } from '@/types';
 import type { GetStaticProps } from 'next';
@@ -16,6 +16,7 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => ({
 
 const ProductsPage: NextPageWithLayout = () => {
   const { query } = useRouter();
+  const { categories } = useCategoriesForMenu();
   const filters = {
     ...(typeof query.category === 'string' && { categories: query.category }),
     ...(typeof query.price === 'string' && { price: query.price }),
@@ -24,25 +25,12 @@ const ProductsPage: NextPageWithLayout = () => {
   return (
     <>
       <TitleSeo title="Товары — SANCAN" description="Товары, магазины и бренды SANCAN." />
-      <main className="web2-commerce-surface pb-16 pt-5">
-        <section className="web2-commerce-hero">
-          <div>
-            <p className="web2-eyebrow">SANCAN MARKET</p>
-            <h1>Товары</h1>
-            <p>Авторские вещи, дизайн и находки от магазинов SANCAN.</p>
-          </div>
-        </section>
-        <CategoryFilter />
-        <div className="mt-6">
-          <DynamicProductGrid
-            limit={30}
-            filters={{ ...filters, orderBy: 'created_at', sortedBy: 'desc' }}
-            showLoadMore
-            showSummary
-            className="px-0 pt-0"
-          />
-        </div>
-      </main>
+      <CommerceProductListing
+        title="Товары"
+        description="Авторские вещи, дизайн и находки от магазинов SANCAN."
+        categories={categories}
+        filters={filters}
+      />
     </>
   );
 };

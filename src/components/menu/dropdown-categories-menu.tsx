@@ -8,6 +8,7 @@ import type { Category } from '@/types';
 import { ChevronLeft } from '@/components/icons/chevron-left';
 import { ChevronRight } from '@/components/icons/chevron-right';
 import { useRouter } from 'next/router';
+import Image from '@/components/ui/image';
 
 // Маппинг иконок для категорий
 const getCategoryIcon = (iconName?: string) => {
@@ -52,6 +53,8 @@ const createMenuStructure = (categories: Category[]) => {
         name: category.name || 'Категория',
         slug: safeSlug(category.slug),
         icon: category.icon || undefined,
+        image: category.image?.original || category.image?.thumbnail || null,
+        details: category.details || '',
         columns: createColumnsFromCategory(category),
       };
     });
@@ -138,6 +141,7 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [promoImageFailed, setPromoImageFailed] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   
   // Состояние для мобильной навигации по уровням
@@ -160,8 +164,14 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
   // ОТЛАДКА: логируем обработанные данные
 
   const handleToggleMenu = () => {
-    setIsOpen((prev) => !prev);
-    if (isOpen) setActiveCategory(null);
+    setIsOpen((prev) => {
+      const next = !prev;
+      if (next && !activeCategory && categoriesData.length > 0) {
+        setActiveCategory(categoriesData[0].id);
+      }
+      if (!next) setActiveCategory(null);
+      return next;
+    });
   };
 
   const handleCloseMenu = () => {
@@ -267,6 +277,10 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
 
   const activeCatObj = categoriesData.find((cat) => cat.id === activeCategory);
 
+  useEffect(() => {
+    setPromoImageFailed(false);
+  }, [activeCategory]);
+
   // Показываем загрузку если данные еще не загружены
   if (isLoading) {
     return (
@@ -326,18 +340,18 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
     <div ref={menuRef} className="relative inline-block text-left">
       <button
         className={compact
-          ? `flex h-10 items-center justify-center gap-2 rounded-xl border border-brand bg-brand px-4 text-sm font-bold text-white shadow-[0_8px_18px_rgba(159,0,255,0.22)] transition-all duration-200 hover:bg-brand-dark focus:outline-none`
-          : `flex h-11 items-center justify-center gap-2 rounded-xl border border-brand bg-brand px-5 text-[15px] font-bold text-white shadow-[0_8px_18px_rgba(159,0,255,0.22)] transition-all duration-200 hover:bg-brand-dark focus:outline-none`
+          ? `flex h-10 items-center justify-center gap-2 rounded-xl border border-[#eadcff] bg-[#f1e7ff] px-4 text-sm font-bold text-[#7b3dff] transition-all duration-200 hover:bg-[#eadcff] focus:outline-none`
+          : `flex h-11 items-center justify-center gap-2 rounded-xl border border-[#eadcff] bg-[#f1e7ff] px-5 text-[15px] font-bold text-[#7b3dff] transition-all duration-200 hover:bg-[#eadcff] focus:outline-none`
         }
         style={{ minWidth: compact ? 90 : 135 }}
         onClick={handleToggleMenu}
       >
         {!isOpen ? (
           <span className="grid h-4 w-4 shrink-0 grid-cols-2 gap-1" aria-hidden="true">
-            <span className="rounded-[3px] bg-white" />
-            <span className="rounded-[3px] bg-white" />
-            <span className="rounded-[3px] bg-white" />
-            <span className="rounded-[3px] bg-white" />
+            <span className="rounded-[3px] bg-current" />
+            <span className="rounded-[3px] bg-current" />
+            <span className="rounded-[3px] bg-current" />
+            <span className="rounded-[3px] bg-current" />
           </span>
         ) : null}
         Каталог
@@ -521,7 +535,7 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
 		  
           {/* Десктоп/планшет: широкое меню */}
           {/* Полностью скрываем на мобильных устройствах, показываем только на sm и выше */}
-          <div className="absolute left-0 top-full z-[120] mt-2 h-[calc(100vh-88px)] w-[min(1280px,calc(100vw-24px))] animate-fade-in overflow-hidden rounded-b-2xl border border-[#dfe5ef] bg-white shadow-[0_18px_44px_rgba(15,23,42,0.18)] !hidden sm:!flex">
+          <div className="absolute left-0 top-full z-[120] mt-2 h-[540px] w-[min(1360px,calc(100vw-40px))] animate-fade-in overflow-hidden rounded-2xl border border-[#e3e7ef] bg-white shadow-[0_22px_60px_rgba(15,23,42,0.16)] !hidden sm:!flex">
             {/* Левая панель */}
             <div className="flex h-full w-[286px] shrink-0 flex-col overflow-y-auto border-r border-[#e8edf5] bg-[#f7f9fc] px-3 py-3 transition-all duration-200">
               {categoriesData.map((cat) => (
@@ -540,7 +554,7 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
               ))}
             </div>
             {/* Центральная часть с колонками */}
-            <div className="relative flex h-full flex-1 flex-col overflow-y-auto bg-white px-8 py-6">
+            <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-y-auto bg-white px-7 py-6">
               {/* Название родительской категории */}
               {activeCatObj && (
                 <div className="mb-6 text-[26px] font-extrabold leading-tight tracking-[-0.01em] text-[#111827]">{activeCatObj.name}</div>
@@ -586,6 +600,40 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
                 )}
               </div>
             </div>
+            <aside className="hidden h-full w-[254px] shrink-0 border-l border-[#edf0f5] bg-[#fbfaff] p-4 xl:block">
+              <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-white p-3 shadow-[0_8px_28px_rgba(72,48,110,0.08)]">
+                <div className="relative h-[250px] overflow-hidden rounded-xl bg-gradient-to-br from-[#f5eefc] to-[#ece7df]">
+                  {activeCatObj?.image && !promoImageFailed ? (
+                    <Image
+                      src={activeCatObj.image}
+                      alt=""
+                      fill
+                      sizes="254px"
+                      className="object-cover"
+                      onError={() => setPromoImageFailed(true)}
+                    />
+                  ) : (
+                    <div className="flex h-full items-end p-5 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">SANCAN</div>
+                  )}
+                </div>
+                <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">Вдохновение</p>
+                <h3 className="mt-1 text-xl font-bold leading-tight text-[#172033]">
+                  {activeCatObj ? `Лучшее в «${activeCatObj.name}»` : 'Уникальные вещи для вашего дома'}
+                </h3>
+                <p className="mt-2 line-clamp-3 text-sm leading-5 text-slate-500">
+                  {activeCatObj?.details || 'Авторские товары, идеи и находки от магазинов SANCAN.'}
+                </p>
+                {activeCatObj ? (
+                  <Link
+                    href={`/categories/${activeCatObj.slug}`}
+                    onClick={handleLinkClick}
+                    className="mt-auto flex h-10 items-center justify-center gap-2 rounded-full bg-[#f0e6ff] text-sm font-semibold text-[#7b3dff] transition hover:bg-[#e8d8ff]"
+                  >
+                    Смотреть подборку <span aria-hidden="true">→</span>
+                  </Link>
+                ) : null}
+              </div>
+            </aside>
           </div>
         </>
       )}

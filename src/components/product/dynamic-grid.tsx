@@ -22,8 +22,11 @@ interface DynamicGridProps {
     name?: string;
     orderBy?: string;
     sortedBy?: string;
+    attribute_values?: Record<string, string[]>;
   };
   onProductClick?: (product: Product) => void;
+  onMetaChange?: (total: number) => void;
+  dense?: boolean;
 }
 
 export default function DynamicProductGrid({
@@ -33,6 +36,8 @@ export default function DynamicProductGrid({
   className = '',
   filters = {},
   onProductClick,
+  onMetaChange,
+  dense = false,
 }: DynamicGridProps) {
   const { t } = useTranslation('common');
   const { viewMode } = useViewMode();
@@ -68,6 +73,12 @@ export default function DynamicProductGrid({
     ...filters,
     ...getSortParams(),
   });
+
+  useEffect(() => {
+    if (paginatorInfo && typeof paginatorInfo.total === 'number') {
+      onMetaChange?.(paginatorInfo.total);
+    }
+  }, [onMetaChange, paginatorInfo]);
 
   // Intersection Observer для автолоада (только на клиенте)
   useEffect(() => {
@@ -128,11 +139,13 @@ export default function DynamicProductGrid({
 
   if (isLoading && (!products || products.length === 0)) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="text-center">
-          <ProductCardLoader uniqueKey="loading-initial" />
-          <p className="mt-4 text-sm text-gray-600">Загружаем товары...</p>
-        </div>
+      <div className={cn(
+        'grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3',
+        dense ? 'lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6' : 'xl:grid-cols-4 2xl:grid-cols-5'
+      )}>
+        {Array.from({ length: dense ? 12 : 10 }).map((_, index) => (
+          <ProductCardLoader key={index} uniqueKey={`loading-${index}`} />
+        ))}
       </div>
     );
   }
@@ -153,7 +166,10 @@ export default function DynamicProductGrid({
   // Определяем классы для grid или list вида
   const gridClasses = viewMode === 'list'
     ? 'flex flex-col gap-4'
-    : 'grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5';
+    : cn(
+        'grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3',
+        dense ? 'lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6' : 'xl:grid-cols-4 2xl:grid-cols-5'
+      );
 
   return (
     <div

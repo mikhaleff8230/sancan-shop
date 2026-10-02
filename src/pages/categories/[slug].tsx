@@ -1,16 +1,11 @@
-import DynamicProductGrid from '@/components/product/dynamic-grid';
+import CommerceProductListing from '@/components/product/commerce-product-listing';
 import { TitleSeo } from '@/components/seo/title-seo';
-import Breadcrumbs from '@/components/ui/breadcrumbs';
-import SubcategoryFilter from '@/components/categories/subcategory-filter';
-import ProductFilterBar from '@/components/product/product-filter-bar';
-import MarketplacePageShell, {
-  MarketplacePageHeader,
-} from '@/components/layout/marketplace-page-shell';
-import { useCategoryBySlug, useCategoryBreadcrumbs } from '@/data/category-hooks';
+import MarketplacePageShell from '@/components/layout/marketplace-page-shell';
+import { useCategoryBySlug } from '@/data/category-hooks';
 import MarketplaceLayout from '@/layouts/_marketplace-layout';
 import type { GetServerSideProps } from 'next';
 import type { NextPageWithLayout } from '@/types';
-import React, { useState } from 'react';
+import React from 'react';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 interface CategoryPageProps {
@@ -19,15 +14,6 @@ interface CategoryPageProps {
 
 const CategoryPage: NextPageWithLayout<CategoryPageProps> = ({ categorySlug }) => {
   const { category, isLoading: categoryLoading } = useCategoryBySlug(categorySlug);
-  const breadcrumbs = useCategoryBreadcrumbs(category);
-  const [sortParams, setSortParams] = useState({ orderBy: 'orders_count', sortedBy: 'desc' });
-  const [attributeFilters, setAttributeFilters] = useState<Record<string, string[]>>({});
-
-  const filters = {
-    categories: categorySlug,
-    ...sortParams,
-    attribute_values: attributeFilters,
-  };
 
   const baseUrl = 'https://sancan.ru';
   const canonicalUrl = category
@@ -64,23 +50,15 @@ const CategoryPage: NextPageWithLayout<CategoryPageProps> = ({ categorySlug }) =
   return (
     <>
       <TitleSeo title={category.name} canonical={canonicalUrl} />
-      {category.children && category.children.length > 0 ? (
-        <SubcategoryFilter subcategories={category.children} currentCategorySlug={categorySlug} />
-      ) : null}
-      <ProductFilterBar
+      <CommerceProductListing
+        eyebrow="КАТЕГОРИЯ"
+        title={category.name}
+        description={category.details || `Товары в категории «${category.name}»`}
+        categories={category.children || []}
         categoryId={category?.id ? Number(category.id) : undefined}
-        onSortChange={(orderBy, sortedBy) => setSortParams({ orderBy, sortedBy })}
-        onFilterChange={setAttributeFilters}
+        activeCategorySlug={categorySlug}
+        filters={{ categories: categorySlug }}
       />
-      <MarketplacePageShell>
-        <div className="mb-4 pt-2">
-          <Breadcrumbs items={breadcrumbs} />
-        </div>
-        <MarketplacePageHeader title={category.name} subtitle="Товары в категории SANCAN" />
-        <div className="pt-4">
-          <DynamicProductGrid limit={45} filters={filters} showLoadMore className="px-0 pt-0" />
-        </div>
-      </MarketplacePageShell>
     </>
   );
 };

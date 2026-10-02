@@ -1,15 +1,13 @@
-import DynamicProductGrid from '@/components/product/dynamic-grid';
+import CommerceProductListing from '@/components/product/commerce-product-listing';
 import { TitleSeo } from '@/components/seo/title-seo';
 import client from '@/data/client';
 import { API_ENDPOINTS } from '@/data/client/endpoints';
 import MarketplaceLayout from '@/layouts/_marketplace-layout';
-import MarketplacePageShell, { MarketplacePageHeader } from '@/components/layout/marketplace-page-shell';
 import type { NextPageWithLayout, Tag } from '@/types';
 import type {
   GetServerSideProps,
   InferGetServerSidePropsType,
 } from 'next';
-import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { dehydrate, QueryClient } from '@tanstack/react-query';
 
@@ -72,8 +70,6 @@ export const getServerSideProps: GetServerSideProps<
 const TagPage: NextPageWithLayout<
   InferGetServerSidePropsType<typeof getServerSideProps>
 > = ({ tag }) => {
-  const { t } = useTranslation('common');
-  
   const filters = {
     tags: tag.slug,
   };
@@ -83,13 +79,15 @@ const TagPage: NextPageWithLayout<
   const canonicalUrl = `${baseUrl}/products/tags/${tag.slug}`;
 
   return (
-    <MarketplacePageShell>
+    <>
       <TitleSeo title={tag.name} canonical={canonicalUrl} />
-      <MarketplacePageHeader title={`#${tag.name}`} subtitle="Товары по тегу" />
-      <div className="pt-4">
-        <DynamicProductGrid limit={45} filters={filters} showLoadMore className="px-0 pt-0" />
-      </div>
-    </MarketplacePageShell>
+      <CommerceProductListing
+        eyebrow="МЕТКА"
+        title={`#${tag.name}`}
+        description={`Товары с меткой «${tag.name}»`}
+        filters={filters}
+      />
+    </>
   );
 };
 

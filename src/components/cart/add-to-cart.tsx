@@ -15,6 +15,8 @@ interface Props {
   toastClassName?: string;
   withPrice?: boolean;
   variant?: 'outline' | 'fill';
+  children?: React.ReactNode;
+  ariaLabel?: string;
 }
 
 export default function AddToCart({
@@ -23,6 +25,8 @@ export default function AddToCart({
   toastClassName,
   withPrice = true,
   variant = 'fill',
+  children,
+  ariaLabel,
 }: Props) {
   const { t } = useTranslation('common');
   const { addItemToCart, updateCartLanguage, language, isInStock, getItemFromCart, updateItemInCart } = useCart();
@@ -75,8 +79,9 @@ export default function AddToCart({
         className
       )}
       disabled={isInStock(item?.id)}
+      aria-label={ariaLabel}
     >
-      {t('text-add-to-cart')}
+      {children ?? t('text-add-to-cart')}
       <svg
         viewBox="0 0 37 37"
         xmlns="http://www.w3.org/2000/svg"

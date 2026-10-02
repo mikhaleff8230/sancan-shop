@@ -6,7 +6,7 @@ import AnchorLink from '@/components/ui/links/anchor-link';
 import routes from '@/config/routes';
 import usePrice from '@/lib/hooks/use-price';
 import placeholder from '@/assets/images/placeholders/product.svg';
-import { useGridSwitcher, useViewMode } from '@/components/product/grid-switcher';
+import { useViewMode } from '@/components/product/grid-switcher';
 import { fadeInBottomWithScaleX } from '@/lib/framer-motion/fade-in-bottom';
 import { isFree } from '@/lib/is-free';
 import { useTranslation } from 'next-i18next';
@@ -19,6 +19,8 @@ import { useModalAction } from '@/components/modal-views/context';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { getOrderedProductMedia } from '@/lib/product-media';
+import AddToCart from '@/components/cart/add-to-cart';
+import { ShoppingCart, Star } from 'lucide-react';
 
 export default function Card({ product }: { product: Product }) {
   const { name, slug, shop, is_external, has_video_as_cover, cover_video, id, url } = product ?? {};
@@ -30,7 +32,6 @@ export default function Card({ product }: { product: Product }) {
     product_id: id?.toString() || '',
   });
   const { openModal } = useModalAction();
-  const { isGridCompact } = useGridSwitcher();
   const { viewMode } = useViewMode();
   const { price, basePrice } = usePrice({
     amount: product.sale_price ? product.sale_price : product.price,
@@ -59,6 +60,18 @@ export default function Card({ product }: { product: Product }) {
 
   const { t } = useTranslation('common');
   const isFreeItem = isFree(product?.sale_price ?? product?.price);
+  const hasDiscount = Boolean(product?.sale_price && product?.price && product.sale_price < product.price);
+  const discountPercent = hasDiscount
+    ? Math.round(((Number(product.price) - Number(product.sale_price)) / Number(product.price)) * 100)
+    : 0;
+  const productMarkers = [
+    product?.type?.name,
+    ...(product?.categories || []).map((category) => category.name),
+    ...(product?.tags || []).map((tag) => tag.name),
+  ].filter(Boolean).join(' ').toLowerCase();
+  const isHandmade = /handmade|ручн|авторск/.test(productMarkers);
+  const rating = Number(product?.ratings || 0);
+  const reviewsCount = Number(product?.total_reviews || 0);
   
   const orderedMedia = getOrderedProductMedia(product);
   const resolvedCoverVideo = cover_video || product.videos?.[0] || null;
@@ -322,13 +335,6 @@ export default function Card({ product }: { product: Product }) {
     }
   };
 
-  const handleViewButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.stopPropagation();
-    // ВАЖНО: Используем url из API (уже содержит полный путь с кодом) или формируем из slug
-    const productUrl = url || ((product as any)?.canonical_url?.replace(/^https?:\/\/[^\/]+/, '') || slug);
-    router.push(routes.productUrl(productUrl, id));
-  };
-
   const isListView = viewMode === 'list';
 
   return (
@@ -336,7 +342,7 @@ export default function Card({ product }: { product: Product }) {
       variants={fadeInBottomWithScaleX()} 
       title={name}
       className={cn(
-        'sancan-ozon-card h-full p-2 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(23,33,43,0.10)]',
+        'web2-product-card h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgba(23,33,43,0.10)]',
         isListView && 'flex w-full items-center gap-4'
       )}
     >
@@ -357,6 +363,11 @@ export default function Card({ product }: { product: Product }) {
             <ExternalIcon className="h-5 w-5" />
           </div>
         ) : null}
+        {!is_external && (hasDiscount || isHandmade) ? (
+          <span className={cn('web2-product-badge', hasDiscount ? 'web2-product-badge-sale' : 'web2-product-badge-neutral')}>
+            {hasDiscount ? `-${discountPercent}%` : 'Ручная работа'}
+          </span>
+        ) : null}
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -366,7 +377,7 @@ export default function Card({ product }: { product: Product }) {
             }
             toggleWishlist({ product_id: id?.toString() || '' });
           }}
-          className="absolute right-2 top-2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-ozon-muted shadow-sm transition-colors hover:text-ozon-pink"
+          className="absolute right-2 top-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-white/88 text-slate-600 shadow-sm backdrop-blur transition-colors hover:text-[#7b3dff]"
           title={inWishlist ? 'Удалить из избранного' : 'Добавить в избранное'}
         >
           {inWishlist ? (
@@ -546,47 +557,6 @@ export default function Card({ product }: { product: Product }) {
           </div>
         )}
         
-        {/* Кнопка "Перейти к товару" - появляется при наведении */}
-        {isHovered && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
-            <button
-              onClick={handleViewButtonClick}
-              className={cn(
-                "px-3 py-1.5 rounded-lg font-normal text-xs whitespace-nowrap transition-all duration-200",
-                "bg-brand hover:bg-brand-dark text-white backdrop-blur-sm",
-                "shadow-lg hover:shadow-xl transform hover:scale-105",
-                "border border-white/20 flex items-center justify-between gap-2"
-              )}
-            >
-              <span>Перейти к товару</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (!isAuthorized) {
-                    openModal('LOGIN_VIEW');
-                    return;
-                  }
-                  toggleWishlist({ product_id: id?.toString() || '' });
-                }}
-                className="flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
-                title={inWishlist ? 'Удалить из избранного' : 'Добавить в избранное'}
-              >
-                {inWishlist ? (
-                  <HeartFillIcon 
-                    className="flex-shrink-0" 
-                    style={{ width: '12px', height: '12px' }}
-                  />
-                ) : (
-                  <HeartOutlineIcon 
-                    className="flex-shrink-0" 
-                    style={{ width: '12px', height: '12px' }}
-                  />
-                )}
-              </button>
-            </button>
-          </div>
-        )}
-        
         {/* Точки тоже отражают общий порядок фото и видео. */}
         {hasMultipleMedia &&
           (!hasVideoCover || posterFailed) &&
@@ -612,127 +582,68 @@ export default function Card({ product }: { product: Product }) {
           </div>
         )}
       </div>
-      {!isListView && (
-        <div className="flex items-center gap-2 pt-3.5">
-          <span 
-            className="m-0 rounded-[18px] px-1 py-[3px] text-left text-[18px] font-bold uppercase leading-[29px] tracking-[-0.2px] text-ozon-pink"
-            style={{
-              fontWeight: 800,
-              fontSize: '18px',
-              color: '#f91155',
-              backgroundColor: 'unset',
-              border: 'none',
-            }}
-          >
+      <div className={cn(
+        "flex min-w-0 flex-col",
+        isListView ? "flex-1 py-1" : "px-2.5 pb-2.5 pt-2"
+      )}>
+        <div className="flex min-h-[24px] items-baseline gap-2">
+          <span className={cn('web2-product-price', hasDiscount && 'web2-product-price-sale')}>
             {isFreeItem ? t('text-free') : price}
           </span>
-          {!isFreeItem && basePrice && basePrice !== price && (
-            <>
-              <del className="text-sm text-light-600 dark:text-dark-600 line-through" style={{ fontSize: '11px', letterSpacing: '-0.5px', fontWeight: 500, color: 'rgba(156, 163, 175, 1)' }}>
-                {basePrice}
-              </del>
-              <span className="text-sm font-medium text-ozon-pink" style={{ fontSize: '11px', color: '#f91155' }}>
-                -{Math.round(((parseFloat(basePrice.replace(/[^\d.]/g, '')) - parseFloat(price.replace(/[^\d.]/g, ''))) / parseFloat(basePrice.replace(/[^\d.]/g, ''))) * 100)}%
-              </span>
-            </>
-          )}
+          {hasDiscount && basePrice && basePrice !== price ? (
+            <del className="text-[11px] font-medium text-slate-400">{basePrice}</del>
+          ) : null}
         </div>
-      )}
-      <div className={cn(
-        "flex flex-col w-full px-1 pb-1",
-        isListView ? "flex-1" : "pt-3.5"
-      )}>
         <h3
           title={name}
-          className={cn(
-            "line-clamp-2 text-sm font-medium leading-snug text-ozon-text",
-            isListView ? "mb-1" : "mb-0.5"
-          )}
+          className="mt-0.5 line-clamp-2 min-h-[34px] text-[13px] font-medium leading-[17px] text-[#172033]"
         >
-          <div className="relative rounded-[18px] px-[9px] py-[3px] overflow-hidden">
-            <AnchorLink 
-              href={routes.productUrl(url || ((product as any)?.canonical_url?.replace(/^https?:\/\/[^\/]+/, '') || slug), id)}
-              className="m-0 block truncate pr-6 text-left text-[14px] font-normal leading-[20px] tracking-[0px] text-ozon-text hover:text-brand"
-              style={{
-                fontWeight: 400,
-                color: '#17212b',
-                fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-              }}
-            >
-              {name}
-            </AnchorLink>
-            <div 
-              className="pointer-events-none absolute bottom-0 right-0 top-0 w-12 bg-gradient-to-r from-transparent via-transparent to-white"
-            />
-          </div>
-        </h3>
-        <div className="flex items-center gap-3">
-          <div className="relative flex flex-shrink-0 overflow-hidden" style={{ width: '35px', height: '32px' }}>
-            <Image
-              alt={shop?.name}
-              quality={100}
-              fill
-              src={shopLogoFailed ? placeholder : (shop?.logo?.thumbnail ?? placeholder)}
-              className="rounded-full bg-light-500 object-cover"
-              style={{
-                borderWidth: '2px',
-                borderColor: '#9f00ff',
-                borderStyle: 'solid',
-              }}
-              sizes="35px"
-              onError={() => setShopLogoFailed(true)}
-            />
-          </div>
           <AnchorLink
-            href={routes.shopUrl(shop?.slug)}
-            className="line-clamp-2 block text-[12px] font-normal text-ozon-muted hover:text-brand"
-            style={{
-              fontSize: '12px',
-              fontWeight: 400,
-              color: '#707f8d',
-            }}
+            href={routes.productUrl(url || ((product as any)?.canonical_url?.replace(/^https?:\/\/[^\/]+/, '') || slug), id)}
+            className="transition-colors hover:text-[#7b3dff]"
           >
-            {shop?.name}
+            {name}
           </AnchorLink>
-        </div>
-        {!isFreeItem && !is_external ? (
-          <button
-            type="button"
-            onClick={handleViewButtonClick}
-            className="sancan-ozon-button mt-3 min-h-[38px] w-full justify-center rounded-lg px-3 py-2 text-sm font-semibold"
-          >
-            Смотреть товар
-          </button>
-        ) : null}
-          {isListView && (
-            <div className="mt-2 flex items-center gap-2">
-              <span 
-                className="m-0 rounded-[18px] px-1 py-[3px] text-left text-[18px] font-bold uppercase leading-[29px] tracking-[-0.2px] text-ozon-pink"
-                style={{
-                  fontWeight: 800,
-                  fontSize: '18px',
-                  color: '#f91155',
-                  backgroundColor: 'unset',
-                  border: 'none',
-                }}
-              >
-                {isFreeItem ? t('text-free') : price}
-              </span>
-              {!isFreeItem && basePrice && basePrice !== price && (
-                <>
-                  <del className="text-sm text-light-600 dark:text-dark-600 line-through" style={{ fontSize: '11px', letterSpacing: '-0.5px', fontWeight: 500, color: 'rgba(156, 163, 175, 1)' }}>
-                    {basePrice}
-                  </del>
-                  <span className="text-sm font-medium text-ozon-pink" style={{ fontSize: '11px', color: '#f91155' }}>
-                    -{Math.round(((parseFloat(basePrice.replace(/[^\d.]/g, '')) - parseFloat(price.replace(/[^\d.]/g, ''))) / parseFloat(basePrice.replace(/[^\d.]/g, ''))) * 100)}%
-                  </span>
-                </>
-              )}
+        </h3>
+        <div className="mt-1.5 flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5">
+            <div className="relative h-5 w-5 shrink-0 overflow-hidden rounded-full bg-slate-100">
+              <Image
+                alt={shop?.name || ''}
+                quality={90}
+                fill
+                src={shopLogoFailed ? placeholder : (shop?.logo?.thumbnail ?? placeholder)}
+                className="object-cover"
+                sizes="20px"
+                onError={() => setShopLogoFailed(true)}
+              />
             </div>
-          )}
+            <AnchorLink
+              href={routes.shopUrl(shop?.slug)}
+              className="truncate text-[11px] font-medium text-slate-500 transition-colors hover:text-[#7b3dff]"
+            >
+              {shop?.name || 'SANCAN'}
+            </AnchorLink>
+          </div>
+          {rating > 0 ? (
+            <span className="flex shrink-0 items-center gap-1 text-[11px] font-medium text-slate-500">
+              <Star className="h-3.5 w-3.5 fill-[#ff9f1c] text-[#ff9f1c]" />
+              {rating.toFixed(1)}{reviewsCount > 0 ? ` (${reviewsCount})` : ''}
+            </span>
+          ) : null}
+          {!isFreeItem && !is_external ? (
+            <div onClick={(event) => event.stopPropagation()}>
+              <AddToCart
+                item={product}
+                withPrice={false}
+                ariaLabel={`Добавить «${name}» в корзину`}
+                className="web2-card-cart-button"
+              >
+                <ShoppingCart className="h-4 w-4" />
+              </AddToCart>
+            </div>
+          ) : null}
+        </div>
       </div>
     </motion.div>
   );
