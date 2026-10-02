@@ -11,6 +11,7 @@ import ProductVideoPlayer from './product-video-player';
 import type { Product } from '@/types';
 import cn from 'classnames';
 import { getOrderedProductMedia } from '@/lib/product-media';
+import productPlaceholder from '@/assets/images/placeholders/product.svg';
 
 interface ProductImageSliderProps {
   product: Product;
@@ -22,6 +23,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [isMobileFullscreen, setIsMobileFullscreen] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<number>>(new Set());
   const thumbsContainerRef = useRef<HTMLDivElement>(null);
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const mobileSliderRef = useRef<HTMLDivElement>(null);
@@ -53,8 +55,24 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
     });
   }
 
-  const placeholder = '/placeholders/placeholder-450.svg';
+  const placeholder = typeof productPlaceholder === 'string'
+    ? productPlaceholder
+    : productPlaceholder.src;
   const fallbackImage = product.image?.original || product.image?.thumbnail || placeholder;
+  const imageSource = (index: number, source?: string) =>
+    failedImages.has(index) ? placeholder : (source || placeholder);
+  const markImageFailed = (index: number) => {
+    setFailedImages((current) => {
+      if (current.has(index)) return current;
+      const next = new Set(current);
+      next.add(index);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    setFailedImages(new Set());
+  }, [product.id]);
 
   // Валидация медиа-элементов
   const validMediaItems = mediaItems.filter(item => {
@@ -253,12 +271,10 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                       alt={`${product.name || 'Product'} - превью ${index + 1}`}
                       fill
                       quality={100}
-                      src={item.data?.thumbnail || item.data?.original}
+                      src={imageSource(index, item.data?.thumbnail || item.data?.original)}
                       className="object-cover"
                       unoptimized={true}
-                      onError={() => {
-                        console.warn(`Failed to load thumbnail ${index + 1}`);
-                      }}
+                      onError={() => markImageFailed(index)}
                     />
                   ) : (
                     <Image
@@ -349,12 +365,10 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                       alt={product.name || 'Product image'}
                       fill
                       quality={100}
-                      src={item.data?.original || item.data?.thumbnail}
+                      src={imageSource(index, item.data?.original || item.data?.thumbnail)}
                       className="object-cover"
                       unoptimized={true}
-                      onError={() => {
-                        console.warn(`Failed to load product image at index ${index}`);
-                      }}
+                      onError={() => markImageFailed(index)}
                     />
                   ) : (
                     <Image
@@ -397,12 +411,10 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                   alt={product.name || 'Product image'}
                   fill
                   quality={100}
-                  src={validMediaItems[currentImageIndex].data?.original || validMediaItems[currentImageIndex].data?.thumbnail}
+                  src={imageSource(currentImageIndex, validMediaItems[currentImageIndex].data?.original || validMediaItems[currentImageIndex].data?.thumbnail)}
                   className="object-cover"
                   unoptimized={true}
-                  onError={() => {
-                    console.warn(`Failed to load product image at index ${currentImageIndex}`);
-                  }}
+                  onError={() => markImageFailed(currentImageIndex)}
                 />
               ) : (
                 <Image
@@ -504,16 +516,14 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
               validMediaItems[currentImageIndex].data && (validMediaItems[currentImageIndex].data?.original || validMediaItems[currentImageIndex].data?.thumbnail) ? (
                 <img
                   alt={product.name || 'Product image'}
-                  src={validMediaItems[currentImageIndex].data?.original || validMediaItems[currentImageIndex].data?.thumbnail}
+                  src={imageSource(currentImageIndex, validMediaItems[currentImageIndex].data?.original || validMediaItems[currentImageIndex].data?.thumbnail)}
                   className="w-full h-full object-contain"
                   style={{ 
                     touchAction: 'pan-x pan-y pinch-zoom',
                     userSelect: 'none',
                     WebkitUserSelect: 'none'
                   }}
-                  onError={() => {
-                    console.warn(`Failed to load mobile fullscreen image at index ${currentImageIndex}`);
-                  }}
+                  onError={() => markImageFailed(currentImageIndex)}
                 />
               ) : (
                 <img
