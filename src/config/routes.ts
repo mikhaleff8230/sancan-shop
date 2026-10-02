@@ -1,5 +1,7 @@
 const routes = {
   home: '/',
+  following: '/following',
+  communities: '/communities',
   authors: '/shops',
   explore: '/explore',
   products: '/products',

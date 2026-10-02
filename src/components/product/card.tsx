@@ -39,6 +39,8 @@ export default function Card({ product }: { product: Product }) {
   const [isHovered, setIsHovered] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
   const [posterFailed, setPosterFailed] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+  const [shopLogoFailed, setShopLogoFailed] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -120,7 +122,11 @@ export default function Card({ product }: { product: Product }) {
   useEffect(() => {
     setVideoFailed(false);
     setPosterFailed(false);
-  }, [previewUrl, hoverVideo?.poster_url, hoverVideo?.thumbnail_url]);
+    setImageFailed(false);
+    setShopLogoFailed(false);
+  }, [id, previewUrl, hoverVideo?.poster_url, hoverVideo?.thumbnail_url]);
+
+  const safeImageSource = (source: any) => imageFailed ? placeholder : (source || placeholder);
   if (process.env.NODE_ENV === 'development' && has_video_as_cover) {
     console.log('Card - video URLs:', {
       shouldShowVideo,
@@ -399,13 +405,16 @@ export default function Card({ product }: { product: Product }) {
               alt={name}
               fill
               quality={85}
-              src={posterUrl}
+              src={safeImageSource(posterUrl)}
               className="pointer-events-none rounded-xl bg-[#f3f5f9] object-cover"
               sizes="(max-width: 768px) 100vw,
                   (max-width: 1200px) 50vw,
                   33vw"
               priority
-              onError={() => setPosterFailed(true)}
+              onError={() => {
+                setPosterFailed(true);
+                setImageFailed(true);
+              }}
             />
           </div>
         ) : activeMedia?.type === 'video' && videoFailed ? (
@@ -415,16 +424,17 @@ export default function Card({ product }: { product: Product }) {
               alt={name}
               fill
               quality={85}
-              src={
+              src={safeImageSource(
                 posterUrl ||
                 primaryImageMedia?.data?.thumbnail ||
                 primaryImageMedia?.data?.original ||
                 placeholder
-              }
+              )}
               className="pointer-events-none rounded-xl bg-[#f3f5f9] object-cover"
               sizes="(max-width: 768px) 100vw,
                   (max-width: 1200px) 50vw,
                   33vw"
+              onError={() => setImageFailed(true)}
             />
           </div>
         ) : hasVideoCover && currentMediaIndex === 0 && primaryImageMedia ? (
@@ -434,16 +444,17 @@ export default function Card({ product }: { product: Product }) {
               alt={name}
               fill
               quality={85}
-              src={
+              src={safeImageSource(
                 primaryImageMedia.data?.thumbnail ||
                 primaryImageMedia.data?.original ||
                 placeholder
-              }
+              )}
               className="pointer-events-none rounded-xl bg-[#f3f5f9] object-cover"
               sizes="(max-width: 768px) 100vw,
                   (max-width: 1200px) 50vw,
                   33vw"
               priority
+              onError={() => setImageFailed(true)}
             />
           </div>
         ) : (
@@ -483,13 +494,14 @@ export default function Card({ product }: { product: Product }) {
                           alt={`${name} - ${index + 1}`}
                           fill
                           quality={90}
-                          src={img?.thumbnail || img?.original || placeholder}
+                          src={safeImageSource(img?.thumbnail || img?.original)}
                           className="pointer-events-none absolute inset-0 rounded-xl bg-[#f3f5f9] object-cover"
                           sizes="(max-width: 768px) 100vw,
                               (max-width: 1200px) 50vw,
                               33vw"
                           loading={index === 0 ? "eager" : "lazy"}
                           priority={index === 0}
+                          onError={() => setImageFailed(true)}
                         />
                       </div>
                     ))}
@@ -503,7 +515,7 @@ export default function Card({ product }: { product: Product }) {
                         alt={`${name} - ${index + 1}`}
                         fill
                         quality={90}
-                        src={media.data?.thumbnail || media.data?.original || placeholder}
+                        src={safeImageSource(media.data?.thumbnail || media.data?.original)}
                         className={cn(
                           "absolute inset-0 rounded-xl bg-[#f3f5f9] object-cover transition-opacity duration-300 pointer-events-none",
                           index === currentMediaIndex ? "opacity-100 z-10" : "opacity-0 z-0"
@@ -513,6 +525,7 @@ export default function Card({ product }: { product: Product }) {
                             33vw"
                         loading={index === 0 ? "eager" : "lazy"}
                         priority={index === 0}
+                        onError={() => setImageFailed(true)}
                       />
                     ) : null
                   )
@@ -662,7 +675,7 @@ export default function Card({ product }: { product: Product }) {
               alt={shop?.name}
               quality={100}
               fill
-              src={shop?.logo?.thumbnail ?? placeholder}
+              src={shopLogoFailed ? placeholder : (shop?.logo?.thumbnail ?? placeholder)}
               className="rounded-full bg-light-500 object-cover"
               style={{
                 borderWidth: '2px',
@@ -670,6 +683,7 @@ export default function Card({ product }: { product: Product }) {
                 borderStyle: 'solid',
               }}
               sizes="35px"
+              onError={() => setShopLogoFailed(true)}
             />
           </div>
           <AnchorLink

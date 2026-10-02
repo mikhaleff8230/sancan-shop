@@ -6,6 +6,14 @@
 @import '../../styles/places.css';
 @layer base {
   :root {
+    --web2-background: #ffffff;
+    --web2-soft-background: #f7f5ff;
+    --web2-text: #0f172a;
+    --web2-muted: #64748b;
+    --web2-border: #e2e8f0;
+    --web2-primary: #7b3dff;
+    --web2-secondary: #a855f7;
+    --web2-pink: #f472b6;
     --sancan-ozon-blue: #9f00ff;
     --sancan-ozon-blue-dark: #7f00cc;
     --sancan-ozon-pink: #f91155;
@@ -39,8 +47,8 @@
   html,
   body {
     @apply h-full antialiased font-body;
-    background: var(--sancan-ozon-bg);
-    color: var(--sancan-ozon-text);
+    background: var(--web2-background);
+    color: var(--web2-text);
   }
   #__next {
     @apply h-full text-13px;
@@ -77,8 +85,262 @@
 
 /* custom utilities */
 @layer utilities {
+  .web2-header-surface {
+    width: 100%;
+    max-width: 1920px;
+    margin-inline: auto;
+    padding-inline: clamp(20px, 2vw, 32px);
+  }
+  .web2-discovery-surface {
+    width: 100%;
+    max-width: 1920px;
+    margin-inline: auto;
+    padding-inline: clamp(12px, 1.7vw, 32px);
+  }
+  .web2-commerce-surface {
+    width: 100%;
+    max-width: 1720px;
+    margin-inline: auto;
+    padding-inline: clamp(16px, 2vw, 30px);
+  }
+  .web2-reading-surface {
+    width: 100%;
+    max-width: 1180px;
+    margin-inline: auto;
+    padding-inline: clamp(16px, 2vw, 28px);
+  }
+  .web2-primary-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding-inline: 13px;
+    color: var(--web2-text);
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 160ms ease;
+  }
+  .web2-primary-link:hover,
+  .web2-primary-link-active {
+    color: var(--web2-primary);
+  }
+  .web2-primary-link-active::after {
+    position: absolute;
+    right: 13px;
+    bottom: -1px;
+    left: 13px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--web2-primary);
+    content: '';
+  }
+  .web2-icon-button,
+  .web2-create-button {
+    display: inline-flex;
+    height: 40px;
+    width: 40px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: var(--web2-text);
+    transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
+  }
+  .web2-icon-button:hover {
+    background: #f1f5f9;
+  }
+  .web2-create-button {
+    background: linear-gradient(135deg, var(--web2-primary), var(--web2-pink));
+    color: white;
+  }
+  .web2-create-button:hover {
+    transform: translateY(-1px);
+  }
+  .web2-global-search > div:first-child {
+    border: 1px solid var(--web2-border);
+    border-radius: 13px;
+    background: #f8fafc;
+    box-shadow: none;
+  }
+  .web2-global-search > div:first-child:focus-within {
+    border-color: rgba(123, 61, 255, 0.45);
+    box-shadow: 0 0 0 3px rgba(123, 61, 255, 0.08);
+  }
+  .web2-global-search > div:first-child > input {
+    background: transparent;
+    padding-right: 16px;
+  }
+  .web2-global-search > div:first-child > button:last-child {
+    display: none;
+  }
+  .web2-commerce-nav {
+    display: flex;
+    width: 100%;
+    max-width: 1720px;
+    min-height: 58px;
+    margin-inline: auto;
+    align-items: center;
+    gap: 16px;
+    padding-inline: clamp(20px, 2vw, 30px);
+  }
+  .web2-commerce-link,
+  .web2-commerce-icon-link {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    gap: 7px;
+    border-radius: 9px;
+    padding-inline: 12px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .web2-commerce-link:hover,
+  .web2-commerce-link-active {
+    background: var(--web2-soft-background);
+    color: var(--web2-primary);
+  }
+  .web2-topic-bar {
+    display: flex;
+    gap: 9px;
+    overflow-x: auto;
+    padding-block: 14px;
+    scrollbar-width: none;
+  }
+  .web2-topic-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .web2-topic-chip {
+    display: inline-flex;
+    min-height: 34px;
+    flex: 0 0 auto;
+    align-items: center;
+    border-radius: 999px;
+    background: #f1f5f9;
+    padding-inline: 17px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color 160ms ease, color 160ms ease;
+  }
+  .web2-topic-chip:hover,
+  .web2-topic-chip-active {
+    background: var(--web2-text);
+    color: white;
+  }
+  .web2-editorial-banner {
+    position: relative;
+    display: flex;
+    min-height: 124px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    border-radius: 16px;
+    padding: 24px clamp(22px, 3vw, 52px);
+    background:
+      radial-gradient(circle at 75% 20%, rgba(244, 114, 182, 0.18), transparent 28%),
+      radial-gradient(circle at 65% 120%, rgba(123, 61, 255, 0.18), transparent 35%),
+      linear-gradient(105deg, #f4eadf 0%, #fbf7f3 55%, #eee9ff 100%);
+  }
+  .web2-editorial-banner::after {
+    position: absolute;
+    top: -45px;
+    right: 18%;
+    width: 210px;
+    height: 210px;
+    border: 1px solid rgba(123, 61, 255, 0.13);
+    border-radius: 999px;
+    content: '';
+  }
+  .web2-editorial-banner h1,
+  .web2-commerce-hero h1 {
+    margin: 2px 0 4px;
+    color: var(--web2-text);
+    font-size: clamp(28px, 2.3vw, 42px);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+  }
+  .web2-editorial-banner p,
+  .web2-commerce-hero p {
+    margin: 0;
+    color: var(--web2-muted);
+    font-size: 14px;
+  }
+  .web2-eyebrow {
+    color: var(--web2-muted) !important;
+    font-size: 10px !important;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+  }
+  .web2-banner-action {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    min-height: 42px;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid rgba(15, 23, 42, 0.22);
+    border-radius: 999px;
+    padding-inline: 20px;
+    color: var(--web2-text);
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .web2-commerce-hero {
+    display: flex;
+    min-height: 132px;
+    align-items: center;
+    margin-bottom: 14px;
+    border: 1px solid var(--web2-border);
+    border-radius: 16px;
+    padding: 24px clamp(22px, 3vw, 44px);
+    background: linear-gradient(110deg, #ffffff 0%, #faf8ff 100%);
+  }
+  .web2-state-panel {
+    display: flex;
+    min-height: 420px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    border: 1px solid var(--web2-border);
+    border-radius: 16px;
+    padding: clamp(28px, 5vw, 72px);
+    background: linear-gradient(135deg, #fff 0%, #faf8ff 100%);
+  }
+  .web2-state-panel h1 {
+    margin: 5px 0 12px;
+    color: var(--web2-text);
+    font-size: clamp(32px, 4vw, 58px);
+    font-weight: 600;
+    letter-spacing: -0.045em;
+  }
+  .web2-state-panel > p:not(.web2-eyebrow) {
+    max-width: 680px;
+    color: var(--web2-muted);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  .web2-state-action {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    margin-top: 22px;
+    border-radius: 10px;
+    background: var(--web2-text);
+    padding-inline: 18px;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .web2-commerce-surface .sancan-ozon-container {
+    max-width: none;
+    padding-inline: 0;
+  }
   .sancan-ozon-page {
-    background: var(--sancan-ozon-bg);
+    background: var(--web2-background);
     color: var(--sancan-ozon-text);
   }
   .sancan-ozon-container {
@@ -232,6 +494,29 @@
     top: 92px;
   }
   @media (max-width: 767px) {
+    .web2-editorial-banner {
+      min-height: 160px;
+      align-items: flex-end;
+      padding: 22px;
+    }
+    .web2-editorial-banner h1 {
+      max-width: 230px;
+      font-size: 30px;
+    }
+    .web2-editorial-banner > div > p:last-child {
+      max-width: 250px;
+    }
+    .web2-banner-action {
+      width: 42px;
+      min-height: 42px;
+      justify-content: center;
+      overflow: hidden;
+      padding: 0;
+      color: transparent;
+    }
+    .web2-banner-action span {
+      color: var(--web2-text);
+    }
     .sancan-ozon-section {
       border-radius: 16px;
       padding: 16px;

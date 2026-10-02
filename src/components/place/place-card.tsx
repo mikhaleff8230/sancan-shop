@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { Place } from '@/types';
@@ -25,6 +24,8 @@ export default function PlaceCard({ place }: PlaceCardProps) {
   const { t } = useTranslation('common');
   const router = useRouter();
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [mediaFailed, setMediaFailed] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { isAuthorized } = useMe();
@@ -155,22 +156,38 @@ export default function PlaceCard({ place }: PlaceCardProps) {
   }, []);
 
   const handleCardClick = () => {
-    router.push(`/places/${id}`);
+    router.push(`/place/${id}`);
   };
+
+  const authorName = place.user?.name || 'SANCAN';
+  const authorAvatar = typeof place.user?.avatar === 'string'
+    ? place.user.avatar
+    : (place.user?.avatar as any)?.thumbnail || (place.user?.avatar as any)?.original;
+  const caption = place.description || place.title;
+  const linkedProduct = place.products?.[0];
+
+  useEffect(() => {
+    setMediaFailed(false);
+    setAvatarFailed(false);
+  }, [id, displayImage, authorAvatar]);
 
   return (
     <motion.div
       variants={fadeInBottomWithScaleX()}
-      className="place-card group cursor-pointer"
+      className="place-card group cursor-pointer break-inside-avoid"
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-        <div className="relative overflow-hidden rounded-2xl bg-light-500 dark:bg-dark-400">
+        <div className="relative overflow-hidden rounded-xl bg-light-500 dark:bg-dark-400">
         {/* Main Image/Video */}
         <div className="relative w-full">
           {/* Статическое изображение или видео превью */}
-          {hasImages ? (
+          {mediaFailed ? (
+            <div className="flex aspect-[4/5] w-full items-end bg-gradient-to-br from-[#f8f5ff] via-[#f5f1f7] to-[#eee7df] p-4">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">SANCAN</span>
+            </div>
+          ) : hasImages ? (
             <div className="relative w-full overflow-hidden">
               <img
                 src={displayImage}
@@ -180,6 +197,7 @@ export default function PlaceCard({ place }: PlaceCardProps) {
                   isVideoPlaying && hasVideo ? "opacity-0" : "opacity-100"
                 )}
                 loading="lazy"
+                onError={() => setMediaFailed(true)}
               />
             </div>
           ) : hasVideo && videoPoster ? (
@@ -192,6 +210,7 @@ export default function PlaceCard({ place }: PlaceCardProps) {
                 isVideoPlaying ? "opacity-0" : "opacity-100"
               )}
               loading="lazy"
+              onError={() => setMediaFailed(true)}
             />
           ) : (
             /* Fallback к placeholder, если нет ни изображений, ни видео */
@@ -201,6 +220,7 @@ export default function PlaceCard({ place }: PlaceCardProps) {
                 alt={safeTitle}
                 className="w-full h-auto object-cover transition-all duration-300 group-hover:scale-105"
                 loading="lazy"
+                onError={() => setMediaFailed(true)}
               />
             </div>
           )}
@@ -232,7 +252,7 @@ export default function PlaceCard({ place }: PlaceCardProps) {
           )}
 
           {/* Likes count indicator */}
-          <div className="absolute top-3 right-3 flex flex-col gap-2 z-[1] opacity-0 group-hover:opacity-100 transition-all duration-200">
+          <div className="absolute right-3 top-3 z-[1] flex flex-col gap-2 opacity-100 transition-all duration-200 md:opacity-0 md:group-hover:opacity-100">
             <div className="rounded-full bg-black/60 px-2 py-1 text-xs text-white flex items-center gap-1">
               <HeartIcon
                 className={`w-3 h-3 ${localLiked ? 'fill-white' : 'fill-none'} stroke-white`}
@@ -269,7 +289,7 @@ export default function PlaceCard({ place }: PlaceCardProps) {
           <div
             onClick={handleLike}
             className={cn(
-              "absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200 z-[1] cursor-pointer",
+              "absolute bottom-3 right-3 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-200 z-[1] cursor-pointer",
               (toggling || likeLoading) && "pointer-events-none opacity-60"
             )}
           >
@@ -288,6 +308,54 @@ export default function PlaceCard({ place }: PlaceCardProps) {
           </div>
         </div>
       </div>
+
+      <div className="px-0.5 pb-1 pt-2.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            {authorAvatar && !avatarFailed ? (
+              <img
+                src={authorAvatar}
+                alt=""
+                className="h-7 w-7 shrink-0 rounded-full object-cover"
+                loading="lazy"
+                onError={() => setAvatarFailed(true)}
+              />
+            ) : (
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[10px] font-semibold text-slate-700">
+                {authorName.slice(0, 1).toUpperCase()}
+              </span>
+            )}
+            <span className="truncate text-xs font-semibold text-slate-800">{authorName}</span>
+          </div>
+          <span className="flex shrink-0 items-center gap-1 text-xs text-slate-500">
+            <HeartIcon className="h-3.5 w-3.5 fill-none" strokeWidth={1.5} />
+            {localLikes}
+          </span>
+        </div>
+
+        {caption && (
+          <p className="mt-1.5 line-clamp-2 text-[13px] leading-[1.45] text-slate-700">
+            {caption}
+          </p>
+        )}
+
+        {linkedProduct && (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              router.push(`/element/${linkedProduct.slug}`);
+            }}
+            className="mt-2 flex w-full items-center justify-between gap-2 rounded-lg border border-violet-100 bg-violet-50/70 px-2.5 py-2 text-left"
+          >
+            <span className="min-w-0">
+              <span className="block text-[10px] font-semibold uppercase tracking-[0.08em] text-violet-600">Связанный товар</span>
+              <span className="block truncate text-xs font-medium text-slate-900">{linkedProduct.name}</span>
+            </span>
+            <span aria-hidden="true" className="text-violet-600">→</span>
+          </button>
+        )}
+      </div>
     </motion.div>
   );
-} 
+}

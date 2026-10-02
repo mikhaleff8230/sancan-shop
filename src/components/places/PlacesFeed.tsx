@@ -80,8 +80,14 @@ export default function PlacesFeed({
     return (
       <div className={`flex justify-center py-12 ${className}`}>
         <div className="text-center text-gray-500">
-          <p>Ошибка загрузки плейсов</p>
-          <p className="text-sm mt-2">{error.message}</p>
+          <p className="font-medium text-slate-900">Не удалось загрузить ленту</p>
+          <button
+            type="button"
+            className="mt-3 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700"
+            onClick={() => window.location.reload()}
+          >
+            Попробовать ещё раз
+          </button>
         </div>
       </div>
     );
@@ -91,7 +97,11 @@ export default function PlacesFeed({
   if (isLoading && places.length === 0) {
     return (
       <div className={`flex justify-center py-12 ${className}`}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6">
+          {Array.from({ length: 12 }).map((_, index) => (
+            <div key={index} className="aspect-[4/5] animate-pulse rounded-xl bg-slate-100" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -114,8 +124,8 @@ export default function PlacesFeed({
           hasNextPage={hasNextPage}
           isFetchingNextPage={isFetchingNextPage}
           fetchNextPage={fetchNextPage}
-          children={
-            <>
+        >
+          <>
               <PlaceGrid
                 places={places}
                 onLastItemRef={(ref: React.RefObject<HTMLDivElement>) => {
@@ -127,9 +137,8 @@ export default function PlacesFeed({
               {isFetchingNextPage && (
                 <div className="h-32 opacity-0" />
               )}
-            </>
-          }
-        />
+          </>
+        </InfiniteScroll>
       </div>
     );
   } else {

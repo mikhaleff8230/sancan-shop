@@ -3,7 +3,7 @@ import type { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 import { NextPageWithLayout } from '@/types';
-import Layout from '@/layouts/_layout';
+import MarketplaceLayout from '@/layouts/_marketplace-layout';
 import { TitleSeo } from '@/components/seo/title-seo';
 import { Fragment, useEffect, useState, useRef } from 'react';
 import { Menu, Transition } from '@headlessui/react';
@@ -986,7 +986,7 @@ const PlaceDetailPage = ({ place: initialPlace, meta: initialMeta, error: initia
 };
 
 PlaceDetailPage.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
+  return <MarketplaceLayout>{page}</MarketplaceLayout>;
 };
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -1059,4 +1059,4 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   }
 };
 
-export default PlaceDetailPage; 
+export default PlaceDetailPage;

@@ -20,14 +20,21 @@ export function PlaceGrid({
     return <div className="flex justify-center py-12 text-gray-500">Плейсы не найдены</div>;
   }
 
-  const breakpointColumnsObj = { default: 6, 1600: 5, 1400: 4, 1100: 3, 500: 2 };
+  const breakpointColumnsObj = {
+    default: 7,
+    1900: 6,
+    1550: 5,
+    1200: 4,
+    900: 3,
+    640: 2,
+  };
 
   return (
     <div className={`w-full ${className}`}>
       <Masonry
         breakpointCols={breakpointColumnsObj}
-        className="flex w-auto -ml-4"
-        columnClassName="flex flex-col gap-4 pl-4"
+        className="-ml-3 flex w-auto md:-ml-4"
+        columnClassName="flex flex-col gap-4 pl-3 md:pl-4"
       >
         {places.map((place, index) => {
           const isLastItem = index === places.length - 1;

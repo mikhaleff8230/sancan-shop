@@ -15,9 +15,10 @@ const footerGroups = [
   {
     title: 'SANCAN',
     links: [
-      { label: 'Маркетплейс', href: routes.marketplace },
+      { label: 'Для вас', href: routes.home },
+      { label: 'Сообщества', href: routes.communities },
+      { label: 'Товары', href: routes.marketplace },
       { label: 'Продавцам', href: routes.earn },
-      { label: 'Магазины', href: routes.shops },
     ],
   },
   {
@@ -38,8 +39,8 @@ export default function Copyright({ className }: { className?: string }) {
           <div>
             <Logo className="h-10 w-[132px]" />
             <p className="mt-4 max-w-sm text-sm leading-6 text-ozon-muted">
-              SANCAN помогает находить товары, магазины и оформлять сделки между
-              покупателями и продавцами в удобном формате.
+              Люди, идеи и предметы в одном пространстве. Находите вдохновение,
+              сохраняйте любимое и переходите к покупке прямо из публикаций.
             </p>
           </div>
 
@@ -68,7 +69,7 @@ export default function Copyright({ className }: { className?: string }) {
 
         <div className="mt-8 flex flex-col gap-3 border-t border-[#dbe2ec] pt-5 text-xs text-ozon-muted sm:flex-row sm:items-center sm:justify-between">
           <span>2026 SANCAN. Все права защищены.</span>
-          <span>Second Life Marketplace</span>
+          <span>People · Ideas · Things</span>
         </div>
       </div>
     </footer>

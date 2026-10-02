@@ -19,13 +19,8 @@ interface SearchInputProps {
       console.log('📡 Ответ API suggestions:', response.status);
       
       if (!response.ok) {
-        console.warn('⚠️ API suggestions недоступен, используем заглушку');
-        // Заглушка для тестирования
-        return {
-          products: [`${query} товар`, `${query} аксессуар`],
-          tags: [`${query} тег`, `${query} стиль`],
-          categories: [`${query} категория`]
-        };
+        console.warn('⚠️ API suggestions недоступен');
+        return { products: [], tags: [], categories: [] };
       }
       
       const data = await response.json();
@@ -33,12 +28,7 @@ interface SearchInputProps {
       return data.suggestions || { products: [], tags: [], categories: [] };
     } catch (error) {
       console.error('❌ Ошибка получения подсказок:', error);
-      // Заглушка при ошибке
-      return {
-        products: [`${query} товар`],
-        tags: [`${query} тег`],
-        categories: [`${query} категория`]
-      };
+      return { products: [], tags: [], categories: [] };
     }
   };
 
@@ -51,9 +41,8 @@ const getHorizontalSuggestions = async (query: string) => {
     console.log('📡 Ответ API autocomplete:', response.status);
     
     if (!response.ok) {
-      console.warn('⚠️ API autocomplete недоступен, используем заглушку');
-      // Заглушка для тестирования
-      return ['новый', 'популярный', 'стильный', 'качественный', 'уникальный'];
+      console.warn('⚠️ API autocomplete недоступен');
+      return [];
     }
     
     const data = await response.json();
@@ -61,8 +50,7 @@ const getHorizontalSuggestions = async (query: string) => {
     return data.suggestions || [];
   } catch (error) {
     console.error('❌ Ошибка получения горизонтальных подсказок:', error);
-    // Заглушка при ошибке
-    return ['новый', 'популярный', 'стильный'];
+    return [];
   }
 };
 
@@ -338,7 +326,7 @@ export default function SearchInput({
                   className="w-full text-center text-sm text-[#C45A4A] hover:text-[#A0483A] py-2 font-semibold flex items-center justify-center space-x-2 hover:underline transition-all"
                 >
                   <span>Показать все результаты для</span>
-                  <span className="font-bold">"{searchQuery}"</span>
+                  <span className="font-bold">«{searchQuery}»</span>
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>

@@ -18,7 +18,8 @@ import { useDrawer } from '@/components/drawer-views/context';
 import { useModalAction } from '@/components/modal-views/context';
 import Button from '@/components/ui/button';
 import LanguageSwitcher from '@/components/ui/language-switcher';
-import { MapPin, MessageCircle } from 'lucide-react';
+import { Bell, Clock3, Heart, MapPin, MessageCircle, Plus } from 'lucide-react';
+import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import DropdownCategoriesMenu from '@/components/menu/dropdown-categories-menu';
 import Logo from '@/components/ui/logo';
@@ -170,8 +171,21 @@ export default function Header({
   // Используем динамический хедер только для мобильных устройств
   const { isCompact, isVisible } = useDynamicHeader();
   
-  // Проверяем, находимся ли мы на странице товара
-  const isProductPage = asPath?.startsWith('/element/');
+  const isCommerce =
+    asPath === '/products' ||
+    asPath.startsWith('/products?') ||
+    asPath.startsWith('/element/') ||
+    asPath.startsWith('/categories/') ||
+    asPath.startsWith('/shops') ||
+    asPath.startsWith('/cart') ||
+    asPath.startsWith('/checkout') ||
+    asPath.startsWith('/wishlists');
+  const primaryNavigation = [
+    { label: 'Главная', href: '/' },
+    { label: 'Подписки', href: '/following' },
+    { label: 'Сообщества', href: '/communities' },
+    { label: 'Товары', href: '/products' },
+  ];
   const isMultiLangEnable =
     process.env.NEXT_PUBLIC_ENABLE_MULTI_LANG === 'true' &&
     !!process.env.NEXT_PUBLIC_AVAILABLE_LANGUAGES;
@@ -230,77 +244,81 @@ export default function Header({
   
   return (
     <>
-      {/* Desktop: Статичный хедер (без динамики) */}
-      <header className="app-header sticky top-0 z-50 hidden w-full border-b border-ozon-border bg-white ltr:left-0 rtl:right-0 sm:block">
-        <div className="sancan-ozon-container">
-          <div className="flex h-[72px] items-center justify-between gap-4">
-            {/* Левая часть - логотип и кнопка Каталог */}
-            <div className="flex items-center gap-2">
+      <header className="app-header sticky top-0 z-50 hidden w-full border-b border-slate-200 bg-white/95 backdrop-blur sm:block">
+        <div className="web2-header-surface">
+          <div className="flex h-[76px] items-center gap-5">
+            <div className="flex shrink-0 items-center gap-2">
               {showHamburger && (
-                <Hamburger
-                  isToggle={isCollapse}
-                  onClick={onClickHamburger}
-                  className="hidden lg:flex"
-                />
+                <Hamburger isToggle={isCollapse} onClick={onClickHamburger} className="hidden lg:flex" />
               )}
-              <Logo className="h-10 w-[132px]" />
-              <div className="hidden sm:flex">
-                <DropdownCategoriesMenu />
-              </div>
+              <Logo className="h-10 w-[142px]" />
             </div>
 
-            {/* Центральная часть - поиск */}
-            <div className="mx-2 hidden flex-1 md:flex">
-              <SearchInput className="w-full" />
-            </div>
-            <HeaderLocation />
+            <nav className="hidden shrink-0 items-stretch self-stretch xl:flex" aria-label="Основная навигация">
+              {primaryNavigation.map((item) => {
+                const active = item.href === '/' ? asPath === '/' || asPath.startsWith('/?') : asPath.startsWith(item.href);
+                return (
+                  <Link key={item.href} href={item.href} className={cn('web2-primary-link', active && 'web2-primary-link-active')}>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
 
-            {/* Правая часть - кнопки и меню */}
-            <div className="flex items-center gap-2">
-              {asPath !== routes.checkout && (
-                <CartButton className="hidden h-10 w-10 items-center justify-center rounded-full border border-brand/20 bg-brand-50 text-brand shadow-sm transition hover:border-brand/40 hover:bg-brand-100 sm:flex" />
-              )}
-              {isMultiLangEnable ? (
-                <div className="ltr:ml-auto rtl:mr-auto">
-                  <LanguageSwitcher />
-                </div>
-              ) : (
-                ''
-              )}
+            <div className="mx-auto hidden min-w-[260px] max-w-[620px] flex-1 md:block">
+              <SearchInput className="web2-global-search" placeholder="Найти людей, вещи и идеи..." />
+            </div>
+
+            <div className="ml-auto flex shrink-0 items-center gap-1.5">
+              <button type="button" className="web2-icon-button" aria-label="Уведомления">
+                <Bell className="h-5 w-5" />
+              </button>
+              <button type="button" onClick={() => router.push(routes.chat)} className="web2-icon-button" aria-label="Сообщения">
+                <MessageCircle className="h-5 w-5" />
+              </button>
+              <button type="button" onClick={() => router.push('/places/create')} className="web2-create-button" aria-label="Создать Place">
+                <Plus className="h-5 w-5" />
+              </button>
+              {isMultiLangEnable && <LanguageSwitcher />}
               <LoginMenu />
             </div>
           </div>
         </div>
-      </header>
 
-      {/* Mobile: Динамический хедер (с компактным режимом) */}
-      {/* Скрываем на странице товара */}
-      <header 
-        className={cn(
-          "app-header sticky top-0 z-50 w-full overflow-hidden rounded-b-[26px] bg-gradient-to-br from-[#7c45ed] via-[#6937dc] to-[#402083] text-white shadow-[0_10px_28px_rgba(70,34,140,0.25)] ltr:left-0 rtl:right-0 transition-all duration-300 ease-in-out sm:hidden",
-          {
-            "transform translate-y-0": isVisible,
-            "shadow-sm": isCompact,
-            "hidden": isProductPage, // Скрываем на странице товара
-          }
-        )}
-      >
-        <div className={cn(
-          "container mx-auto px-4 transition-all duration-300 ease-in-out",
-          {
-            "opacity-100 translate-y-0": isVisible,
-            "opacity-95": !isVisible,
-          }
-        )}>
-          <div className="flex min-h-[116px] flex-col gap-2 py-2.5">
-            {/* Логотип */}
-            <div className="flex min-w-0 items-center gap-2 px-1"><MapPin className="h-5 w-5 shrink-0"/><div className="min-w-0 flex-1 truncate text-sm font-semibold [&_button]:!max-w-full [&_button]:!truncate [&_button]:!p-0 [&_button]:!text-white [&_button]:hover:!bg-transparent"><LocationWithModal /></div><button type="button" onClick={() => router.push(routes.chat)} aria-label="Чат" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15"><MessageCircle className="h-5 w-5"/></button></div>
-
-            {/* Поиск */}
-            <div className="min-w-0 rounded-2xl bg-white p-0.5 shadow-sm">
-              <SearchInput className="w-full" />
+        {isCommerce && (
+          <div className="border-t border-slate-100 bg-white">
+            <div className="web2-commerce-nav">
+              <div className="shrink-0"><DropdownCategoriesMenu /></div>
+              <nav className="flex min-w-0 items-center gap-1 overflow-x-auto" aria-label="Навигация по товарам">
+                <Link href="/products" className="web2-commerce-link web2-commerce-link-active">Товары</Link>
+                <Link href="/shops" className="web2-commerce-link">Магазины</Link>
+                <Link href="/products?collection=brands" className="web2-commerce-link">Бренды</Link>
+                <Link href="/products?sale=1" className="web2-commerce-link">Скидки</Link>
+                <Link href="/products?sort=new" className="web2-commerce-link">Новинки</Link>
+                <Link href="/products?made_in=russia" className="web2-commerce-link">Сделано в России</Link>
+              </nav>
+              <div className="ml-auto hidden shrink-0 items-center gap-1 2xl:flex">
+                <HeaderLocation compact />
+                <Link href="/wishlists" className="web2-commerce-icon-link"><Heart className="h-4 w-4" />Избранное</Link>
+                <span className="web2-commerce-icon-link"><Clock3 className="h-4 w-4" />Недавно</span>
+                {asPath !== routes.checkout && <CartButton className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-800" />}
+              </div>
             </div>
           </div>
+        )}
+      </header>
+
+      <header className={cn('app-header sticky top-0 z-50 border-b border-slate-200 bg-white transition-transform sm:hidden', !isVisible && '-translate-y-full')}>
+        <div className="px-4 py-2.5">
+          <div className="flex items-center justify-between gap-3">
+            <Logo className="h-9 w-[126px]" />
+            <div className="flex items-center gap-1">
+              <button type="button" onClick={() => router.push(routes.chat)} className="web2-icon-button" aria-label="Сообщения"><MessageCircle className="h-5 w-5" /></button>
+              <button type="button" onClick={() => router.push('/places/create')} className="web2-create-button" aria-label="Создать"><Plus className="h-5 w-5" /></button>
+              <LoginMenu />
+            </div>
+          </div>
+          {!isCompact && <SearchInput className="web2-global-search mt-2" placeholder="Найти людей, вещи и идеи..." />}
         </div>
       </header>
     </>
