@@ -14,7 +14,7 @@ export const API_ENDPOINTS = {
   CATEGORIES: '/categories',
   TAGS: '/tags',
   HASHTAGS: '/hashtags',
-  COMMUNITIES: '/social/communities',
+  COMMUNITIES: `${process.env.NEXT_PUBLIC_SOCIAL_API_PREFIX || ''}/social/communities`,
   TYPES: '/types',
   SHOPS: '/shops',
   MY_SHOPS: '/my-shops',
