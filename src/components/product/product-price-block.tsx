@@ -17,6 +17,7 @@ import { useCart } from '@/components/cart/lib/cart.context';
 import { useMe } from '@/data/user';
 import { useModalAction } from '@/components/modal-views/context';
 import { useQueryClient } from '@tanstack/react-query';
+import { MessageCircle, Percent, Play } from 'lucide-react';
 
 interface ProductPriceBlockProps {
   product: Product;
@@ -170,23 +171,6 @@ export default function ProductPriceBlock({
         ) : null}
       </div>
 
-      {directSbpAvailable ? <div className="group relative mb-4">
-        <button type="button" disabled={creatingOrder} onClick={startDirectSbp} className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#f1f5fb] px-4 py-3 font-extrabold text-ozon-text transition hover:bg-[#e7eef8]">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-600 to-fuchsia-500 text-[10px] font-black text-white">СБП</span>
-          {creatingOrder?'Создаём заказ…':'Оплата СБП'}
-        </button>
-        <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-[290px] -translate-x-1/2 rounded-xl bg-ozon-text p-3 text-xs leading-5 text-white shadow-xl group-hover:block">Оплата идёт напрямую продавцу. SANCAN не принимает платёж, но помогает организовать сделку, общение и подтверждение.</div>
-      </div>:null}
-
-      <div className="mb-4 grid grid-cols-2 gap-2 text-[12px]">
-        <button type="button" disabled={openingChat} onClick={openSellerChat} className="rounded-[10px] bg-[#f4f5f7] px-3 py-2.5 font-medium text-[#172033] transition hover:bg-[#eceef1] hover:text-[#7b3dff] disabled:opacity-60">
-          {openingChat ? 'Открываем…' : 'В чат'}
-        </button>
-        <button type="button" onClick={() => isAuthorized ? setDiscountRequestOpen(true) : openModal('LOGIN_VIEW')} className="rounded-[10px] bg-[#f4f5f7] px-3 py-2.5 font-medium text-[#172033] transition hover:bg-[#eceef1] hover:text-[#7b3dff]">
-          Хочу скидку
-        </button>
-      </div>
-
       <div className="flex items-center gap-2">
         {product.is_external ? (
           <Link
@@ -214,6 +198,32 @@ export default function ProductPriceBlock({
           productId={product.id}
           className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fbf2ff] text-ozon-blue transition-colors hover:text-ozon-pink"
         />
+      </div>
+
+      {directSbpAvailable ? (
+        <div className="group relative mt-3">
+          <button
+            type="button"
+            disabled={creatingOrder}
+            onClick={startDirectSbp}
+            className="flex w-full items-center justify-center gap-2 rounded-[10px] bg-gradient-to-r from-[#8b5cf6] via-[#a855f7] to-[#f05a9d] px-4 py-3 text-sm font-semibold text-white transition hover:brightness-105 disabled:opacity-60"
+          >
+            <Play className="h-[17px] w-[17px] fill-none" />
+            {creatingOrder ? 'Создаём заказ…' : 'Оплата СБП'}
+          </button>
+          <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-[290px] -translate-x-1/2 rounded-xl bg-ozon-text p-3 text-xs leading-5 text-white shadow-xl group-hover:block">Оплата идёт напрямую продавцу. SANCAN не принимает платёж, но помогает организовать сделку, общение и подтверждение.</div>
+        </div>
+      ) : null}
+
+      <div className="mt-2 grid grid-cols-2 gap-2 text-[12px]">
+        <button type="button" disabled={openingChat} onClick={openSellerChat} className="flex items-center justify-center gap-2 rounded-[10px] bg-[#f4f5f7] px-3 py-2.5 font-medium text-[#172033] transition hover:bg-[#eceef1] hover:text-[#7b3dff] disabled:opacity-60">
+          <MessageCircle className="h-[17px] w-[17px]" />
+          {openingChat ? 'Открываем…' : 'Чат'}
+        </button>
+        <button type="button" onClick={() => isAuthorized ? setDiscountRequestOpen(true) : openModal('LOGIN_VIEW')} className="flex items-center justify-center gap-2 rounded-[10px] bg-[#f4f5f7] px-3 py-2.5 font-medium text-[#172033] transition hover:bg-[#eceef1] hover:text-[#7b3dff]">
+          <Percent className="h-[17px] w-[17px]" />
+          Хочу скидку
+        </button>
       </div>
 
       {product.shop?.name ? (
