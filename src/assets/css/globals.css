@@ -120,10 +120,10 @@
 .web2-create-media-slot > label { width: 100%; height: 100%; }
 .web2-create-media-slot > label svg, .web2-create-video-slot > svg { width: 22px; height: 22px; }
 .web2-create-media-slot > b { z-index: 2; }
-.web2-create-media-slot > button, .web2-create-video-slot > button { position: absolute; z-index: 4; right: 6px; top: 6px; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid rgba(255,255,255,.7); border-radius: 999px; background: rgba(15,23,42,.78); color: #fff; box-shadow: 0 3px 10px rgba(15,23,42,.22); transition: background .18s, transform .18s; }
-.web2-create-media-slot > button:hover, .web2-create-video-slot > button:hover { background: #ef4444; transform: scale(1.06); }
+.web2-create-media-slot > button, .web2-create-video-slot > button { position: absolute; z-index: 4; right: 7px; top: 7px; display: grid; place-items: center; width: 29px; height: 29px; border: 2px solid #fff; border-radius: 999px; background: #f43f5e; color: #fff; box-shadow: 0 4px 12px rgba(225,29,72,.32); transition: background .18s, transform .18s; }
+.web2-create-media-slot > button:hover, .web2-create-video-slot > button:hover { background: #e11d48; transform: scale(1.07); }
 .web2-create-media-slot > button svg, .web2-create-video-slot > button svg { width: 15px; height: 15px; }
-.web2-create-drag-icon { position: absolute; z-index: 2; left: 5px; top: 6px; width: 16px; height: 16px; color: white; filter: drop-shadow(0 1px 2px rgba(0,0,0,.8)); }
+.web2-create-drag-icon { position: absolute; z-index: 2; left: 7px; top: 9px; width: 17px; height: 17px; color: white; filter: drop-shadow(0 1px 3px rgba(0,0,0,.9)); }
 .web2-create-media-slot > i { position: absolute; inset: 0; z-index: 1; background: rgba(123,61,255,.18); }
 .web2-create-video-slot video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .web2-create-video-slot b { z-index: 2; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 999px; background: rgba(15,23,42,.7); color: white; }
@@ -1044,15 +1044,15 @@
 }
 
 /* Place detail, Web 2.0 */
-.web2-place-detail { width: min(1380px, calc(100% - 48px)); margin: 0 auto; padding: 22px 0 44px; color: #101522; }
+.web2-place-detail { width: min(1180px, calc(100% - 48px)); margin: 0 auto; padding: 18px 0 48px; color: #101522; }
 .web2-place-back { display: inline-flex; align-items: center; gap: 8px; margin: 0 0 14px; color: #556075; font-size: 14px; font-weight: 600; }
 .web2-place-back svg { width: 18px; height: 18px; }
-.web2-place-detail-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(390px, .85fr); gap: 34px; align-items: start; }
-.web2-place-media { position: sticky; top: 124px; height: min(740px, calc(100vh - 150px)); min-height: 560px; overflow: hidden; border-radius: 15px; background: #f1eee8; }
+.web2-place-detail-grid { display: grid; grid-template-columns: minmax(0, 604px) minmax(390px, 1fr); gap: 34px; align-items: start; }
+.web2-place-media { position: sticky; top: 124px; height: min(646px, calc(100vh - 145px)); min-height: 560px; overflow: hidden; border-radius: 13px; background: #f1eee8; }
 .web2-place-media > div { height: 100%; }
 .web2-place-empty { display: grid; place-items: center; height: 100%; color: #7b8495; }
 .web2-place-product-pin { position: absolute; z-index: 8; left: 18px; bottom: 18px; display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 0 15px; border-radius: 999px; background: rgba(18,18,18,.76); color: #fff; font-size: 12px; backdrop-filter: blur(9px); }
-.web2-place-panel { min-width: 0; padding: 4px 0 24px; }
+.web2-place-panel { min-width: 0; padding: 0 0 24px; }
 .web2-place-author-row { display: flex; align-items: center; gap: 12px; min-height: 52px; }
 .web2-place-author-avatar { width: 48px; height: 48px; overflow: hidden; flex: none; border-radius: 999px; background: #111; }
 .web2-place-author-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -1068,7 +1068,7 @@
 .web2-place-owner-menu button.danger { color: #e11d48; }
 .web2-place-meta { display: flex; align-items: center; gap: 7px; margin-top: 20px; color: #667085; font-size: 12px; }
 .web2-place-meta svg { width: 15px; height: 15px; }
-.web2-place-panel > h1 { margin-top: 9px; font-size: clamp(28px, 2.2vw, 38px); font-weight: 760; line-height: 1.03; letter-spacing: -.035em; }
+.web2-place-panel > h1 { margin-top: 9px; max-width: 460px; font-size: clamp(27px, 2vw, 34px); font-weight: 760; line-height: 1.04; letter-spacing: -.035em; }
 .web2-place-panel > p { margin-top: 13px; color: #5d6678; font-size: 15px; line-height: 1.55; white-space: pre-line; }
 .web2-place-panel > p.is-collapsed { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 4; }
 .web2-place-more { margin-top: 6px; color: #6f2fff; font-size: 12px; font-weight: 650; }
@@ -1095,8 +1095,8 @@
 .web2-place-comments { padding-top: 20px; }
 .web2-place-comments h2 span { color: #7d8798; font-weight: 500; }
 @media (max-width: 1180px) {
-  .web2-place-detail { width: min(1120px, calc(100% - 32px)); }
-  .web2-place-detail-grid { grid-template-columns: minmax(0, 1.15fr) minmax(360px, .85fr); gap: 24px; }
+  .web2-place-detail { width: min(1100px, calc(100% - 32px)); }
+  .web2-place-detail-grid { grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); gap: 24px; }
 }
 
 /**

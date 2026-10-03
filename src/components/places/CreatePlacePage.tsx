@@ -185,7 +185,7 @@ export default function CreatePlacePage() {
                 >
                   {preview ? <>
                     <Image src={preview} alt={`Фото ${index + 1}`} fill unoptimized className="object-cover" />
-                    <b>{index + 1}</b><GripVertical className="web2-create-drag-icon" />
+                    <GripVertical className="web2-create-drag-icon" />
                     <button type="button" onClick={() => handleImageChange(index, null)} aria-label="Удалить фото"><X /></button>
                   </> : <label><ImagePlus /><span>Фото</span><input type="file" accept="image/*" hidden onChange={(event) => handleImageChange(index, event.target.files?.[0] || null)} /></label>}
                   {draggedIndex === index ? <i /> : null}
