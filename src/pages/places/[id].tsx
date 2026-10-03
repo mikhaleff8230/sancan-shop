@@ -23,7 +23,7 @@ import { extractMediaUrls } from '@/data/utils/media-utils';
 import SimilarPlaces from '@/components/places/similar-places';
 import PlaceComments from '@/components/places/place-comments';
 import { Component, ReactNode } from 'react';
-import { Bookmark, MapPin, MessageCircle, Send } from 'lucide-react';
+import { Bookmark, ChevronRight, MapPin, MessageCircle, Send } from 'lucide-react';
 
 // Обертка для обработки ошибок в компоненте комментариев
 class PlaceCommentsWrapper extends Component<{ placeId: string | number }, { hasError: boolean }> {
