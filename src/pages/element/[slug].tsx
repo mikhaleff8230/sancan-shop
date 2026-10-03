@@ -345,6 +345,10 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
   
   const previews = getPreviews(productImages, image);
   const descriptionMedia = previews[0]?.original || previews[0]?.url || previews[0]?.thumbnail || '';
+  const plainDescription = String(description || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   
   // Проверяем, нужно ли показывать специальную страницу для черновика/архива
   const isHiddenStatus = status === 'draft' || status === 'unpublish';
@@ -440,7 +444,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
       />
       
       <div className="sancan-ozon-page relative">
-        <div className="sancan-ozon-container h-full min-h-screen py-4 lg:py-6">
+        <div className="sancan-ozon-container web2-product-detail h-full min-h-screen py-4 lg:py-5">
           {/* Хлебные крошки */}
           <div className="mb-6">
             <ProductBreadcrumbs product={product} />
@@ -525,45 +529,47 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               {/* Обычная страница товара для опубликованных товаров */}
               <motion.div
                 variants={staggerTransition()}
-                className="grid gap-5 lg:grid-cols-[minmax(400px,560px)_minmax(0,1fr)] xl:grid-cols-[minmax(460px,560px)_minmax(0,1fr)_350px]"
+                className="web2-product-hero grid gap-5 lg:grid-cols-[minmax(440px,1.3fr)_minmax(300px,0.8fr)] xl:grid-cols-[minmax(500px,1.25fr)_minmax(300px,0.8fr)_300px]"
               >
                 {/* Левая колонка - Слайдер изображений */}
                 <motion.div
                   variants={fadeInBottomWithScaleX()}
-                  className="lg:sticky lg:top-[92px] lg:self-start"
+                  className="web2-product-gallery lg:sticky lg:top-[126px] lg:self-start"
                 >
                   <ProductImageSlider 
                     product={product}
                     images={previews}
-                    className="sancan-ozon-card p-3"
+                    className="p-0"
                   />
                 </motion.div>
 
                 {/* Средняя колонка - Информация о товаре */}
                 <motion.div
                   variants={fadeInBottom()}
-                  className="space-y-4"
+                  className="web2-product-summary space-y-4"
                 >
                   {/* Описание товара */}
-                  <div className="sancan-ozon-card p-5 lg:p-6">
+                  <div className="p-1 lg:p-2">
                     <div className="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-ozon-muted">
                       {categories?.[0]?.name ? <span>{categories[0].name}</span> : null}
                       {categories?.[0]?.name && type?.name ? <span>•</span> : null}
                       {type?.name ? <span>{type.name}</span> : null}
                       {id ? <span className="ml-auto">Артикул: {id}</span> : null}
                     </div>
-                    <h1 className="mb-3 text-2xl font-extrabold leading-tight text-ozon-text lg:text-3xl">
+                    <h1 className="mb-2 text-2xl font-bold leading-tight tracking-[-0.025em] text-ozon-text">
                       {name}
                     </h1>
-                    <div className="mb-5 flex flex-wrap items-center gap-3 text-sm font-semibold text-ozon-muted">
+                    <div className="mb-4 flex flex-wrap items-center gap-2 text-[13px] font-medium text-ozon-muted">
                       <span className="text-[#ff9f00]">★</span>
                       <span className="text-ozon-text">{ratings ? Number(ratings).toFixed(1) : 'Нет рейтинга'}</span>
                       <span>{total_reviews ? `${total_reviews} ${t('text-reviews')}` : t('text-no-reviews')}</span>
                       {shop?.name ? <span>Продавец: {shop.name}</span> : null}
                     </div>
-                    <div className="rounded-2xl bg-[#f3f7fc] p-4">
-                      <h2 className="mb-3 text-lg font-bold text-ozon-text">О товаре</h2>
-                      <div className="grid gap-2 text-sm">
+                    {plainDescription ? (
+                      <p className="mb-5 line-clamp-4 text-[13px] leading-5 text-ozon-muted">{plainDescription}</p>
+                    ) : null}
+                    <div className="web2-product-quick-facts">
+                      <div className="grid gap-2 text-[13px]">
                         {type?.name ? (
                           <div className="flex justify-between gap-4 border-b border-dotted border-[#cfd7e3] pb-2">
                             <span className="text-ozon-muted">Тип</span>
@@ -596,24 +602,33 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                 {/* Правая колонка - Покупка и доставка */}
                 <motion.div
                   variants={fadeInBottom()}
-                  className="space-y-4 xl:sticky xl:top-[92px] xl:self-start"
+                  className="web2-product-buy-rail space-y-0 xl:sticky xl:top-[126px] xl:self-start"
                 >
                   {/* Блок с ценой */}
                   <ProductPriceBlock 
                     price={price}
                     sale_price={sale_price}
                     product={product}
+                    className="web2-product-buy-card"
                   />
                   
                   {/* Блок с информацией о доставке */}
-                  <ProductDeliveryBlock product={product} />
+                  <ProductDeliveryBlock product={product} className="web2-product-delivery-card" />
                   
                 </motion.div>
               </motion.div>
 
-              <motion.div variants={fadeInBottom()} className="mt-8 space-y-8">
-                <section className="sancan-ozon-section min-w-0 overflow-hidden">
-                  <h2 className="mb-4 text-2xl font-bold text-ozon-text">Описание</h2>
+              <nav className="web2-product-tabs mt-8" aria-label="Разделы страницы товара">
+                <a href="#description" className="web2-product-tab web2-product-tab-active">Описание</a>
+                <a href="#attributes" className="web2-product-tab">Характеристики</a>
+                <a href="#reviews" className="web2-product-tab">Отзывы</a>
+                <a href="#questions" className="web2-product-tab">Вопросы</a>
+                <a href="#delivery" className="web2-product-tab">Доставка и оплата</a>
+              </nav>
+
+              <motion.div variants={fadeInBottom()} className="space-y-0">
+                <section id="description" className="web2-product-content-section min-w-0 overflow-hidden">
+                  <h2 className="mb-4 text-xl font-bold text-ozon-text">О товаре</h2>
                   <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,480px)] lg:items-start">
                     <div className="min-w-0">
                       <ProductDescription description={description} />
@@ -625,19 +640,19 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                           alt={name}
                           width={640}
                           height={640}
-                          className="h-full max-h-[520px] w-full object-contain"
+                          className="h-full max-h-[360px] w-full object-cover"
                         />
                       </div>
                     ) : null}
                   </div>
                 </section>
 
-                <section className="sancan-ozon-section">
+                <section id="attributes" className="web2-product-content-section">
                   <ProductAttributes product={product} />
                 </section>
 
                 {tags && tags.length > 0 ? (
-                  <section className="sancan-ozon-section">
+                  <section className="web2-product-content-section">
                     <ProductTags tags={tags} />
                   </section>
                 ) : null}
@@ -646,10 +661,10 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
               {/* Нижняя часть - Отзывы и вопросы */}
               <motion.div
                 variants={fadeInBottom()}
-                className="mt-12 space-y-8"
+                className="space-y-0"
               >
                 {/* Отзывы */}
-                <section className="sancan-ozon-section">
+                <section id="reviews" className="web2-product-content-section">
                   <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
                     <ProductReviews productId={id} />
                     <AverageRatings
@@ -661,7 +676,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                 </section>
 
                 {/* Вопросы */}
-                <section className="sancan-ozon-section">
+                <section id="questions" className="web2-product-content-section">
                   <ProductQuestions
                     productId={id}
                     shopId={shop?.id}

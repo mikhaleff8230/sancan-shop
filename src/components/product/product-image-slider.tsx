@@ -312,7 +312,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
         )}
 
         {/* Большое изображение (справа на десктопе, сверху на мобиле) */}
-        <div className="group relative aspect-[3/4] overflow-hidden rounded-xl bg-white">
+        <div className="group relative aspect-[3/4] overflow-hidden rounded-xl bg-[#f7f7f5] lg:aspect-square">
           {/* Кнопка "Назад" для мобильных (поверх изображения) - вне контейнера для правильного z-index */}
           <button
             onClick={(e) => {
@@ -412,7 +412,7 @@ export default function ProductImageSlider({ product, className = '' }: ProductI
                   fill
                   quality={100}
                   src={imageSource(currentImageIndex, validMediaItems[currentImageIndex].data?.original || validMediaItems[currentImageIndex].data?.thumbnail)}
-                  className="object-cover"
+                  className="object-contain"
                   unoptimized={true}
                   onError={() => markImageFailed(currentImageIndex)}
                 />

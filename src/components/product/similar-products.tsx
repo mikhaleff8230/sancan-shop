@@ -18,9 +18,9 @@ export default function SimilarProducts({
   if (isLoading) {
     return (
       <section className={`sancan-ozon-section ${className}`}>
-        <h2 className="mb-6 text-2xl font-bold text-ozon-text">Рекомендуем также</h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {Array.from({ length: 6 }).map((_, index) => (
+        <h2 className="mb-5 text-xl font-bold text-ozon-text">Похожие товары</h2>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="h-72 animate-pulse rounded-2xl bg-[#eef2f7]" />
           ))}
         </div>
@@ -32,9 +32,12 @@ export default function SimilarProducts({
 
   return (
     <section className={`sancan-ozon-section ${className}`}>
-      <h2 className="mb-6 text-2xl font-bold text-ozon-text">Рекомендуем также</h2>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-        {displayProducts.map((product) => (
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <h2 className="text-xl font-bold text-ozon-text">Похожие товары</h2>
+        <span className="text-xs font-medium text-ozon-muted">Смотреть все&nbsp; →</span>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {displayProducts.slice(0, 4).map((product) => (
           <Card key={product.id} product={product} />
         ))}
       </div>

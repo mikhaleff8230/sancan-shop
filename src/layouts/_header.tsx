@@ -21,9 +21,9 @@ import LanguageSwitcher from '@/components/ui/language-switcher';
 import { Bell, Clock3, Heart, MapPin, MessageCircle, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
-import DropdownCategoriesMenu from '@/components/menu/dropdown-categories-menu';
 import Logo from '@/components/ui/logo';
 import cn from 'classnames';
+import DropdownCategoriesMenu from '@/components/menu/dropdown-categories-menu';
 import { LocationWithModal } from '@/components/GeoLocation/LocationWithModal';
 
 const AuthorizedMenuItems = [
@@ -180,12 +180,14 @@ export default function Header({
     asPath.startsWith('/cart') ||
     asPath.startsWith('/checkout') ||
     asPath.startsWith('/wishlists');
-  const primaryNavigation = [
-    { label: 'Главная', href: '/' },
-    { label: 'Подписки', href: '/following' },
-    { label: 'Сообщества', href: '/communities' },
-    { label: 'Товары', href: '/products' },
-  ];
+  const isPlacesSurface =
+    asPath === '/' ||
+    asPath.startsWith('/?') ||
+    asPath.startsWith('/following') ||
+    asPath.startsWith('/places') ||
+    asPath.startsWith('/place/') ||
+    asPath.startsWith('/communities') ||
+    asPath.startsWith('/community/');
   const isMultiLangEnable =
     process.env.NEXT_PUBLIC_ENABLE_MULTI_LANG === 'true' &&
     !!process.env.NEXT_PUBLIC_AVAILABLE_LANGUAGES;
@@ -246,7 +248,7 @@ export default function Header({
     <>
       <header className="app-header sticky top-0 z-50 hidden w-full border-b border-slate-200 bg-white/95 backdrop-blur sm:block">
         <div className="web2-header-surface">
-          <div className="flex h-[76px] items-center gap-5">
+          <div className="flex h-[64px] items-center gap-6">
             <div className="flex shrink-0 items-center gap-2">
               {showHamburger && (
                 <Hamburger isToggle={isCollapse} onClick={onClickHamburger} className="hidden lg:flex" />
@@ -254,20 +256,14 @@ export default function Header({
               <Logo className="h-10 w-[142px]" />
             </div>
 
-            <nav className="hidden shrink-0 items-stretch self-stretch xl:flex" aria-label="Основная навигация">
-              {primaryNavigation.map((item) => {
-                const active = item.href === '/' ? asPath === '/' || asPath.startsWith('/?') : asPath.startsWith(item.href);
-                return (
-                  <Link key={item.href} href={item.href} className={cn('web2-primary-link', active && 'web2-primary-link-active')}>
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            <div className="mx-auto hidden min-w-[260px] max-w-[620px] flex-1 md:block">
-              <SearchInput className="web2-global-search" placeholder="Найти людей, вещи и идеи..." />
+            <div className="mx-auto hidden min-w-[320px] max-w-[900px] flex-1 md:block">
+              <SearchInput className="web2-global-search" placeholder="Найти людей, плейсы и вещи..." />
             </div>
+
+            <nav className="web2-mode-switch hidden shrink-0 lg:grid" aria-label="Раздел SANCAN">
+              <Link href="/" className={cn('web2-mode-link', !isCommerce && 'web2-mode-link-active')}>Плейсы</Link>
+              <Link href="/products" className={cn('web2-mode-link', isCommerce && 'web2-mode-link-active')}>Маркет</Link>
+            </nav>
 
             <div className="ml-auto flex shrink-0 items-center gap-1.5">
               <button type="button" className="web2-icon-button" aria-label="Уведомления">
@@ -276,14 +272,23 @@ export default function Header({
               <button type="button" onClick={() => router.push(routes.chat)} className="web2-icon-button" aria-label="Сообщения">
                 <MessageCircle className="h-5 w-5" />
               </button>
-              <button type="button" onClick={() => router.push('/places/create')} className="web2-create-button" aria-label="Создать Place">
-                <Plus className="h-5 w-5" />
-              </button>
               {isMultiLangEnable && <LanguageSwitcher />}
               <LoginMenu />
             </div>
           </div>
+
         </div>
+
+        {isPlacesSurface && !isCommerce && (
+          <div className="border-t border-slate-100 bg-white">
+            <div className="web2-section-nav">
+              <nav className="flex items-center gap-7" aria-label="Навигация по плейсам">
+                <Link href="/" className={cn('web2-section-link', (asPath === '/' || asPath.startsWith('/?')) && 'web2-section-link-active')}>Интересное</Link>
+                <Link href="/following" className={cn('web2-section-link', asPath.startsWith('/following') && 'web2-section-link-active')}>Подписки</Link>
+              </nav>
+            </div>
+          </div>
+        )}
 
         {isCommerce && (
           <div className="border-t border-slate-100 bg-white">
@@ -301,7 +306,7 @@ export default function Header({
                 <HeaderLocation compact />
                 <Link href="/wishlists" className="web2-commerce-icon-link"><Heart className="h-4 w-4" />Избранное</Link>
                 <span className="web2-commerce-icon-link"><Clock3 className="h-4 w-4" />Недавно</span>
-                {asPath !== routes.checkout && <CartButton className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-800" />}
+                {asPath !== routes.checkout && <div className="web2-commerce-cart"><CartButton className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-800" /><span>Корзина</span></div>}
               </div>
             </div>
           </div>
@@ -318,7 +323,7 @@ export default function Header({
               <LoginMenu />
             </div>
           </div>
-          {!isCompact && <SearchInput className="web2-global-search mt-2" placeholder="Найти людей, вещи и идеи..." />}
+          {!isCompact && <SearchInput className="web2-global-search mt-2" placeholder="Найти людей, плейсы и вещи..." />}
         </div>
       </header>
     </>

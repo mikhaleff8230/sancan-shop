@@ -607,14 +607,14 @@ export default function Card({ product }: { product: Product }) {
         </h3>
         <div className="mt-1.5 flex items-center gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-1.5">
-            <div className="relative h-5 w-5 shrink-0 overflow-hidden rounded-full bg-slate-100">
+            <div className="relative h-6 w-6 shrink-0 overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200">
               <Image
                 alt={shop?.name || ''}
                 quality={90}
                 fill
                 src={shopLogoFailed ? placeholder : (shop?.logo?.thumbnail ?? placeholder)}
                 className="object-cover"
-                sizes="20px"
+                sizes="24px"
                 onError={() => setShopLogoFailed(true)}
               />
             </div>
@@ -639,7 +639,7 @@ export default function Card({ product }: { product: Product }) {
                 ariaLabel={`Добавить «${name}» в корзину`}
                 className="web2-card-cart-button"
               >
-                <ShoppingCart className="h-4 w-4" />
+                <ShoppingCart className="h-[18px] w-[18px]" />
               </AddToCart>
             </div>
           ) : null}
