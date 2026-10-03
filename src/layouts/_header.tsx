@@ -177,6 +177,7 @@ export default function Header({
     asPath.startsWith('/element/') ||
     asPath.startsWith('/categories/') ||
     asPath.startsWith('/shops') ||
+    asPath.startsWith('/popular-products') ||
     asPath.startsWith('/cart') ||
     asPath.startsWith('/checkout') ||
     asPath.startsWith('/wishlists');
@@ -295,12 +296,10 @@ export default function Header({
             <div className="web2-commerce-nav">
               <div className="shrink-0"><DropdownCategoriesMenu /></div>
               <nav className="flex min-w-0 items-center gap-1 overflow-x-auto" aria-label="Навигация по товарам">
-                <Link href="/products" className="web2-commerce-link web2-commerce-link-active">Товары</Link>
-                <Link href="/shops" className="web2-commerce-link">Магазины</Link>
-                <Link href="/products?collection=brands" className="web2-commerce-link">Бренды</Link>
-                <Link href="/products?sale=1" className="web2-commerce-link">Скидки</Link>
-                <Link href="/products?sort=new" className="web2-commerce-link">Новинки</Link>
-                <Link href="/products?made_in=russia" className="web2-commerce-link">Сделано в России</Link>
+                <Link href="/products" className={cn('web2-commerce-link', asPath.startsWith('/products') && !asPath.includes('sort=new') && 'web2-commerce-link-active')}>Товары</Link>
+                <Link href="/shops" className={cn('web2-commerce-link', asPath.startsWith('/shops') && 'web2-commerce-link-active')}>Магазины</Link>
+                <Link href="/products?sort=new" className={cn('web2-commerce-link', asPath.includes('sort=new') && 'web2-commerce-link-active')}>Новые товары</Link>
+                <Link href="/popular-products" className={cn('web2-commerce-link', asPath.startsWith('/popular-products') && 'web2-commerce-link-active')}>Популярные товары</Link>
               </nav>
               <div className="ml-auto hidden shrink-0 items-center gap-1 2xl:flex">
                 <HeaderLocation compact />

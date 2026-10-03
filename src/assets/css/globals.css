@@ -405,16 +405,17 @@
     display: flex;
     width: 100%;
     max-width: 1720px;
-    min-height: 48px;
+    min-height: 68px;
     margin-inline: auto;
     align-items: center;
-    gap: 16px;
+    gap: 20px;
+    padding-block: 8px;
     padding-inline: clamp(16px, 2vw, 30px);
   }
   .web2-commerce-link,
   .web2-commerce-icon-link {
     display: inline-flex;
-    min-height: 38px;
+    min-height: 44px;
     align-items: center;
     gap: 7px;
     border-radius: 9px;
@@ -439,6 +440,24 @@
     font-size: 13px;
     font-weight: 500;
     white-space: nowrap;
+  }
+  .web2-mobile-nav-item {
+    display: flex !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 58px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    border-radius: 12px !important;
+    color: #64748b !important;
+    font-size: 10px !important;
+    font-weight: 600 !important;
+    line-height: 1 !important;
+  }
+  .web2-mobile-nav-item-active {
+    color: #7b3dff !important;
   }
   .web2-topic-bar {
     display: flex;

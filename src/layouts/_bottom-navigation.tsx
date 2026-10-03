@@ -4,54 +4,76 @@ import Button from '@/components/ui/button';
 import { HomeIcon } from '@/components/icons/home-icon';
 import { SearchIcon } from '@/components/icons/search-icon';
 import { HeartOutlineIcon } from '@/components/icons/heart-outline';
-import DropdownCategoriesMenu from '@/components/menu/dropdown-categories-menu';
 import { useMe } from '@/data/user';
 import Avatar from 'react-avatar';
 import { UserIcon } from '@/components/icons/user-icon';
+import { ShoppingBag } from 'lucide-react';
+import cn from 'classnames';
 
 export default function BottomNavigation() {
   const router = useRouter();
   const { me, isAuthorized } = useMe();
+  const isMarket =
+    router.asPath.startsWith('/products') ||
+    router.asPath.startsWith('/shops') ||
+    router.asPath.startsWith('/popular-products') ||
+    router.asPath.startsWith('/categories') ||
+    router.asPath.startsWith('/element/') ||
+    router.asPath.startsWith('/cart') ||
+    router.asPath.startsWith('/checkout') ||
+    router.asPath.startsWith('/wishlists');
+  const itemClass = (active = false) => cn(
+    'web2-mobile-nav-item',
+    active && 'web2-mobile-nav-item-active'
+  );
   
   return (
     <>
       {/* 🌌 SYSTEM GLOW — АНИМИРОВАННЫЙ ФОН ПОД НАВИГАЦИЕЙ */}
       <div className="system-glow pointer-events-none" />
       
-      <nav className="bottom-menu fixed bottom-0 left-0 right-0 z-[100] grid h-14 w-full grid-cols-5 items-center justify-items-center bg-light/95 text-center shadow-bottom-nav backdrop-blur-xl dark:bg-dark-300/95 sm:hidden" style={{ margin: 0, padding: 0 }}>
-        {/* Домой */}
+      <nav className="bottom-menu fixed bottom-0 left-0 right-0 z-[100] grid h-[66px] w-full grid-cols-5 items-center justify-items-center border-t border-slate-200 bg-light/95 px-1 text-center shadow-bottom-nav backdrop-blur-xl dark:bg-dark-300/95 sm:hidden">
+        {/* Основной переключатель поверхностей */}
         <Button
           variant="icon"
-          aria-label="Home"
+          aria-label="Плейсы"
           onClick={() => router.push(routes.home)}
-          className="flex h-full w-full items-center justify-center"
+          className={itemClass(!isMarket)}
         >
-          <HomeIcon className="h-6 w-6" />
+          <HomeIcon className="h-5 w-5" />
+          <span>Плейсы</span>
         </Button>
 
-        {/* Поиск товаров */}
         <Button
           variant="icon"
-          aria-label="Поиск товаров"
+          aria-label="Маркет"
+          onClick={() => router.push(routes.products)}
+          className={itemClass(isMarket)}
+        >
+          <ShoppingBag className="h-5 w-5" />
+          <span>Маркет</span>
+        </Button>
+
+        {/* Поиск */}
+        <Button
+          variant="icon"
+          aria-label="Поиск"
           onClick={() => router.push('/search')}
-          className="flex h-full w-full items-center justify-center"
+          className={itemClass(router.asPath.startsWith('/search'))}
         >
-          <SearchIcon className="h-6 w-6" />
+          <SearchIcon className="h-5 w-5" />
+          <span>Поиск</span>
         </Button>
 
-        {/* Каталог (посередине) */}
-        <div className="flex h-full w-full items-center justify-center">
-          <DropdownCategoriesMenu compact={true} />
-        </div>
-
-        {/* Избранное (сердечко) */}
+        {/* Избранное */}
         <Button
           variant="icon"
-          aria-label="Wishlist"
+          aria-label="Избранное"
           onClick={() => router.push(routes.wishlists)}
-          className="flex h-full w-full items-center justify-center"
+          className={itemClass(router.asPath.startsWith('/wishlists'))}
         >
-          <HeartOutlineIcon className="h-6 w-6" />
+          <HeartOutlineIcon className="h-5 w-5" />
+          <span>Избранное</span>
         </Button>
 
         {/* Профиль/Аватар (справа) */}
@@ -60,24 +82,26 @@ export default function BottomNavigation() {
             variant="icon"
             aria-label="Profile"
             onClick={() => router.push(routes.profile)}
-            className="relative flex h-full w-full items-center justify-center"
+            className={itemClass(router.asPath.startsWith('/profile'))}
           >
             <Avatar
-              size="36"
+              size="24"
               round={true}
               name={me.name}
               textSizeRatio={2}
               src={me?.profile?.avatar?.thumbnail}
             />
+            <span>Профиль</span>
           </Button>
         ) : (
           <Button
             variant="icon"
             aria-label="Profile"
             onClick={() => router.push(routes.profile)}
-            className="flex h-full w-full items-center justify-center"
+            className={itemClass(router.asPath.startsWith('/profile'))}
           >
-            <UserIcon className="h-6 w-6" />
+            <UserIcon className="h-5 w-5" />
+            <span>Профиль</span>
           </Button>
         )}
       </nav>
