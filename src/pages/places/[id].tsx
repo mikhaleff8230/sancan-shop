@@ -414,7 +414,7 @@ const PlaceDetailPage = ({ place: initialPlace, meta: initialMeta, error: initia
             {place.description?.length > 220 ? <button className="web2-place-more" onClick={() => setIsDescriptionExpanded((value) => !value)}>{isDescriptionExpanded ? 'Свернуть' : 'Читать далее'}</button> : null}
 
             {Array.isArray(place.hashtags) && place.hashtags.length ? <div className="web2-place-tags">{place.hashtags.map((tag: any, index: number) => { const name = typeof tag === 'string' ? tag : tag?.name; return name ? <Link key={tag?.id || name || index} href={routes.placeHashtagUrl(tag?.slug || name.toLowerCase().replace(/\s+/g, '-'))}>#{name}</Link> : null; })}</div> : null}
-            {place.community ? <Link className="web2-place-community" href={`/community/${place.community.slug}`}><span>⌘</span>{place.community.name}<ChevronRight /></Link> : null}
+            {place.community?.slug && place.community?.name ? <Link className="web2-place-community" href={`/community/${place.community.slug}`}><span>⌘</span>{place.community.name}<ChevronRight /></Link> : null}
 
             <div className="web2-place-actions">
               <button onClick={handleLike} className={localLiked ? 'is-liked' : ''} aria-label={localLiked ? t('text-unlike') : t('text-like')}><HeartIcon fill={localLiked ? 'currentColor' : 'none'} /> <strong>{localLikes}</strong></button>
