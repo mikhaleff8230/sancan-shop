@@ -267,9 +267,9 @@
   }
   .web2-discovery-surface {
     width: 100%;
-    max-width: 1920px;
+    max-width: 1720px;
     margin-inline: auto;
-    padding-inline: clamp(12px, 1.7vw, 32px);
+    padding-inline: clamp(16px, 2vw, 30px);
   }
   .web2-commerce-surface {
     width: 100%;
