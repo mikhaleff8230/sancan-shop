@@ -10,8 +10,8 @@ import 'dayjs/locale/ru';
 
 dayjs.extend(relativeTime);
 dayjs.locale('ru');
-import { Button } from '@/components/ui/button';
-import { TextArea } from '@/components/ui/text-area';
+import Button from '@/components/ui/button';
+import TextArea from '@/components/ui/text-area';
 import Loader from '@/components/ui/loader/spinner/spinner';
 
 interface PlaceCommentsProps {

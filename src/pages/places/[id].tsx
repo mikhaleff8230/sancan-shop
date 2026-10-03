@@ -21,11 +21,11 @@ import { useDeletePlace } from '@/data/place-delete';
 import { useModalAction } from '@/components/modal-views/context';
 import { extractMediaUrls } from '@/data/utils/media-utils';
 import SimilarPlaces from '@/components/places/similar-places';
-// import PlaceComments from '@/components/places/place-comments';
+import PlaceComments from '@/components/places/place-comments';
 import { Component, ReactNode } from 'react';
+import { Bookmark, MapPin, MessageCircle, Send } from 'lucide-react';
 
 // Обертка для обработки ошибок в компоненте комментариев
-/*
 class PlaceCommentsWrapper extends Component<{ placeId: string | number }, { hasError: boolean }> {
   constructor(props: { placeId: string | number }) {
     super(props);
@@ -52,7 +52,6 @@ class PlaceCommentsWrapper extends Component<{ placeId: string | number }, { has
     return <PlaceComments placeId={this.props.placeId} />;
   }
 }
-*/
 import Image from 'next/image';
 import avatarPlaceholder from '@/assets/images/placeholders/avatar.svg';
 import { formatPlaceDate } from '@/data/utils/format';
@@ -244,6 +243,10 @@ const PlaceDetailPage = ({ place: initialPlace, meta: initialMeta, error: initia
   // Проверка прав - автор и супер-админ могут редактировать/удалять плейсы
   const isSuperAdmin = me?.role === 'super_admin' || me?.user_permissions?.includes('super_admin');
   const canEditOrDelete = isAuthorized && me && (me.id === (place.user && typeof place.user === 'object' ? place.user.id : undefined) || isSuperAdmin);
+  const linkedProduct = Array.isArray(place.products) ? place.products[0] : null;
+  const linkedProductImage = linkedProduct?.image?.thumbnail || linkedProduct?.image?.original || linkedProduct?.image?.url || linkedProduct?.gallery?.[0]?.thumbnail || linkedProduct?.gallery?.[0]?.original;
+  const authorAvatar = place.user?.avatar?.thumbnail || place.user?.avatar?.original || place.user?.avatar;
+  const authorHandle = place.user?.profile?.username || place.user?.username;
 
   // Функция для копирования ссылки
   const handleShare = async () => {
@@ -388,8 +391,47 @@ const PlaceDetailPage = ({ place: initialPlace, meta: initialMeta, error: initia
           animation: heartPulse 0.6s ease-out;
         }
       `}} />
-      {/* ===== CENTER DETAILED PLACE (Desktop) ===== */}
-      <div className="hidden lg:flex lg:justify-center w-full min-h-screen py-8">
+      {/* ===== WEB 2.0 PLACE DETAIL (Desktop) ===== */}
+      <div className="web2-place-detail hidden lg:block">
+        <button type="button" className="web2-place-back" onClick={() => router.back()}><ChevronLeft /> Назад</button>
+        <div className="web2-place-detail-grid">
+          <section className="web2-place-media" onDoubleClick={handleDoubleTap}>
+            {images.length > 0 || videos.length > 0 ? <PlaceImageSlider images={images} videos={videos} title={place.title || t('text-place')} maxHeight="100%" className="h-full w-full" /> : <div className="web2-place-empty">Нет изображений</div>}
+            {linkedProduct ? <Link href={`/element/${linkedProduct.slug}`} className="web2-place-product-pin"><span>□</span> Товар в кадре</Link> : null}
+          </section>
+
+          <aside className="web2-place-panel">
+            <div className="web2-place-author-row">
+              <div className="web2-place-author-avatar">{authorAvatar ? <Image src={authorAvatar} alt={place.user?.name || ''} width={48} height={48} unoptimized /> : <Image src={avatarPlaceholder} alt="" width={48} height={48} />}</div>
+              <div className="web2-place-author-copy"><strong>{place.user?.name || 'Автор SANCAN'}</strong>{authorHandle ? <span>@{authorHandle}</span> : null}</div>
+              {userShop && isAuthorized ? <FollowButton shop_id={userShop.id} /> : null}
+              {canEditOrDelete ? <Menu as="div" className="relative"><Menu.Button className="web2-place-icon-button" aria-label="Меню"><MenuDotsHorizontalIcon /></Menu.Button><Menu.Items className="web2-place-owner-menu"><Menu.Item>{({ active }) => <button className={active ? 'is-active' : ''} onClick={() => setShowEditModal(true)}>{t('text-edit')}</button>}</Menu.Item><Menu.Item>{({ active }) => <button className={active ? 'is-active danger' : 'danger'} onClick={() => setShowDeleteConfirm(true)}>{t('text-delete')}</button>}</Menu.Item></Menu.Items></Menu> : null}
+            </div>
+
+            <div className="web2-place-meta">{place.location ? <><MapPin /> {place.location}<span>·</span></> : null}<time>{formatPlaceDate(place.created_at)}</time></div>
+            <h1>{place.title}</h1>
+            {place.description ? <p className={isDescriptionExpanded ? '' : 'is-collapsed'}>{place.description}</p> : null}
+            {place.description?.length > 220 ? <button className="web2-place-more" onClick={() => setIsDescriptionExpanded((value) => !value)}>{isDescriptionExpanded ? 'Свернуть' : 'Читать далее'}</button> : null}
+
+            {Array.isArray(place.hashtags) && place.hashtags.length ? <div className="web2-place-tags">{place.hashtags.map((tag: any, index: number) => { const name = typeof tag === 'string' ? tag : tag?.name; return name ? <Link key={tag?.id || name || index} href={routes.placeHashtagUrl(tag?.slug || name.toLowerCase().replace(/\s+/g, '-'))}>#{name}</Link> : null; })}</div> : null}
+            {place.community ? <Link className="web2-place-community" href={`/community/${place.community.slug}`}><span>⌘</span>{place.community.name}<ChevronRight /></Link> : null}
+
+            <div className="web2-place-actions">
+              <button onClick={handleLike} className={localLiked ? 'is-liked' : ''} aria-label={localLiked ? t('text-unlike') : t('text-like')}><HeartIcon fill={localLiked ? 'currentColor' : 'none'} /> <strong>{localLikes}</strong></button>
+              <span><MessageCircle /> {place.comments_count || 0}</span>
+              <button onClick={handleShare} aria-label="Поделиться"><Send /></button>
+              <button onClick={handleWishlist} className={localInWishlist ? 'is-saved' : ''} aria-label="Сохранить"><Bookmark fill={localInWishlist ? 'currentColor' : 'none'} /></button>
+            </div>
+
+            {linkedProduct ? <div className="web2-place-linked"><h2>Связанный товар</h2><Link href={`/element/${linkedProduct.slug}`}><span className="web2-place-linked-image">{linkedProductImage ? <Image src={linkedProductImage} alt={linkedProduct.name || ''} fill unoptimized /> : null}</span><span><strong>{linkedProduct.name}</strong><b>{Number(linkedProduct.price || 0).toLocaleString('ru-RU')} ₽</b><small>Перейти к товару →</small></span></Link></div> : null}
+
+            <div className="web2-place-comments"><h2>Комментарии <span>{place.comments_count || ''}</span></h2><PlaceCommentsWrapper placeId={place.id} /></div>
+          </aside>
+        </div>
+      </div>
+
+      {/* Legacy desktop markup is retained for compatibility but no longer displayed. */}
+      <div className="hidden">
         {/* Контейнер с Card */}
         <div className="container max-w-6xl mx-auto px-4 md:px-8 w-full">
           <div className="rounded-lg border-none shadow-lg bg-white dark:bg-dark-300 overflow-hidden w-full h-[85vh]">

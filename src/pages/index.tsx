@@ -8,14 +8,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 const topics = [
-  { label: 'Все', slug: '' },
-  { label: 'Искусство', slug: 'art' },
-  { label: 'Интерьер', slug: 'interior' },
-  { label: 'Fashion', slug: 'fashion' },
-  { label: 'Handmade', slug: 'handmade' },
-  { label: 'Design', slug: 'design' },
-  { label: 'Кино', slug: 'cinema' },
-  { label: 'Фото', slug: 'photo' },
+  { label: 'Все', slug: '', href: '/' },
+  { label: 'Искусство', slug: 'art', href: '/community/art' },
+  { label: 'Интерьер', slug: 'interior', href: '/community/interior' },
+  { label: 'Fashion', slug: 'fashion', href: '/community/fashion' },
+  { label: 'Handmade', slug: 'handmade', href: '/community/handmade' },
+  { label: 'Design', slug: 'design', href: '/community/design' },
+  { label: 'Архитектура', slug: 'architecture', href: '/community/architecture' },
+  { label: 'Фото', slug: 'photography', href: '/community/photography' },
 ];
 
 export const getStaticProps: GetStaticProps = async ({ locale }) => ({
@@ -41,8 +41,7 @@ const Home: NextPageWithLayout = () => {
           {topics.map((topic) => (
             <Link
               key={topic.label}
-              href={topic.slug ? `/?topic=${topic.slug}` : '/'}
-              scroll={false}
+              href={topic.href}
               className={activeTopic === topic.slug ? 'web2-topic-chip web2-topic-chip-active' : 'web2-topic-chip'}
             >
               {topic.label}

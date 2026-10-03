@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { ArrowLeft, ChevronRight, GripVertical, ImagePlus, MapPin, Package, Trash2, Upload, Users, Video, X } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronRight, GripVertical, ImagePlus, MapPin, Package, Upload, Users, Video, X } from 'lucide-react';
 import client from '@/data/client';
 import { API_ENDPOINTS } from '@/data/client/endpoints';
 import { useMe, useMyShops } from '@/data/user';
@@ -39,6 +39,7 @@ export default function CreatePlacePage() {
   const [location, setLocation] = useState('');
   const [formError, setFormError] = useState('');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [communityPickerOpen, setCommunityPickerOpen] = useState(false);
 
   const { register, handleSubmit, watch, setValue, getValues, formState: { errors } } = useForm<PlaceFormData>({
     defaultValues: { title: '', description: '', hashtags: [], product_id: '' },
@@ -113,6 +114,12 @@ export default function CreatePlacePage() {
     setVideoPreview(URL.createObjectURL(file));
   };
 
+  const removeVideo = () => {
+    if (videoPreview.startsWith('blob:')) URL.revokeObjectURL(videoPreview);
+    setVideoPreview('');
+    if (videoInputRef.current) videoInputRef.current.value = '';
+  };
+
   const moveImage = (from: number, to: number) => {
     if (Number.isNaN(from) || from === to) return;
     setImageFiles((current) => {
@@ -179,16 +186,14 @@ export default function CreatePlacePage() {
                   {preview ? <>
                     <Image src={preview} alt={`Фото ${index + 1}`} fill unoptimized className="object-cover" />
                     <b>{index + 1}</b><GripVertical className="web2-create-drag-icon" />
-                    <button type="button" onClick={() => handleImageChange(index, null)} aria-label="Удалить фото"><Trash2 /></button>
+                    <button type="button" onClick={() => handleImageChange(index, null)} aria-label="Удалить фото"><X /></button>
                   </> : <label><ImagePlus /><span>Фото</span><input type="file" accept="image/*" hidden onChange={(event) => handleImageChange(index, event.target.files?.[0] || null)} /></label>}
                   {draggedIndex === index ? <i /> : null}
                 </div>
               ))}
-              <label className={`web2-create-video-slot ${videoPreview ? 'has-media' : ''}`}>
-                {videoPreview ? <video src={videoPreview} muted /> : <><Video /><span>Видео</span></>}
-                <input ref={videoInputRef} type="file" accept="video/mp4,video/webm" hidden onChange={handleVideoChange} />
-                {videoPreview ? <b>▶</b> : null}
-              </label>
+              <div className={`web2-create-video-slot ${videoPreview ? 'has-media' : ''}`}>
+                {videoPreview ? <><video src={videoPreview} muted /><b>▶</b><button type="button" onClick={removeVideo} aria-label="Удалить видео"><X /></button></> : <label><Video /><span>Видео</span><input ref={videoInputRef} type="file" accept="video/mp4,video/webm" hidden onChange={handleVideoChange} /></label>}
+              </div>
             </div>
             <div className="web2-create-preview">
               {primaryImage ? <Image src={primaryImage} alt="" fill unoptimized className="object-contain" />
@@ -212,13 +217,16 @@ export default function CreatePlacePage() {
           </section>
 
           <section className="web2-create-card web2-create-options">
-            <label>
-              <Users /><span><strong>Сообщество</strong><small>{selectedCommunity?.name || 'Выберите тематическое сообщество'}</small></span>
-              <select value={communityId ?? ''} disabled={communitiesLoading} onChange={(event) => setCommunityId(event.target.value ? Number(event.target.value) : null)}>
-                <option value="">Не выбрано</option>
-                {communities.map((community) => <option value={community.id} key={community.id}>{community.name}</option>)}
-              </select><ChevronRight />
-            </label>
+            <div className="web2-create-option-row web2-community-picker">
+              <Users /><span><strong>Сообщество</strong><small>{selectedCommunity?.name || 'Выерите тематическое сообщество'}</small></span>
+              <button type="button" className="web2-community-picker-trigger" disabled={communitiesLoading} onClick={() => setCommunityPickerOpen((open) => !open)} aria-expanded={communityPickerOpen}>
+                {communitiesLoading ? 'Загрузка…' : selectedCommunity?.name || 'Выбрать'} <ChevronDown />
+              </button>
+              {communityPickerOpen ? <div className="web2-community-picker-menu" role="listbox">
+                <button type="button" className={!communityId ? 'is-selected' : ''} onClick={() => { setCommunityId(null); setCommunityPickerOpen(false); }}><span>Без сообщества</span>{!communityId ? <Check /> : null}</button>
+                {communities.map((community) => <button type="button" role="option" aria-selected={community.id === communityId} className={community.id === communityId ? 'is-selected' : ''} key={community.id} onClick={() => { setCommunityId(community.id); setCommunityPickerOpen(false); }}><span><strong>{community.name}</strong><small>{Number(community.members_count || 0).toLocaleString('ru-RU')} участников</small></span>{community.id === communityId ? <Check /> : null}</button>)}
+              </div> : null}
+            </div>
             <div className="web2-create-product-row">
               <Package /><span><strong>Связать товар</strong><small>{selectedProduct?.name || 'Необязательно'}</small></span>
               <div className="web2-create-product-control">
@@ -229,7 +237,7 @@ export default function CreatePlacePage() {
               </div>
               <input type="hidden" {...register('product_id')} />
             </div>
-            <label>
+            <label className="web2-create-option-row">
               <MapPin /><span><strong>Место</strong><small>{location || 'Не указано'}</small></span>
               <input value={location} maxLength={255} onChange={(event) => setLocation(event.target.value)} placeholder="Например, Москва" /><ChevronRight />
             </label>
