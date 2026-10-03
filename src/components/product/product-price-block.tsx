@@ -153,41 +153,52 @@ export default function ProductPriceBlock({
       className={`sancan-ozon-card overflow-hidden p-5 ${className}`}
     >
       <div className="mb-4">
-        <div className="flex items-start justify-between gap-3">
-          <span className="sancan-ozon-price text-[28px] font-bold leading-none">
+        <div className="flex flex-wrap items-end gap-2">
+          <span className="sancan-ozon-price text-3xl font-extrabold leading-none">
             {isFreeItem ? t('text-free') : price}
           </span>
-          <FavoriteButton
-            productId={product.id}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#e7e9ee] bg-white text-[#111827] transition-colors hover:border-[#111827]"
-          />
-        </div>
-        <div className="mt-2 flex flex-wrap items-center gap-2">
           {!isFreeItem && basePrice && basePrice !== price ? (
-            <span className="text-sm font-medium text-ozon-muted line-through">
+            <span className="text-lg font-semibold text-ozon-muted line-through">
               {basePrice}
             </span>
           ) : null}
-          {discount > 0 ? <span className="text-xs font-semibold text-[#ef365f]">−{discount}%</span> : null}
         </div>
-        <div className="mt-4 flex items-center gap-2 text-[12px] font-medium text-[#268852]">
-          <span className="h-2 w-2 rounded-full bg-[#34c775]" />
-          В наличии
-        </div>
+        {discount > 0 ? (
+          <div className="mt-1 text-sm font-semibold text-emerald-600">
+            Скидка {discount}%
+          </div>
+        ) : null}
       </div>
 
-      <div className="grid gap-2">
+      {directSbpAvailable ? <div className="group relative mb-4">
+        <button type="button" disabled={creatingOrder} onClick={startDirectSbp} className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#f1f5fb] px-4 py-3 font-extrabold text-ozon-text transition hover:bg-[#e7eef8]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-blue-600 to-fuchsia-500 text-[10px] font-black text-white">СБП</span>
+          {creatingOrder?'Создаём заказ…':'Оплата СБП'}
+        </button>
+        <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-[290px] -translate-x-1/2 rounded-xl bg-ozon-text p-3 text-xs leading-5 text-white shadow-xl group-hover:block">Оплата идёт напрямую продавцу. SANCAN не принимает платёж, но помогает организовать сделку, общение и подтверждение.</div>
+      </div>:null}
+
+      <div className="mb-4 grid grid-cols-2 gap-2 text-[12px]">
+        <button type="button" disabled={openingChat} onClick={openSellerChat} className="rounded-[10px] bg-[#f4f5f7] px-3 py-2.5 font-medium text-[#172033] transition hover:bg-[#eceef1] hover:text-[#7b3dff] disabled:opacity-60">
+          {openingChat ? 'Открываем…' : 'В чат'}
+        </button>
+        <button type="button" onClick={() => isAuthorized ? setDiscountRequestOpen(true) : openModal('LOGIN_VIEW')} className="rounded-[10px] bg-[#f4f5f7] px-3 py-2.5 font-medium text-[#172033] transition hover:bg-[#eceef1] hover:text-[#7b3dff]">
+          Хочу скидку
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2">
         {product.is_external ? (
           <Link
             href={product.external_product_url}
             target="_blank"
-            className="sancan-ozon-button flex w-full items-center justify-center gap-2 px-5 py-3 text-sm font-semibold leading-5"
+            className="sancan-ozon-button web2-product-primary-buy flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-bold leading-6"
           >
             <ShoppingCartIcon className="h-5 w-5" />
             {product.external_product_button_text || 'В корзину'}
           </Link>
         ) : !isFreeItem ? (
-          <AddToCart item={{...product, price: sitePrice, sale_price: null, payment_method: 'site_payment'} as Product} withPrice={false} className="sancan-ozon-button flex w-full items-center justify-center gap-2 px-5 py-3 text-sm font-semibold leading-5">
+          <AddToCart item={{...product, price: sitePrice, sale_price: null, payment_method: 'site_payment'} as Product} withPrice={false} className="sancan-ozon-button web2-product-primary-buy flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-bold leading-6">
             <ShoppingCartIcon className="h-5 w-5" />
             Добавить в корзину
           </AddToCart>
@@ -196,30 +207,13 @@ export default function ProductPriceBlock({
             productId={product.id}
             productSlug={product.slug}
             productName={product.name}
-            className="sancan-ozon-button flex w-full items-center justify-center gap-2 px-5 py-3 text-sm font-semibold leading-5"
+            className="sancan-ozon-button web2-product-primary-buy flex flex-1 items-center justify-center gap-2 px-6 py-3 text-base font-bold leading-6"
           />
         )}
-      </div>
-
-      {directSbpAvailable ? <div className="group relative mt-2">
-        <button type="button" disabled={creatingOrder} onClick={startDirectSbp} className="web2-sbp-button flex w-full items-center justify-center gap-2 rounded-[10px] px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90">
-          <span className="text-[11px] font-extrabold">▷</span>
-          {creatingOrder?'Создаём заказ…':'Оплата СБП'}
-        </button>
-        <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-[290px] -translate-x-1/2 rounded-xl bg-ozon-text p-3 text-xs leading-5 text-white shadow-xl group-hover:block">Оплата идёт напрямую продавцу. SANCAN не принимает платёж, но помогает организовать сделку, общение и подтверждение.</div>
-      </div>:null}
-
-      <div className="mt-2 grid grid-cols-2 gap-2 text-[12px]">
-        <button type="button" disabled={openingChat} onClick={openSellerChat} className="rounded-[10px] bg-[#f4f5f7] px-3 py-2.5 font-medium text-ozon-text transition hover:bg-[#eceef1] disabled:opacity-60">
-          {openingChat ? 'Открываем…' : 'В чат'}
-        </button>
-        <button type="button" onClick={() => isAuthorized ? setDiscountRequestOpen(true) : openModal('LOGIN_VIEW')} className="rounded-[10px] bg-[#f4f5f7] px-3 py-2.5 font-medium text-ozon-text transition hover:bg-[#eceef1]">
-          Хочу скидку
-        </button>
-      </div>
-
-      <div className="mt-5 border-t border-[#eceef2] pt-4 text-center text-[11px] leading-4 text-ozon-muted">
-        Безопасная оплата · Гарантия 1 год
+        <FavoriteButton
+          productId={product.id}
+          className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#fbf2ff] text-ozon-blue transition-colors hover:text-ozon-pink"
+        />
       </div>
 
       {product.shop?.name ? (
