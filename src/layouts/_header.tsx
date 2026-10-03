@@ -273,6 +273,9 @@ export default function Header({
               <button type="button" onClick={() => router.push(routes.chat)} className="web2-icon-button" aria-label="Сообщения">
                 <MessageCircle className="h-5 w-5" />
               </button>
+              <button type="button" onClick={() => router.push('/places/create')} className="web2-create-button" aria-label="Создать плейс">
+                <Plus className="h-5 w-5" />
+              </button>
               {isMultiLangEnable && <LanguageSwitcher />}
               <LoginMenu />
             </div>
