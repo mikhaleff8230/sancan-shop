@@ -5,6 +5,7 @@ import routes from '@/config/routes';
 import { useIsMounted } from '@/lib/hooks/use-is-mounted';
 import { useIsDarkMode } from '@/lib/hooks/use-is-dark-mode';
 import { siteSettings } from '@/data/static/site-settings';
+import { useSettings } from '@/data/settings';
 
 export default function Logo({
   className = 'w-40',
@@ -13,6 +14,7 @@ export default function Logo({
   const isMounted = useIsMounted();
   const { isDarkMode } = useIsDarkMode();
   const { lightLogo, darkLogo } = siteSettings;
+  const { settings }: any = useSettings();
   return (
     <AnchorLink
       href={routes.home}
@@ -31,19 +33,19 @@ export default function Logo({
       >
         {isMounted && isDarkMode && (
           <Image
-            src={darkLogo}
+            src={settings?.dark_logo?.original ?? darkLogo}
             fill
             loading="eager"
-            alt="SANCAN"
+            alt={settings?.siteTitle ?? 'Dark Logo'}
             className="object-contain"
           />
         )}
         {isMounted && !isDarkMode && (
           <Image
-            src={lightLogo}
+            src={settings?.logo?.original ?? lightLogo}
             fill
             loading="eager"
-            alt="SANCAN"
+            alt={settings?.siteTitle ?? 'Light Logo'}
             className="object-contain"
           />
         )}
