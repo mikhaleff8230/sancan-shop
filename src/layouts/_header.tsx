@@ -16,6 +16,7 @@ import { useSwapBodyClassOnScrollDirection } from '@/lib/hooks/use-swap-body-cla
 import { useDynamicHeader } from '@/lib/hooks/use-dynamic-header';
 import { useDrawer } from '@/components/drawer-views/context';
 import { useModalAction } from '@/components/modal-views/context';
+import { rememberAuthReturnPath } from '@/utils/auth-return';
 import Button from '@/components/ui/button';
 import LanguageSwitcher from '@/components/ui/language-switcher';
 import { Bell, Clock3, Heart, MapPin, MessageCircle, Plus } from 'lucide-react';
@@ -164,6 +165,17 @@ export default function Header({
   const router = useRouter();
   const { asPath } = router;
   const { openDrawer } = useDrawer();
+  const { openModal } = useModalAction();
+  const { isAuthorized } = useMe();
+
+  const handleCreatePlace = () => {
+    if (!isAuthorized) {
+      rememberAuthReturnPath('/places/create');
+      openModal('LOGIN_VIEW');
+      return;
+    }
+    router.push('/places/create');
+  };
   
   
   useSwapBodyClassOnScrollDirection();
@@ -273,7 +285,7 @@ export default function Header({
               <button type="button" onClick={() => router.push(routes.chat)} className="web2-icon-button" aria-label="Сообщения">
                 <MessageCircle className="h-5 w-5" />
               </button>
-              <button type="button" onClick={() => router.push('/places/create')} className="web2-create-button" aria-label="Создать плейс">
+              <button type="button" onClick={handleCreatePlace} className="web2-create-button" aria-label="Создать плейс">
                 <Plus className="h-5 w-5" />
               </button>
               {isMultiLangEnable && <LanguageSwitcher />}
@@ -321,7 +333,7 @@ export default function Header({
             <Logo className="h-9 w-[126px]" />
             <div className="flex items-center gap-1">
               <button type="button" onClick={() => router.push(routes.chat)} className="web2-icon-button" aria-label="Сообщения"><MessageCircle className="h-5 w-5" /></button>
-              <button type="button" onClick={() => router.push('/places/create')} className="web2-create-button" aria-label="Создать"><Plus className="h-5 w-5" /></button>
+              <button type="button" onClick={handleCreatePlace} className="web2-create-button" aria-label="Создать"><Plus className="h-5 w-5" /></button>
               <LoginMenu />
             </div>
           </div>

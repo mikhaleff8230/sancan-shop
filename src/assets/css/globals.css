@@ -179,10 +179,18 @@
 .web2-create-publish { position: sticky; top: 138px; padding: 18px; }
 .web2-create-publish-button { width: 100%; height: 48px; margin: 18px 0 12px; border-radius: 10px; background: linear-gradient(90deg,#7b3dff,#8d2fff); color: white; font-weight: 700; box-shadow: 0 10px 22px rgba(123,61,255,.18); }
 .web2-create-publish-button:disabled { opacity: .58; }
+.web2-create-draft-button { display: flex; width: 100%; height: 44px; align-items: center; justify-content: center; gap: 8px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; color: #172033; font-size: 13px; font-weight: 650; transition: border-color .18s, color .18s, background .18s; }
+.web2-create-draft-button:hover { border-color: #c9b5ff; background: #f5f0ff; color: #7b3dff; }
+.web2-create-draft-button svg { width: 17px; height: 17px; }
+.web2-create-draft-status { margin-top: 8px; color: #64748b; font-size: 11px; line-height: 1.45; text-align: center; }
 .web2-create-status { display: flex; gap: 10px; padding: 16px 0; border-bottom: 1px solid #eef1f5; }
 .web2-create-status i { width: 14px; height: 14px; margin-top: 3px; border-radius: 999px; background: #63d785; }
 .web2-create-status strong { color: #2f7d49; font-size: 13px; }
 .web2-create-status p { margin-top: 4px; color: #64748b; font-size: 11px; line-height: 1.5; }
+.web2-create-auth-required { display: flex; min-height: 420px; max-width: 620px; margin: 40px auto; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #e7eaf0; border-radius: 18px; background: #fff; padding: 48px 28px; text-align: center; box-shadow: 0 18px 55px rgba(23,32,51,.06); }
+.web2-create-auth-required h1 { color: #172033; font-size: 28px; font-weight: 750; letter-spacing: -.03em; }
+.web2-create-auth-required p { max-width: 430px; margin-top: 10px; color: #64748b; font-size: 14px; line-height: 1.6; }
+.web2-create-auth-required button { margin-top: 24px; min-width: 180px; height: 46px; border-radius: 11px; background: linear-gradient(90deg,#7b3dff,#8d2fff); color: #fff; font-weight: 700; }
 .web2-create-summary { display: flex; flex-direction: column; gap: 3px; padding: 14px 0; border-bottom: 1px solid #eef1f5; }
 .web2-create-summary span { color: #7b3dff; font-size: 11px; font-weight: 600; }
 .web2-create-summary strong { font-size: 14px; }

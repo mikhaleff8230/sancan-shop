@@ -3,18 +3,36 @@ import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { ArrowLeft, Check, ChevronDown, ChevronRight, GripVertical, ImagePlus, MapPin, Package, Upload, Users, Video, X } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronRight, FileText, GripVertical, ImagePlus, MapPin, Package, Upload, Users, Video, X } from 'lucide-react';
 import client from '@/data/client';
 import { API_ENDPOINTS } from '@/data/client/endpoints';
 import { useMe, useMyShops } from '@/data/user';
 import ProductAutocomplete from '@/components/place/product-autocomplete';
 import HashtagAutocomplete from '@/components/places/HashtagAutocomplete';
+import { useModalAction } from '@/components/modal-views/context';
+import { rememberAuthReturnPath } from '@/utils/auth-return';
 
 type HashtagValue = Array<{ id?: string; name: string } | string>;
 type PlaceFormData = { title: string; description: string; hashtags: HashtagValue; product_id?: string };
 type Community = { id: number; name: string; slug: string; members_count?: number; is_joined?: boolean };
 
 const IMAGE_SLOTS = 5;
+const DRAFT_KEY = 'sancan:create-place:draft:v1';
+const DRAFT_MEDIA_KEY = 'sancan:create-place:draft-media:v1';
+const MAX_SESSION_MEDIA_LENGTH = 3_000_000;
+
+type PlaceDraft = {
+  title?: string;
+  description?: string;
+  hashtags?: HashtagValue;
+  product_id?: string;
+  selectedProduct?: any;
+  communityId?: number | null;
+  location?: string;
+  savedAt?: string;
+};
+
+type DraftMedia = Array<{ dataUrl: string; name: string; type: string } | null>;
 
 const normalizeCommunities = (response: any): Community[] => {
   const payload = response?.data ?? response;
@@ -25,10 +43,20 @@ const normalizeHashtags = (hashtags: HashtagValue = []) => hashtags
   .map((tag) => typeof tag === 'string' ? tag.trim() : tag?.name?.trim())
   .filter((tag): tag is string => Boolean(tag));
 
+const restoreDraftFile = (media: NonNullable<DraftMedia[number]>) => {
+  const [metadata, encoded = ''] = media.dataUrl.split(',');
+  const detectedType = metadata.match(/data:(.*?);base64/)?.[1] || media.type || 'image/jpeg';
+  const binary = window.atob(encoded);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return new File([bytes], media.name, { type: detectedType });
+};
+
 export default function CreatePlacePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { isAuthorized } = useMe();
+  const { openModal } = useModalAction();
   const { shops = [], isLoading: shopsLoading } = useMyShops();
   const videoInputRef = useRef<HTMLInputElement>(null);
   const [imageFiles, setImageFiles] = useState<(File | null)[]>(Array(IMAGE_SLOTS).fill(null));
@@ -40,10 +68,18 @@ export default function CreatePlacePage() {
   const [formError, setFormError] = useState('');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [communityPickerOpen, setCommunityPickerOpen] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftStatus, setDraftStatus] = useState('');
+  const loginPromptShown = useRef(false);
 
-  const { register, handleSubmit, watch, setValue, getValues, formState: { errors } } = useForm<PlaceFormData>({
+  const { register, handleSubmit, watch, setValue, getValues, reset, formState: { errors } } = useForm<PlaceFormData>({
     defaultValues: { title: '', description: '', hashtags: [], product_id: '' },
   });
+
+  const titleValue = watch('title') || '';
+  const descriptionValue = watch('description') || '';
+  const hashtagValues = watch('hashtags') || [];
+  const productIdValue = watch('product_id') || '';
 
   const { data: communitiesResponse, isLoading: communitiesLoading } = useQuery(
     [API_ENDPOINTS.COMMUNITIES],
@@ -55,6 +91,104 @@ export default function CreatePlacePage() {
   const selectedImages = imagePreviews.filter((preview): preview is string => Boolean(preview));
   const primaryImage = selectedImages[0];
   const shopId = shops[0]?.id;
+
+  useEffect(() => {
+    if (!router.isReady || isAuthorized) {
+      if (isAuthorized) loginPromptShown.current = false;
+      return;
+    }
+    rememberAuthReturnPath(router.asPath || '/places/create');
+    if (!loginPromptShown.current) {
+      loginPromptShown.current = true;
+      openModal('LOGIN_VIEW');
+    }
+  }, [isAuthorized, openModal, router.asPath, router.isReady]);
+
+  useEffect(() => {
+    if (!router.isReady || draftReady || typeof window === 'undefined') return;
+    try {
+      const storedDraft = sessionStorage.getItem(DRAFT_KEY);
+      const draft: PlaceDraft = storedDraft ? JSON.parse(storedDraft) : {};
+      reset({
+        title: draft.title || '',
+        description: draft.description || '',
+        hashtags: Array.isArray(draft.hashtags) ? draft.hashtags : [],
+        product_id: draft.product_id || '',
+      });
+      setSelectedProduct(draft.selectedProduct || null);
+      setLocation(draft.location || '');
+      const presetCommunity = typeof router.query.community === 'string' ? Number(router.query.community) : null;
+      setCommunityId(presetCommunity || draft.communityId || null);
+
+      const storedMedia = sessionStorage.getItem(DRAFT_MEDIA_KEY);
+      if (storedMedia) {
+        const media = JSON.parse(storedMedia) as DraftMedia;
+        const restoredPreviews = Array(IMAGE_SLOTS).fill(null) as (string | null)[];
+        const restoredFiles = Array(IMAGE_SLOTS).fill(null) as (File | null)[];
+        media.slice(0, IMAGE_SLOTS).forEach((item, index) => {
+          if (!item?.dataUrl) return;
+          restoredPreviews[index] = item.dataUrl;
+          restoredFiles[index] = restoreDraftFile(item);
+        });
+        setImagePreviews(restoredPreviews);
+        setImageFiles(restoredFiles);
+      }
+      if (draft.savedAt) setDraftStatus('Черновик восстановлен из этой сессии');
+    } catch {
+      sessionStorage.removeItem(DRAFT_KEY);
+      sessionStorage.removeItem(DRAFT_MEDIA_KEY);
+    } finally {
+      setDraftReady(true);
+    }
+  }, [draftReady, reset, router.isReady, router.query.community]);
+
+  useEffect(() => {
+    if (!draftReady || typeof window === 'undefined') return;
+    const timer = window.setTimeout(() => {
+      const draft: PlaceDraft = {
+        title: titleValue,
+        description: descriptionValue,
+        hashtags: hashtagValues,
+        product_id: productIdValue,
+        selectedProduct,
+        communityId,
+        location,
+        savedAt: new Date().toISOString(),
+      };
+      try {
+        sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+        setDraftStatus('Черновик сохранён в этой сесии');
+      } catch {
+        setDraftStatus('Не удалось сохранить черновик');
+      }
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [communityId, descriptionValue, draftReady, hashtagValues, location, productIdValue, selectedProduct, titleValue]);
+
+  useEffect(() => {
+    if (!draftReady || typeof window === 'undefined') return;
+    const mediaLength = imagePreviews.reduce((total, preview) => total + (preview?.length || 0), 0);
+    if (!mediaLength) {
+      sessionStorage.removeItem(DRAFT_MEDIA_KEY);
+      return;
+    }
+    if (mediaLength > MAX_SESSION_MEDIA_LENGTH) {
+      sessionStorage.removeItem(DRAFT_MEDIA_KEY);
+      setDraftStatus('Текст черновика сохранён; крупные фото нужно будет выбрать заново');
+      return;
+    }
+    const media: DraftMedia = imagePreviews.map((preview, index) => preview ? {
+      dataUrl: preview,
+      name: imageFiles[index]?.name || `draft-image-${index + 1}.jpg`,
+      type: imageFiles[index]?.type || 'image/jpeg',
+    } : null);
+    try {
+      sessionStorage.setItem(DRAFT_MEDIA_KEY, JSON.stringify(media));
+    } catch {
+      sessionStorage.removeItem(DRAFT_MEDIA_KEY);
+      setDraftStatus('Текст черновика сохранён; фото не поместились в сессию');
+    }
+  }, [draftReady, imageFiles, imagePreviews]);
 
   useEffect(() => {
     const preset = typeof router.query.community === 'string' ? Number(router.query.community) : null;
@@ -71,6 +205,10 @@ export default function CreatePlacePage() {
       return client.places.create(formData);
     },
     onSuccess: (response: any) => {
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem(DRAFT_KEY);
+        sessionStorage.removeItem(DRAFT_MEDIA_KEY);
+      }
       queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.PLACES] });
       queryClient.invalidateQueries({ queryKey: [API_ENDPOINTS.COMMUNITIES] });
       const place = response?.data ?? response;
@@ -134,9 +272,34 @@ export default function CreatePlacePage() {
     });
   };
 
+  const saveDraftNow = () => {
+    if (typeof window === 'undefined') return;
+    const values = getValues();
+    const draft: PlaceDraft = {
+      title: values.title || '',
+      description: values.description || '',
+      hashtags: values.hashtags || [],
+      product_id: values.product_id || '',
+      selectedProduct,
+      communityId,
+      location,
+      savedAt: new Date().toISOString(),
+    };
+    try {
+      sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      setDraftStatus('Черновик сохранён в этой сесии');
+    } catch {
+      setDraftStatus('Не удалось сохранить черновик');
+    }
+  };
+
   const onSubmit = (data: PlaceFormData) => {
     setFormError('');
-    if (!isAuthorized) return setFormError('Войдите в аккаунт, чтобы создать Place.');
+    if (!isAuthorized) {
+      rememberAuthReturnPath(router.asPath || '/places/create');
+      openModal('LOGIN_VIEW');
+      return;
+    }
     const title = data.title?.trim();
     if (!title) return setFormError('Введите название Place.');
 
@@ -153,7 +316,17 @@ export default function CreatePlacePage() {
     createPlace.mutate(formData);
   };
 
-  const hashtagValues = watch('hashtags') || [];
+  if (!isAuthorized) {
+    return (
+      <main className="web2-create-place-page">
+        <section className="web2-create-auth-required">
+          <h1>Создание Place</h1>
+          <p>Войдите в SANCAN, чтобы создать и опубликовать плейс.</p>
+          <button type="button" onClick={() => openModal('LOGIN_VIEW')}>Войти</button>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="web2-create-place-page">
@@ -247,6 +420,8 @@ export default function CreatePlacePage() {
         <aside className="web2-create-card web2-create-publish">
           <h2>Публикация</h2>
           <button type="submit" className="web2-create-publish-button" disabled={createPlace.isLoading}>{createPlace.isLoading ? 'Публикуем…' : 'Опубликовать'}</button>
+          <button type="button" className="web2-create-draft-button" onClick={saveDraftNow}><FileText /> Сохранить черновик</button>
+          {draftStatus ? <p className="web2-create-draft-status">{draftStatus}</p> : null}
           <div className="web2-create-status"><i /><div><strong>Готово к публикации</strong><p>{selectedImages.length} фото · {videoPreview ? 1 : 0} видео</p></div></div>
           {selectedCommunity ? <div className="web2-create-summary"><span>Выбранное сообщество</span><strong>{selectedCommunity.name}</strong><small>{Number(selectedCommunity.members_count || 0).toLocaleString('ru-RU')} участников</small></div> : null}
           {selectedProduct ? <div className="web2-create-summary"><span>Связанный товар</span><strong>{selectedProduct.name}</strong></div> : null}

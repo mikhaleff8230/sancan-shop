@@ -7,6 +7,7 @@ import Layout from '@/layouts/_layout';
 import type { NextPageWithLayout } from '@/types';
 import { API_ENDPOINTS } from '@/data/client/endpoints';
 import { getAuthToken } from '@/data/client/token.utils';
+import { consumeAuthReturnPath } from '@/utils/auth-return';
 
 const AuthSuccessPage: NextPageWithLayout = () => {
   const router = useRouter();
@@ -29,8 +30,9 @@ const AuthSuccessPage: NextPageWithLayout = () => {
       });
       
       // Редирект на главную БЕЗ перезагрузки
+      const returnPath = consumeAuthReturnPath() || '/';
       setTimeout(() => {
-        router.push('/');
+        router.push(returnPath);
       }, 1500);
     } else if (yandex_auth === 'success') {
       // Если это успешная авторизация через Яндекс, но токена нет в URL
@@ -49,8 +51,9 @@ const AuthSuccessPage: NextPageWithLayout = () => {
         className: '-mt-10 xs:mt-0',
       });
       
+      const returnPath = consumeAuthReturnPath() || '/';
       setTimeout(() => {
-        router.push('/');
+        router.push(returnPath);
       }, 1500);
     } else {
       // Если нет токена и нет успешной авторизации, редирект на главную

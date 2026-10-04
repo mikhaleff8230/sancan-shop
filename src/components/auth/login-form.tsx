@@ -22,6 +22,7 @@ import AuthTabs from './auth-tabs';
 import { ReactPhone } from '@/components/ui/forms/phone-input';
 import OtpCodeInput from './otp-code-input';
 import { formatRussianPhone, normalizeRussianPhone, phoneHref } from '@/utils/phone';
+import { consumeAuthReturnPath } from '@/utils/auth-return';
 
 const loginValidationSchema = yup.object().shape({
   email: yup.string().email().required(),
@@ -97,7 +98,10 @@ export default function LoginUserForm() {
       });
       
       const returnUrl = localStorage.getItem('returnUrl');
-      if (returnUrl) {
+      const authReturnPath = consumeAuthReturnPath();
+      if (authReturnPath) {
+        router.push(authReturnPath);
+      } else if (returnUrl) {
         router.push('/select-address');
       }
     },
@@ -177,7 +181,10 @@ export default function LoginUserForm() {
       });
       
       const returnUrl = localStorage.getItem('returnUrl');
-      if (returnUrl) {
+      const authReturnPath = consumeAuthReturnPath();
+      if (authReturnPath) {
+        router.push(authReturnPath);
+      } else if (returnUrl) {
         router.push('/select-address');
       }
     },
