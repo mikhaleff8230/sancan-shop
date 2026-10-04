@@ -262,7 +262,7 @@ export default function Header({
             </div>
 
             <nav className="web2-mode-switch hidden shrink-0 lg:grid" aria-label="Раздел SANCAN">
-              <Link href="/" className={cn('web2-mode-link', !isCommerce && 'web2-mode-link-active')}>Плейсы</Link>
+              <Link href="/places" className={cn('web2-mode-link', !isCommerce && 'web2-mode-link-active')}>Плейсы</Link>
               <Link href="/products" className={cn('web2-mode-link', isCommerce && 'web2-mode-link-active')}>Маркет</Link>
             </nav>
 

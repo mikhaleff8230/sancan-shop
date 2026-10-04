@@ -37,7 +37,7 @@ export default function BottomNavigation() {
         <Button
           variant="icon"
           aria-label="Плейсы"
-          onClick={() => router.push(routes.home)}
+          onClick={() => router.push('/places')}
           className={itemClass(!isMarket)}
         >
           <HomeIcon className="h-5 w-5" />
