@@ -25,6 +25,44 @@ interface CommerceProductListingProps {
   categoryId?: number;
   activeCategorySlug?: string;
   filters?: ListingFilters;
+  groupByCategories?: boolean;
+}
+
+function CategoryProductsSection({ category }: { category: Category }) {
+  const [total, setTotal] = useState<number | null>(null);
+
+  return (
+    <section className={total === 0 ? 'hidden' : 'web2-home-category-section'}>
+      <div className="mb-5 flex items-end justify-between gap-4 sm:mb-6">
+        <div>
+          <p className="web2-eyebrow">НОВИНКИ</p>
+          <h2 className="mt-1 text-[24px] font-extrabold leading-tight tracking-[-0.02em] text-[#111827] sm:text-[30px]">
+            {category.name}
+          </h2>
+        </div>
+        <Link
+          href={`/categories/${category.slug}`}
+          className="shrink-0 text-[13px] font-semibold text-brand transition-opacity hover:opacity-70 sm:text-sm"
+        >
+          Смотреть все →
+        </Link>
+      </div>
+
+      <DynamicProductGrid
+        limit={12}
+        filters={{
+          categories: category.slug,
+          orderBy: 'created_at',
+          sortedBy: 'desc',
+        }}
+        showLoadMore={false}
+        showSummary={false}
+        dense
+        onMetaChange={setTotal}
+        className="px-0 pt-0"
+      />
+    </section>
+  );
 }
 
 function CategoryChip({ category, active }: { category: Category; active: boolean }) {
@@ -59,6 +97,7 @@ export default function CommerceProductListing({
   categoryId,
   activeCategorySlug,
   filters = {},
+  groupByCategories = false,
 }: CommerceProductListingProps) {
   const [sortParams, setSortParams] = useState({ orderBy: 'orders_count', sortedBy: 'desc' });
   const [attributeFilters, setAttributeFilters] = useState<Record<string, string[]>>({});
@@ -91,6 +130,15 @@ export default function CommerceProductListing({
           </Link>
         </nav>
       ) : null}
+
+      {groupByCategories ? (
+        <div className="web2-home-category-sections">
+          {categories.map((category) => (
+            <CategoryProductsSection key={category.id} category={category} />
+          ))}
+        </div>
+      ) : (
+        <>
 
       <ProductFilterBar
         categoryId={categoryId}
@@ -129,6 +177,8 @@ export default function CommerceProductListing({
         onMetaChange={setTotal}
         className="px-0 pt-0"
       />
+        </>
+      )}
     </main>
   );
 }

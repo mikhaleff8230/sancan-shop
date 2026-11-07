@@ -539,14 +539,14 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
 		  
           {/* Десктоп/планшет: широкое меню */}
           {/* Полностью скрываем на мобильных устройствах, показываем только на sm и выше */}
-          <div className="absolute left-0 top-full z-[120] mt-2 h-[540px] w-[min(1360px,calc(100vw-40px))] animate-fade-in overflow-hidden rounded-2xl border border-[#e3e7ef] bg-white shadow-[0_22px_60px_rgba(15,23,42,0.16)] !hidden sm:!flex">
+          <div className="web2-catalog-mega-menu z-[120] overflow-hidden border-y border-[#dfe8f5] shadow-[0_24px_64px_rgba(41,67,110,0.14)] !hidden sm:!flex">
             {/* Левая панель */}
-            <div className="flex h-full w-[286px] shrink-0 flex-col overflow-y-auto border-r border-[#e8edf5] bg-[#f7f9fc] px-3 py-3 transition-all duration-200">
+            <div className="flex h-full w-[286px] shrink-0 flex-col overflow-hidden border-r border-[#dfe8f5] bg-white/45 px-3 py-3 transition-all duration-200">
               {categoriesData.map((cat) => (
                 <Link prefetch={false}
                   key={cat.id}
                   href={`/categories/${cat.slug}`}
-                  className={`relative flex min-h-[44px] cursor-pointer items-center gap-3 rounded-xl px-4 py-2 text-[15px] font-medium leading-5 transition-all duration-150 ${activeCategory === cat.id ? 'bg-[#f1e6ff] text-brand shadow-sm' : 'text-[#1f2937] hover:bg-white hover:text-brand'}`}
+                  className={`relative flex min-h-[43px] cursor-pointer items-center gap-3 rounded-xl px-4 py-2 text-[14px] font-normal leading-5 transition-all duration-150 ${activeCategory === cat.id ? 'bg-[#eee8ff]/90 text-brand shadow-sm' : 'text-[#344054] hover:bg-white/80 hover:text-brand'}`}
                   onMouseEnter={() => setActiveCategory(String(cat.id))}
                   onClick={handleLinkClick}
                 >
@@ -560,27 +560,27 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
               ))}
             </div>
             {/* Центральная часть с колонками */}
-            <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-y-auto bg-white px-7 py-6">
+            <div className="relative flex h-full min-w-0 flex-1 flex-col overflow-hidden bg-white/65 px-8 py-6 backdrop-blur-[2px]">
               {/* Название родительской категории */}
               {activeCatObj && (
-                <div className="mb-6 text-[26px] font-extrabold leading-tight tracking-[-0.01em] text-[#111827]">{activeCatObj.name}</div>
+                <div className="mb-5 text-[25px] font-semibold leading-tight tracking-[-0.015em] text-[#24324a]">{activeCatObj.name}</div>
               )}
               <div className="grid grid-cols-3 gap-x-14 gap-y-2">
                 {activeCatObj ? (
                   activeCatObj.columns.map((col, idx) => (
                     <div key={idx} className="min-w-0">
                       {col.sections.map((section: any, i: number) => (
-                        <div key={i} className="mb-5 break-inside-avoid">
+                        <div key={i} className="mb-4 break-inside-avoid">
                           {section.slug && section.slug !== '#' ? (
                             <Link prefetch={false}
                               href={`/categories/${section.slug}`}
-                              className="mb-2 block cursor-pointer text-[16px] font-bold leading-5 text-[#111827] transition-colors hover:text-brand"
+                              className="mb-1.5 block cursor-pointer text-[15px] font-medium leading-5 text-[#27354d] transition-colors hover:text-brand"
                               onClick={handleLinkClick}
                             >
                               {section.title}
                             </Link>
                           ) : (
-                            <div className="mb-2 text-[16px] font-bold leading-5 text-[#111827]">{section.title}</div>
+                            <div className="mb-1.5 text-[15px] font-medium leading-5 text-[#27354d]">{section.title}</div>
                           )}
                           {section.items && section.items.length > 0 && (
                             <ul>
@@ -588,7 +588,7 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
                                 <li key={j}>
                                   <Link prefetch={false}
                                     href={`/categories/${item.slug}`}
-                                    className="block cursor-pointer py-1 text-[14px] font-medium leading-5 text-[#667085] transition-colors hover:text-brand"
+                                    className="block cursor-pointer py-0.5 text-[14px] font-normal leading-5 text-[#69778e] transition-colors hover:text-brand"
                                     onClick={handleLinkClick}
                                   >
                                     {item.name}
@@ -606,8 +606,8 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
                 )}
               </div>
             </div>
-            <aside className="hidden h-full w-[254px] shrink-0 border-l border-[#edf0f5] bg-[#fbfaff] p-4 xl:block">
-              <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-white p-3 shadow-[0_8px_28px_rgba(72,48,110,0.08)]">
+            <aside className="hidden h-full w-[254px] shrink-0 border-l border-[#dfe8f5] bg-white/35 p-4 xl:block">
+              <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-white/85 p-3 shadow-[0_8px_28px_rgba(72,48,110,0.08)] backdrop-blur-sm">
                 <div className="relative h-[250px] overflow-hidden rounded-xl bg-gradient-to-br from-[#f5eefc] to-[#ece7df]">
                   {activeCatObj?.image && !promoImageFailed ? (
                     <Image
@@ -623,7 +623,7 @@ export default function DropdownCategoriesMenu({ compact = false }: { compact?: 
                   )}
                 </div>
                 <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">Вдохновение</p>
-                <h3 className="mt-1 text-xl font-bold leading-tight text-[#172033]">
+                <h3 className="mt-1 text-xl font-semibold leading-tight text-[#27354d]">
                   {activeCatObj ? `Лучшее в «${activeCatObj.name}»` : 'Уникальные вещи для вашего дома'}
                 </h3>
                 <p className="mt-2 line-clamp-3 text-sm leading-5 text-slate-500">

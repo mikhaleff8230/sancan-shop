@@ -288,6 +288,73 @@
     margin-inline: auto;
     padding-inline: clamp(16px, 2vw, 30px);
   }
+
+  .web2-desktop-header {
+    border-bottom: 0;
+    background: linear-gradient(180deg, rgba(239, 244, 255, 0.96) 0%, rgba(248, 250, 255, 0.97) 38%, rgba(255, 255, 255, 0.98) 100%);
+  }
+
+  .web2-header-frame {
+    border-right: 1px solid #e3e8f2;
+    border-left: 1px solid #e3e8f2;
+    background: linear-gradient(180deg, rgba(244, 247, 255, 0.72), rgba(255, 255, 255, 0.82));
+  }
+
+  .web2-header-strip-frame {
+    width: 100%;
+    max-width: 1720px;
+    margin-inline: auto;
+  }
+
+  .web2-header-strip-banner {
+    min-height: 58px;
+    border-radius: 0 0 26px 26px;
+    box-shadow: 0 8px 22px rgba(44, 67, 112, 0.08);
+  }
+
+  .web2-image-hero-banner {
+    min-height: 250px;
+    aspect-ratio: 4.8 / 1;
+    max-height: 380px;
+  }
+
+  .web2-home-banner-frame {
+    width: 100%;
+    max-width: 1720px;
+    margin-inline: auto;
+  }
+
+  /* Desktop catalog dropdown follows the same 1720px grid as the header
+     and homepage banners instead of the legacy fixed menu width. */
+  .web2-catalog-mega-menu {
+    position: fixed;
+    top: 72px;
+    left: 0;
+    right: 0;
+    width: 100vw;
+    height: min(760px, calc(100vh - 72px));
+    padding-inline: max(20px, calc((100vw - 1720px) / 2 + 30px));
+    margin-top: 0;
+    background-color: #f7faff;
+    background-image:
+      radial-gradient(circle at 14% 10%, rgba(173, 214, 255, 0.22), transparent 30%),
+      radial-gradient(circle at 86% 92%, rgba(198, 178, 255, 0.18), transparent 34%),
+      linear-gradient(115deg, transparent 0 22%, rgba(83, 151, 235, 0.075) 22.1% 22.25%, transparent 22.35% 57%, rgba(103, 164, 238, 0.06) 57.1% 57.25%, transparent 57.35%),
+      linear-gradient(180deg, rgba(251, 253, 255, 0.98), rgba(241, 247, 255, 0.98));
+    animation: web2-menu-slide-down 260ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+    transform-origin: top center;
+  }
+
+  @keyframes web2-menu-slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-16px) scaleY(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scaleY(1);
+    }
+  }
   .web2-discovery-surface {
     width: 100%;
     max-width: 1720px;

@@ -14,12 +14,9 @@ import Hamburger from '@/components/ui/hamburger';
 import { useIsMounted } from '@/lib/hooks/use-is-mounted';
 import { useSwapBodyClassOnScrollDirection } from '@/lib/hooks/use-swap-body-class';
 import { useDynamicHeader } from '@/lib/hooks/use-dynamic-header';
-import { useDrawer } from '@/components/drawer-views/context';
 import { useModalAction } from '@/components/modal-views/context';
-import { rememberAuthReturnPath } from '@/utils/auth-return';
 import Button from '@/components/ui/button';
-import LanguageSwitcher from '@/components/ui/language-switcher';
-import { Bell, Clock3, Heart, MapPin, MessageCircle, Plus } from 'lucide-react';
+import { Heart, MapPin, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from 'next-i18next';
 import Logo from '@/components/ui/logo';
@@ -135,16 +132,13 @@ function HeaderLocation({ compact = false }: { compact?: boolean }) {
     <div
       className={cn(
         'items-center gap-2 rounded-xl bg-light-200 px-3 py-2 text-ozon-text transition-colors hover:bg-brand-50',
-        compact ? 'flex min-w-[44px]' : 'hidden min-w-[220px] lg:flex'
+        compact ? 'flex min-w-[44px]' : 'hidden max-w-[150px] lg:flex'
       )}
     >
       <MapPin className="h-5 w-5 shrink-0 text-ozon-text" />
       {!compact && (
-        <div className="min-w-0">
+        <div className="min-w-0 truncate text-[13px] font-medium [&_button]:!max-w-[112px] [&_button]:!truncate [&_button]:!p-0 [&_button]:!font-medium [&_button]:hover:!bg-transparent">
           <LocationWithModal className="!p-0 hover:!bg-transparent" />
-          <div className="truncate text-xs font-medium text-ozon-muted">
-            Как можно скорее
-          </div>
         </div>
       )}
     </div>
@@ -164,18 +158,6 @@ export default function Header({
 }: HeaderProps) {
   const router = useRouter();
   const { asPath } = router;
-  const { openDrawer } = useDrawer();
-  const { openModal } = useModalAction();
-  const { isAuthorized } = useMe();
-
-  const handleCreatePlace = () => {
-    if (!isAuthorized) {
-      rememberAuthReturnPath('/places/create');
-      openModal('LOGIN_VIEW');
-      return;
-    }
-    router.push('/places/create');
-  };
   
   
   useSwapBodyClassOnScrollDirection();
@@ -183,39 +165,6 @@ export default function Header({
   // Используем динамический хедер только для мобильных устройств
   const { isCompact, isVisible } = useDynamicHeader();
   
-  const isCommerce =
-    asPath === '/products' ||
-    asPath.startsWith('/products?') ||
-    asPath.startsWith('/element/') ||
-    asPath.startsWith('/categories/') ||
-    asPath.startsWith('/shops') ||
-    asPath.startsWith('/popular-products') ||
-    asPath.startsWith('/cart') ||
-    asPath.startsWith('/checkout') ||
-    asPath.startsWith('/wishlists');
-  const isPlacesSurface =
-    asPath === '/' ||
-    asPath.startsWith('/?') ||
-    asPath.startsWith('/following') ||
-    asPath.startsWith('/places') ||
-    asPath.startsWith('/place/') ||
-    asPath.startsWith('/communities') ||
-    asPath.startsWith('/community/');
-  const isMultiLangEnable =
-    process.env.NEXT_PUBLIC_ENABLE_MULTI_LANG === 'true' &&
-    !!process.env.NEXT_PUBLIC_AVAILABLE_LANGUAGES;
-
-  // Функция для открытия мобильного меню (сайдбара)
-  const handleMobileMenuClick = () => {
-    // На мобильных устройствах открываем drawer с меню
-    if (typeof window !== 'undefined' && window.innerWidth < 640) {
-      openDrawer('MOBILE_MENU');
-    } else {
-      // На десктопе используем обычный toggle сайдбара
-      onClickHamburger?.();
-    }
-  };
-
   // Обработка изменения маршрута для исправления "ghost header" (только для мобильных)
   useEffect(() => {
     // Проверяем, что мы на мобильном устройстве
@@ -259,72 +208,40 @@ export default function Header({
   
   return (
     <>
-      <header className="app-header sticky top-0 z-50 hidden w-full border-b border-slate-200 bg-white/95 backdrop-blur sm:block">
-        <div className="web2-header-surface">
-          <div className="flex h-[64px] items-center gap-6">
+      <header className="app-header web2-desktop-header sticky top-0 z-50 hidden w-full backdrop-blur sm:block">
+        <div className="web2-header-surface web2-header-frame">
+          <div className="flex h-[72px] items-center gap-3 xl:gap-4">
             <div className="flex shrink-0 items-center gap-2">
               {showHamburger && (
                 <Hamburger isToggle={isCollapse} onClick={onClickHamburger} className="hidden lg:flex" />
               )}
-              <Logo className="h-10 w-[142px]" />
+              <Logo className="h-10 w-[132px]" />
+              <div className="hidden shrink-0 sm:block"><DropdownCategoriesMenu /></div>
             </div>
 
-            <div className="mx-auto hidden min-w-[320px] max-w-[900px] flex-1 md:block">
-              <SearchInput className="web2-global-search" placeholder="Найти людей, плейсы и вещи..." />
+            <div className="hidden min-w-[280px] flex-1 md:block">
+              <SearchInput className="web2-global-search" placeholder="Найти товары, магазины и вещи..." />
             </div>
-
-            <nav className="web2-mode-switch hidden shrink-0 lg:grid" aria-label="Раздел SANCAN">
-              <Link href="/places" className={cn('web2-mode-link', !isCommerce && 'web2-mode-link-active')}>Плейсы</Link>
-              <Link href="/products" className={cn('web2-mode-link', isCommerce && 'web2-mode-link-active')}>Маркет</Link>
-            </nav>
 
             <div className="ml-auto flex shrink-0 items-center gap-1.5">
-              <button type="button" className="web2-icon-button" aria-label="Уведомления">
-                <Bell className="h-5 w-5" />
-              </button>
-              <button type="button" onClick={() => router.push(routes.chat)} className="web2-icon-button" aria-label="Сообщения">
-                <MessageCircle className="h-5 w-5" />
-              </button>
-              <button type="button" onClick={handleCreatePlace} className="web2-create-button" aria-label="Создать плейс">
-                <Plus className="h-5 w-5" />
-              </button>
-              {isMultiLangEnable && <LanguageSwitcher />}
+              <HeaderLocation />
+              <Link href={routes.wishlists} className="hidden h-10 items-center gap-2 rounded-xl px-2.5 text-[13px] font-medium text-slate-700 transition hover:bg-[#f5f1ff] hover:text-[#7b3dff] xl:flex">
+                <Heart className="h-5 w-5" />Избранное
+              </Link>
+              <Link href={routes.chat} className="hidden h-10 items-center gap-2 rounded-xl px-2.5 text-[13px] font-medium text-slate-700 transition hover:bg-[#f5f1ff] hover:text-[#7b3dff] xl:flex">
+                <MessageCircle className="h-5 w-5" />Чат
+              </Link>
+              <span className="mx-1 hidden h-7 w-px bg-slate-200 xl:block" aria-hidden="true" />
+              {asPath !== routes.checkout && (
+                <div className="web2-commerce-cart hidden sm:flex">
+                  <CartButton className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-800" />
+                  <span>Корзина</span>
+                </div>
+              )}
               <LoginMenu />
             </div>
           </div>
-
         </div>
-
-        {isPlacesSurface && !isCommerce && (
-          <div className="border-t border-slate-100 bg-white">
-            <div className="web2-section-nav">
-              <nav className="flex items-center gap-7" aria-label="Навигация по плейсам">
-                <Link href="/" className={cn('web2-section-link', (asPath === '/' || asPath.startsWith('/?')) && 'web2-section-link-active')}>Интересное</Link>
-                <Link href="/following" className={cn('web2-section-link', asPath.startsWith('/following') && 'web2-section-link-active')}>Подписки</Link>
-              </nav>
-            </div>
-          </div>
-        )}
-
-        {isCommerce && (
-          <div className="border-t border-slate-100 bg-white">
-            <div className="web2-commerce-nav">
-              <div className="shrink-0"><DropdownCategoriesMenu /></div>
-              <nav className="flex min-w-0 items-center gap-1 overflow-x-auto" aria-label="Навигация по товарам">
-                <Link href="/products" className={cn('web2-commerce-link', asPath.startsWith('/products') && !asPath.includes('sort=new') && 'web2-commerce-link-active')}>Товары</Link>
-                <Link href="/shops" className={cn('web2-commerce-link', asPath.startsWith('/shops') && 'web2-commerce-link-active')}>Магазины</Link>
-                <Link href="/products?sort=new" className={cn('web2-commerce-link', asPath.includes('sort=new') && 'web2-commerce-link-active')}>Новые товары</Link>
-                <Link href="/popular-products" className={cn('web2-commerce-link', asPath.startsWith('/popular-products') && 'web2-commerce-link-active')}>Популярные товары</Link>
-              </nav>
-              <div className="ml-auto hidden shrink-0 items-center gap-1 2xl:flex">
-                <HeaderLocation compact />
-                <Link href="/wishlists" className="web2-commerce-icon-link"><Heart className="h-4 w-4" />Избранное</Link>
-                <span className="web2-commerce-icon-link"><Clock3 className="h-4 w-4" />Недавно</span>
-                {asPath !== routes.checkout && <div className="web2-commerce-cart"><CartButton className="flex h-10 w-10 items-center justify-center rounded-lg text-slate-800" /><span>Корзина</span></div>}
-              </div>
-            </div>
-          </div>
-        )}
       </header>
 
       <header className={cn('app-header sticky top-0 z-50 border-b border-slate-200 bg-white transition-transform sm:hidden', !isVisible && '-translate-y-full')}>
@@ -333,11 +250,11 @@ export default function Header({
             <Logo className="h-9 w-[126px]" />
             <div className="flex items-center gap-1">
               <button type="button" onClick={() => router.push(routes.chat)} className="web2-icon-button" aria-label="Сообщения"><MessageCircle className="h-5 w-5" /></button>
-              <button type="button" onClick={handleCreatePlace} className="web2-create-button" aria-label="Создать"><Plus className="h-5 w-5" /></button>
+              {asPath !== routes.checkout && <CartButton className="flex h-10 w-10 items-center justify-center rounded-full text-slate-800" />}
               <LoginMenu />
             </div>
           </div>
-          {!isCompact && <SearchInput className="web2-global-search mt-2" placeholder="Найти людей, плейсы и вещи..." />}
+          {!isCompact && <SearchInput className="web2-global-search mt-2" placeholder="Найти товары, магазины и вещи..." />}
         </div>
       </header>
     </>

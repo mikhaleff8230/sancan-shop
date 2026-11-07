@@ -72,7 +72,9 @@ const apiRoot = (
   process.env.NEXT_PUBLIC_REST_API_ENDPOINT || 'https://api.sancan.ru'
 ).replace(/\/api\/?$/, '');
 function background(c: Record<string, any>) {
-  if (c.background_type === 'image' && c.background_image)
+  // An uploaded image always wins, so replacing a banner in the admin panel
+  // does not require switching a separate background mode.
+  if (c.background_image)
     return {
       backgroundImage: `url(${
         c.background_image.startsWith('/')
@@ -90,25 +92,21 @@ function background(c: Record<string, any>) {
     };
   return { background: c.background_color || '#ffe72e' };
 }
-function Action({
-  href,
-  children,
-  style,
-  className,
-}: {
-  href?: string;
-  children: any;
-  style: any;
-  className: string;
-}) {
-  return href && href !== '#' ? (
-    <Link href={href} style={style} className={className}>
-      {children}
+
+function stripBackground(c: Record<string, any>) {
+  if (c.background_image) return background(c);
+  if (c.background_type === 'gradient')
+    return {
+      background: `linear-gradient(180deg, ${c.gradient_from}, ${c.gradient_to})`,
+    };
+  return background(c);
+}
+function BannerClickTarget({ href, label }: { href?: string; label: string }) {
+  if (!href || href === '#') return null;
+  return (
+    <Link href={href} className="absolute inset-0 z-[2]" aria-label={label}>
+      <span className="sr-only">{label}</span>
     </Link>
-  ) : (
-    <span style={style} className={className}>
-      {children}
-    </span>
   );
 }
 
@@ -150,69 +148,39 @@ export default function HomepageBanners() {
         <div className="px-3 pt-3 sm:hidden">
           <div
             style={background(m)}
-            className="relative min-h-[154px] overflow-hidden rounded-[24px] p-5 shadow-sm"
+            className="relative min-h-[154px] overflow-hidden rounded-[24px] bg-cover bg-center shadow-sm"
           >
-            <div className="from-black/65 absolute inset-0 bg-gradient-to-r via-black/25 to-transparent" />
-            <div className="relative z-[1] flex min-h-[114px] max-w-[62%] flex-col items-start justify-center">
-              <h1
-                style={{ color: m.title_color }}
-                className="text-[24px] font-extrabold leading-[1.05]"
-              >
-                {m.title}
-              </h1>
-              {m.cta_text && (
-                <Action
-                  href={m.cta_url}
-                  style={{ color: m.cta_color, background: m.cta_background }}
-                  className="mt-4 inline-flex rounded-lg px-3 py-2 text-sm font-bold"
-                >
-                  {m.cta_text} ›
-                </Action>
-              )}
-            </div>
+            <BannerClickTarget href={m.cta_url} label="Открыть баннер" />
           </div>
         </div>
       )}
       {s && (
-        <div className="sancan-ozon-container hidden pt-3 sm:block">
+        <div className="web2-header-strip-frame hidden sm:block">
           <div
-            style={background(s)}
-            className="relative flex min-h-[52px] items-center justify-center overflow-hidden rounded-[18px] px-4 text-center shadow-sm"
+            style={stripBackground(s)}
+            className="web2-header-strip-banner relative overflow-hidden bg-cover bg-center"
           >
-            <span
-              style={{ color: s.text_color }}
-              className="relative text-sm font-extrabold uppercase tracking-wide md:text-lg"
-            >
-              {s.text}
-            </span>
-            {s.button_text && (
-              <Action
-                href={s.button_url}
-                style={{
-                  color: s.button_color,
-                  background: s.button_background,
-                }}
-                className="relative ml-3 hidden rounded-full px-4 py-2 text-sm font-bold md:inline-flex"
-              >
-                {s.button_text}
-              </Action>
-            )}
+            <BannerClickTarget href={s.button_url} label="Открыть промобаннер" />
           </div>
         </div>
       )}
       {h && (
-        <div className="sancan-ozon-container hidden pt-3 sm:block">
-          <div className="relative grid w-full overflow-hidden rounded-[22px] shadow-sm">
+        <div className="web2-home-banner-frame hidden pt-4 sm:block">
+          <div className="relative grid w-full overflow-hidden rounded-[24px] shadow-sm">
             <AnimatePresence initial={false}>
               <MotionDiv
                 key={heroes[hero % Math.max(heroes.length, 1)]?.id ?? hero}
                 style={background(h)}
-                className="relative col-start-1 row-start-1 min-h-[210px] w-full overflow-hidden px-6 py-7 md:min-h-[270px] md:px-12 lg:px-16"
+                className="web2-image-hero-banner relative col-start-1 row-start-1 w-full overflow-hidden bg-cover bg-center"
                 initial={{ x: '100%' }}
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
               >
+                <BannerClickTarget
+                  href={h.button_one_url || h.button_two_url}
+                  label="Открыть баннер"
+                />
                 {heroes.length > 1 && (
                   <>
                     <button
@@ -235,76 +203,6 @@ export default function HomepageBanners() {
                     </button>
                   </>
                 )}
-                <div className="relative z-[1] grid gap-6 md:grid-cols-[1fr_380px] md:items-center">
-                  <div>
-                    {h.eyebrow && (
-                      <div
-                        style={{
-                          color: h.eyebrow_color,
-                          background: h.eyebrow_background,
-                        }}
-                        className="mb-5 inline-flex rounded-[28px] px-5 py-3 text-lg font-black shadow-sm md:text-2xl"
-                      >
-                        {h.eyebrow}
-                      </div>
-                    )}
-                    <h1
-                      style={{ color: h.title_color }}
-                      className="max-w-[620px] text-4xl font-black leading-[0.95] tracking-[-0.02em] md:text-6xl"
-                    >
-                      {h.title}
-                    </h1>
-                    <p
-                      style={{ color: h.description_color }}
-                      className="mt-5 max-w-[520px] text-base font-semibold md:text-lg"
-                    >
-                      {h.description}
-                    </p>
-                    <div className="mt-6 flex flex-wrap gap-3">
-                      {h.button_one_text && (
-                        <Action
-                          href={h.button_one_url}
-                          style={{
-                            color: h.button_one_color,
-                            background: h.button_one_background,
-                          }}
-                          className="rounded-2xl px-5 py-3 text-sm font-black shadow-sm"
-                        >
-                          {h.button_one_text}
-                        </Action>
-                      )}
-                      {h.button_two_text && (
-                        <Action
-                          href={h.button_two_url}
-                          style={{
-                            color: h.button_two_color,
-                            background: h.button_two_background,
-                          }}
-                          className="rounded-2xl px-5 py-3 text-sm font-black shadow-sm"
-                        >
-                          {h.button_two_text}
-                        </Action>
-                      )}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      color: h.card_text_color,
-                      background: h.card_background,
-                    }}
-                    className="relative hidden h-[210px] rounded-[32px] p-6 shadow-[0_20px_50px_rgba(91,58,255,0.28)] md:block"
-                  >
-                    <div className="absolute right-7 top-8 rotate-6 rounded-2xl bg-white px-5 py-4 text-4xl font-black text-ozon-pink shadow-lg">
-                      {h.card_badge}
-                    </div>
-                    <div className="absolute bottom-8 left-8 max-w-[240px] text-3xl font-black leading-tight">
-                      {h.card_text}
-                    </div>
-                    <div className="absolute bottom-6 right-7 text-2xl font-bold opacity-60">
-                      {h.card_note}
-                    </div>
-                  </div>
-                </div>
                 {heroes.length > 1 && (
                   <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-2">
                     {heroes.map((_, i) => (
