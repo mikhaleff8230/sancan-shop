@@ -22,3 +22,18 @@ export function consumeAuthReturnPath() {
   }
 }
 
+/**
+ * Compatibility for flows that remembered their return page before the
+ * sessionStorage-based auth return path was introduced.
+ */
+export function consumeLegacyReturnUrl() {
+  if (typeof window === 'undefined') return null;
+  try {
+    const path = localStorage.getItem('returnUrl');
+    localStorage.removeItem('returnUrl');
+    return path && isSafeInternalPath(path) ? path : null;
+  } catch {
+    return null;
+  }
+}
+

@@ -11,6 +11,7 @@ import { getAuthToken } from '@/data/client/token.utils';
 import { useRouter } from 'next/router';
 import { useMe } from '@/data/user';
 import { formatRussianPhone, normalizeRussianPhone } from '@/utils/phone';
+import { consumeLegacyReturnUrl } from '@/utils/auth-return';
 
 // Ключи для хранения данных в localStorage
 const PHONE_NUMBER_KEY = 'saved_phone_number';
@@ -105,9 +106,9 @@ export default function PinLoginForm() {
         });
       });
       
-      const returnUrl = localStorage.getItem('returnUrl');
-      if (returnUrl) {
-        router.push('/select-address');
+      const returnPath = consumeLegacyReturnUrl();
+      if (returnPath) {
+        router.push(returnPath);
       }
     },
     onError: (error: any) => {
