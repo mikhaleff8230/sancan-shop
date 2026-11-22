@@ -16,6 +16,7 @@ import ProductDeliveryBlock from '@/components/product/product-delivery-block';
 import AverageRatings from '@/components/review/average-ratings';
 import ProductReviews from '@/components/review/product-reviews';
 import ProductMobileBuyBar from '@/components/product/product-mobile-buybar';
+import VariableProductSelector from '@/components/product/variable-product-selector';
 import { TitleSeo } from '@/components/seo/title-seo';
 import Image from '@/components/ui/image';
 import routes from '@/config/routes';
@@ -276,6 +277,7 @@ function ProductDescription({ description }: { description: string }) {
 const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServerSideProps>> = ({ product, meta }) => {
   const { t } = useTranslation('common');
   const router = useRouter();
+  const [selectedVariation, setSelectedVariation] = useState<any | null>(null);
   const [directSbpAvailable, setDirectSbpAvailable] = useState(false);
   useEffect(() => {
     if (!product?.id) return;
@@ -338,12 +340,38 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
     images = [],
   } = product || {};
 
+  const purchasableProduct = product?.product_type === 'variable'
+    ? {
+        ...product,
+        name: selectedVariation ? `${name} — ${selectedVariation.title}` : name,
+        price: selectedVariation?.price ?? price,
+        sale_price: selectedVariation?.sale_price ?? null,
+        quantity: selectedVariation?.quantity ?? 0,
+        image: selectedVariation?.image || product?.image,
+        variation_option_id: selectedVariation?.id,
+        variation_title: selectedVariation?.title,
+        variation_options_snapshot: selectedVariation?.options,
+        requires_variation_selection: !selectedVariation,
+      }
+    : product;
+
   // Используем images если есть, иначе gallery
   const productImages = images && Array.isArray(images) && images.length > 0 
     ? images 
     : (gallery && Array.isArray(gallery) ? gallery : []);
   
   const previews = getPreviews(productImages, image);
+  const selectedVariationImage = selectedVariation?.image;
+  const displayPreviews = selectedVariationImage
+    ? [
+        selectedVariationImage,
+        ...previews.filter(
+          (preview: any) =>
+            (preview?.original || preview?.thumbnail || preview?.url) !==
+            (selectedVariationImage?.original || selectedVariationImage?.thumbnail || selectedVariationImage?.url)
+        ),
+      ]
+    : previews;
   const descriptionMedia = previews[0]?.original || previews[0]?.url || previews[0]?.thumbnail || '';
   
   // Проверяем, нужно ли показывать специальную страницу для черновика/архива
@@ -533,8 +561,8 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                   className="lg:sticky lg:top-[92px] lg:self-start"
                 >
                   <ProductImageSlider 
-                    product={product}
-                    images={previews}
+                    product={purchasableProduct}
+                    images={displayPreviews}
                     className="sancan-ozon-card p-3"
                   />
                 </motion.div>
@@ -587,6 +615,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                   </div>
 
                   {/* Варианты товара (если товар в группе) */}
+                  <VariableProductSelector product={product} onChange={setSelectedVariation} />
                   <ProductVariationsErrorBoundary>
                     <GroupProductVariations product={product} />
                   </ProductVariationsErrorBoundary>
@@ -600,9 +629,9 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
                 >
                   {/* Блок с ценой */}
                   <ProductPriceBlock 
-                    price={price}
-                    sale_price={sale_price}
-                    product={product}
+                    price={purchasableProduct?.price ?? price}
+                    sale_price={purchasableProduct?.sale_price ?? sale_price}
+                    product={purchasableProduct}
                   />
                   
                   {/* Блок с информацией о доставке */}
@@ -700,7 +729,7 @@ const ProductPage: NextPageWithLayout<InferGetServerSidePropsType<typeof getServ
         </motion.div>
         
         {/* Мобильная фиксированная панель */}
-        <ProductMobileBuyBar product={product} />
+        <ProductMobileBuyBar product={purchasableProduct} />
       </div>
     </>
   );

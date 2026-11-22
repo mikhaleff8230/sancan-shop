@@ -173,7 +173,8 @@ export default function CartCheckout({ name, email, phone, address, note, clearC
     const orderPayload: any = {
       amount,
       products: items.map((item: any) => ({
-        product_id: item.id,
+        product_id: item.product_id ?? item.id,
+        ...(item.variation_option_id ? { variation_option_id: item.variation_option_id } : {}),
         order_quantity: item.quantity,
         unit_price: item.price,
       subtotal: item.price * item.quantity,

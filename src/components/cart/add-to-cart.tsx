@@ -39,14 +39,18 @@ export default function AddToCart({
 
   useEffect(() => {
     if (item?.payment_method !== 'site_payment') return;
-    const cartItem = getItemFromCart(item?.id);
     const freshItem = generateCartItem(item);
+    const cartItem = getItemFromCart(freshItem.id);
     if (cartItem && (cartItem.price !== freshItem.price || cartItem.payment_method !== freshItem.payment_method)) {
-      updateItemInCart(item.id, freshItem);
+      updateItemInCart(freshItem.id, freshItem);
     }
-  }, [item?.id, item?.price, item?.sale_price, item?.payment_method, getItemFromCart, updateItemInCart]);
+  }, [item?.id, (item as any)?.variation_option_id, item?.price, item?.sale_price, item?.payment_method, getItemFromCart, updateItemInCart]);
 
   function handleAddToCart() {
+    if ((item as any)?.requires_variation_selection) {
+      toast.error('Выберите размер или другую вариацию товара');
+      return;
+    }
     setAddToCartLoader(true);
     setTimeout(() => {
       setAddToCartLoader(false);
@@ -78,7 +82,7 @@ export default function AddToCart({
           : 'pointer-events-auto cursor-pointer',
         className
       )}
-      disabled={isInStock(item?.id)}
+      disabled={Boolean((item as any)?.requires_variation_selection) || isInStock(generateCartItem(item).id)}
       aria-label={ariaLabel}
     >
       {children ?? t('text-add-to-cart')}

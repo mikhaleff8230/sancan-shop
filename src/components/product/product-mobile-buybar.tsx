@@ -43,6 +43,10 @@ export default function ProductMobileBuyBar({ product }: Props) {
   );
 
   function handleAddToCart() {
+    if ((product as any)?.requires_variation_selection) {
+      toast.error('Выберите размер или другую вариацию товара');
+      return;
+    }
     setAddToCartLoader(true);
     setTimeout(() => {
       setAddToCartLoader(false);
@@ -59,7 +63,7 @@ export default function ProductMobileBuyBar({ product }: Props) {
   }
 
   const isLoading = addToCartLoader || isDownloading;
-  const disabled = isInStock(product?.id);
+  const disabled = Boolean((product as any)?.requires_variation_selection) || isInStock(generateCartItem(product).id);
 
   return (
     <div className="fixed bottom-[56px] left-0 right-0 z-40 border-t border-ozon-border bg-white/95 shadow-[0_-10px_28px_rgba(23,33,43,0.12)] backdrop-blur-sm xs:bottom-[72px] sm:bottom-0 lg:hidden">

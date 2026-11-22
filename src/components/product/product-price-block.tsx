@@ -116,6 +116,14 @@ export default function ProductPriceBlock({
 
   useEffect(() => {
     if (!product?.id) return;
+    // The direct second-life/SBP order endpoint currently accepts only a Product ID
+    // and cannot preserve or validate a variable SKU. Keep it unavailable here until
+    // that endpoint gains variation_option_id support.
+    if ((product as any)?.product_type === 'variable') {
+      setDirectSbpAvailable(false);
+      setSitePaymentPrice(currentPrice);
+      return;
+    }
     client.secondLife.paymentOptions(product.id).then((options:any) => {
       setDirectSbpAvailable(Boolean(options?.direct_sbp?.available));
       setCommissionRate(Number(options?.site_payment?.commission_rate || 0));
